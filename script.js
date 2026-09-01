@@ -78,7 +78,7 @@ function initChart() {
 }
 
 function connectToRealtimeData() {
-    const socket = io('http://localhost:3000');
+    const socket = io('https://biogas-system-jh34.onrender.com');
 
     socket.on('connect', () => {
         console.log('✅ Connected to Real-time Backend Stream');
