@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biogas Plant Monitoring System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    <nav id="main-nav">
+        <div class="logo">BioMonitor Pro</div>
+        <ul>
+            <li><a onclick="switchScreen('home-screen')">Home</a></li>
+            <li><a onclick="restrictedAccess()">Dashboard</a></li>
+            <li><a onclick="restrictedAccess()">Monitor</a></li>
+            <li><button class="btn-login" onclick="switchScreen('login-screen')">Login</button></li>
+        </ul>
+    </nav>
+
+    <!-- SCREEN 1: HOME SCREEN -->
+    <div id="home-screen" class="screen active">
+        <div class="home-container">
+            <h1 class="hero-title">Intelligent Biogas Data Logger</h1>
+            <p>Real-time parameter tracking and evaluation system for university operations.</p>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: LOGIN SCREEN -->
+    <div id="login-screen" class="screen">
+        <div class="login-box">
+            <h2>System Login</h2>
+            <div class="input-group">
+                <label for="username">Username / Student ID</label>
+                <input type="text" id="username" placeholder="Enter your name or ID">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <button class="btn-log" onclick="handleLogin()">LOG IN</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: PROTECTED DASHBOARD -->
+    <div id="dashboard-screen" class="screen">
+        <div class="dashboard-layout">
+            
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div>
+                    <h3 style="margin-bottom: 25px; padding-left: 5px;">Biogas Research</h3>
+                    <ul>
+                        <li id="side-mon" class="active-link" onclick="switchSubScreen('monitor-content', 'side-mon')">Monitor</li>
+                        <li id="side-hist" onclick="switchSubScreen('history-content', 'side-hist')">History</li>
+                    </ul>
+                </div>
+                <div>
+                    <button style="width: 100%; background: #ef4444; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;" onclick="handleLogout()">Sign Out</button>
+                </div>
+            </div>
+
+            <!-- MAIN WINDOW -->
+            <div class="main-content">
+                <div class="welcome-msg" id="welcome-text">Welcome back!</div>
+                
+                <!-- SUB-FRAME 1: MONITOR -->
+                <div id="monitor-content" class="sub-screen sub-active">
+                    <h3 style="margin-bottom: 20px; color: #1e293b;">Live Plant Parameters</h3>
+                    
+                    <!-- Cards Grid -->
+                    <div class="sensor-grid">
+                        <div class="sensor-card">
+                            <h4>Methane (CH4)</h4>
+                            <div class="sensor-value" id="val-ch4">0.0 <span class="sensor-unit">%</span></div>
+                        </div>
+                        <div class="sensor-card">
+                            <h4>Carbon Dioxide (CO2)</h4>
+                            <div class="sensor-value" id="val-co2">0.0 <span class="sensor-unit">%</span></div>
+                        </div>
+                        <div class="sensor-card">
+                            <h4>Hydrogen Sulfide (H2S)</h4>
+                            <div class="sensor-value" id="val-h2s">0.0 <span class="sensor-unit">ppm</span></div>
+                        </div>
+                        <div class="sensor-card">
+                            <h4>pH Level</h4>
+                            <div class="sensor-value" id="val-ph">0.0</div>
+                        </div>
+                        <div class="sensor-card">
+                            <h4>Pressure</h4>
+                            <div class="sensor-value" id="val-press">0.00 <span class="sensor-unit">bar</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Split Grid Container -->
+                    <div class="monitor-data-container">
+                        <div class="chart-container-box">
+                            <h4 style="margin-bottom: 12px;">Real-time Streams</h4>
+                            <div style="height: 300px;">
+                                <canvas id="liveSensorChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-FRAME 2: HISTORY LOG PAGE -->
+                <div id="history-content" class="sub-screen">
+                    <div class="history-card">
+                        <div class="history-header">
+                            <h3 style="color: #1e293b; margin-bottom: 15px;">Stored Data History Logs</h3>
+                        </div>
+                        <div class="log-table-wrapper">
+                            <table class="log-table" id="historyLogTable">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>CH4 (%)</th>
+                                        <th>CO2 (%)</th>
+                                        <th>H2S (ppm)</th>
+                                        <th>pH Level</th>
+                                        <th>Pressure (bar)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyLogBody">
+                                    <!-- දත්ත පැමිණෙන විට මෙතැනට ස්වයංක්‍රීයව එකතු වේ -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

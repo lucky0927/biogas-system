@@ -1,0 +1,50 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background-color: #f1f5f9; color: #333; }
+
+/* Navigation */
+#main-nav { display: flex; justify-content: space-between; align-items: center; background-color: #0f172a; padding: 15px 40px; }
+.logo { color: #fff; font-size: 24px; font-weight: bold; }
+#main-nav ul { list-style: none; display: flex; gap: 30px; align-items: center; }
+#main-nav a { color: #cbd5e1; text-decoration: none; font-size: 16px; cursor: pointer; transition: 0.3s; }
+#main-nav a:hover { color: #fff; }
+.btn-login { background-color: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+.btn-login:hover { background-color: #2563eb; }
+
+/* Screens */
+.screen { display: none; }
+.screen.active { display: block; }
+.sub-screen { display: none; }
+.sub-screen.sub-active { display: block; }
+
+/* Home & Login */
+.home-container { text-align: center; padding: 100px 20px; }
+.hero-title { font-size: 48px; color: #1e293b; margin-bottom: 20px; }
+.login-box { background: white; max-width: 400px; margin: 100px auto; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.login-box h2 { text-align: center; margin-bottom: 30px; color: #1e293b; }
+.input-group { margin-bottom: 20px; display: flex; flex-direction: column; }
+.input-group label { margin-bottom: 8px; font-weight: 600; color: #475569; }
+.input-group input { padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 16px; }
+.btn-log { width: 100%; background: #3b82f6; color: white; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+/* Dashboard Layout */
+.dashboard-layout { display: flex; height: 100vh; overflow: hidden; }
+.sidebar { width: 260px; background-color: #1e293b; color: white; padding: 30px 20px; display: flex; flex-direction: column; justify-content: space-between; }
+.sidebar ul { list-style: none; }
+.sidebar li { padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; font-size: 16px; color: #cbd5e1; transition: 0.3s; }
+.sidebar li:hover { background-color: #334155; color: white; }
+.sidebar li.active-link { background-color: #3b82f6; color: white; font-weight: bold; }
+.main-content { flex: 1; padding: 40px; overflow-y: auto; }
+.welcome-msg { font-size: 24px; font-weight: bold; color: #0f172a; margin-bottom: 30px; }
+
+/* Sensor Grid */
+.sensor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.sensor-card { background: white; padding: 25px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #3b82f6; }
+.sensor-card h4 { color: #64748b; margin-bottom: 15px; font-size: 15px; }
+.sensor-value { font-size: 32px; font-weight: bold; color: #0f172a; }
+.sensor-unit { font-size: 16px; font-weight: normal; color: #94a3b8; }
+
+/* Chart & Table */
+.monitor-data-container, .history-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.log-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.log-table th, .log-table td { padding: 15px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+.log-table th { background-color: #f8fafc; color: #475569; font-weight: 600; }
