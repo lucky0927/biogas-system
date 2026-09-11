@@ -5,135 +5,717 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Biogas Plant Monitoring System</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PDF Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Modern Typography for Softly Theme -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
 </head>
 <body>
+<!-- SVG Noise Grain Overlay (35% Opacity) -->
+<!-- SVG Noise Grain Overlay (35% Opacity) -->
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; opacity: 0.35; mix-blend-mode: overlay; background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
 
-    <!-- NAVIGATION BAR -->
-    <nav id="main-nav">
-        <div class="logo">BioMonitor Pro</div>
-        <ul>
-            <li><a onclick="switchScreen('home-screen')">Home</a></li>
-            <li><a onclick="restrictedAccess()">Dashboard</a></li>
-            <li><a onclick="restrictedAccess()">Monitor</a></li>
-            <li><button class="btn-login" onclick="switchScreen('login-screen')">Login</button></li>
-        </ul>
-    </nav>
+   <!-- ========================================== -->
+    <!-- MODERN ANIMATED LOGIN SCREEN               -->
+    <!-- ========================================== -->
+    <div id="login-screen" class="screen active" style="justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-sage) 100%); position: relative; overflow: hidden;">
+        
+        <!-- Background decorative elements -->
+        <div style="position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--bg-lavender); border-radius: 50%; filter: blur(80px); opacity: 0.6; z-index: 1;"></div>
+        <div style="position: absolute; bottom: -10%; right: -10%; width: 300px; height: 300px; background: var(--accent-coral); border-radius: 50%; filter: blur(80px); opacity: 0.2; z-index: 1;"></div>
 
-    <!-- SCREEN 1: HOME SCREEN -->
-    <div id="home-screen" class="screen active">
-        <div class="home-container">
-            <h1 class="hero-title">Intelligent Biogas Data Logger</h1>
-            <p>Real-time parameter tracking and evaluation system for university operations.</p>
+        <div class="login-container" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); padding: 48px 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.5); width: 100%; max-width: 420px; z-index: 2; animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
+            
+            <div class="login-header" style="text-align: center; margin-bottom: 32px;">
+                <div style="font-size: 48px; margin-bottom: 12px; animation: floatIcon 3s ease-in-out infinite;">🌱</div>
+                <h2 style="font-family: var(--font-main); font-weight: 700; color: var(--text-dark); font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BioMonitor</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Authorized Personnel Access</p>
+            </div>
+
+            <!-- 
+                Form ටැග් එක මගින් Browser එකට Password Save කරගැනීමට සංඥා කරයි. 
+                autocomplete="username" සහ autocomplete="current-password" අත්‍යවශ්‍ය වේ.
+            -->
+            <form id="login-form" onsubmit="event.preventDefault(); document.getElementById('login-btn').click();">
+                <div class="input-group" style="margin-bottom: 20px; text-align: left;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Email Address</label>
+                    <input type="email" id="user-email" autocomplete="username" required placeholder="name@example.com" class="login-input">
+                </div>
+                
+                <div class="input-group" style="margin-bottom: 24px; text-align: left;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Password</label>
+                    <input type="password" id="user-password" autocomplete="current-password" required placeholder="••••••••" class="login-input">
+                </div>
+
+                <div id="login-error" style="color: #991B1B; font-size: 13px; text-align: center; margin-bottom: 16px; min-height: 20px; font-weight: 500;"></div>
+
+                <button type="submit" id="login-btn" class="btn-primary-small login-button">
+                    Sign In <span style="font-size: 18px; margin-left: 8px; transition: transform 0.3s;">➔</span>
+                </button>
+            </form>
         </div>
     </div>
 
-    <!-- SCREEN 2: LOGIN SCREEN -->
-    <div id="login-screen" class="screen">
-        <div class="login-box">
-            <h2>System Login</h2>
-            <div class="input-group">
-                <label for="username">Username / Student ID</label>
-                <input type="text" id="username" placeholder="Enter your name or ID">
-            </div>
-            <div class="input-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" placeholder="••••••••">
-            </div>
-            <button class="btn-log" onclick="handleLogin()">LOG IN</button>
-        </div>
-    </div>
-
-    <!-- SCREEN 3: PROTECTED DASHBOARD -->
-    <div id="dashboard-screen" class="screen">
+    <!-- SCREEN 2: ADMIN DASHBOARD -->
+    <div id="admin-screen" class="screen">
         <div class="dashboard-layout">
             
             <!-- SIDEBAR -->
             <div class="sidebar">
-                <div>
-                    <h3 style="margin-bottom: 25px; padding-left: 5px;">Biogas Research</h3>
-                    <ul>
-                        <li id="side-mon" class="active-link" onclick="switchSubScreen('monitor-content', 'side-mon')">Monitor</li>
-                        <li id="side-hist" onclick="switchSubScreen('history-content', 'side-hist')">History</li>
-                    </ul>
-                </div>
-                <div>
-                    <button style="width: 100%; background: #ef4444; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;" onclick="handleLogout()">Sign Out</button>
+                <div class="brand">BioMonitor<span class="coral-dot">.</span></div>
+                <ul class="nav-links">
+                    <li id="tab-admin-overview" class="active" onclick="switchAdminTab('admin-overview')">Overview</li>
+                    <li id="tab-admin-deployments" onclick="switchAdminTab('admin-deployments')">Deployments</li>
+                    <li id="tab-admin-complaints" onclick="switchAdminTab('admin-complaints')">Complaints</li>
+                </ul>
+                <div class="sidebar-footer">
+                    <button class="btn-logout" id="admin-logout-btn">Sign Out</button>
                 </div>
             </div>
 
-            <!-- MAIN WINDOW -->
+            <!-- MAIN CONTENT -->
             <div class="main-content">
-                <div class="welcome-msg" id="welcome-text">Welcome back!</div>
                 
-                <!-- SUB-FRAME 1: MONITOR -->
-                <div id="monitor-content" class="sub-screen sub-active">
-                    <h3 style="margin-bottom: 20px; color: #1e293b;">Live Plant Parameters</h3>
-                    
-                    <!-- Cards Grid -->
-                    <div class="sensor-grid">
-                        <div class="sensor-card">
-                            <h4>Methane (CH4)</h4>
-                            <div class="sensor-value" id="val-ch4">0.0 <span class="sensor-unit">%</span></div>
+                <!-- TOP HEADER & SEARCH -->
+                <div class="header-bar">
+                    <div>
+                        <h2 id="admin-welcome-msg">Welcome, Admin</h2>
+                        <p class="text-muted">System Overview & Management</p>
+                    </div>
+                    <div class="search-box" style="position: relative;">
+                        <input type="text" id="admin-search-input" placeholder="Search customer, location or unit ID...">
+                        <div id="search-suggestions" class="suggestions-dropdown"></div>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB: OVERVIEW -->
+                <div id="admin-overview" class="admin-tab active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Total Biogas Units</h3>
+                            <div class="stat-value" id="admin-total-units">0</div>
                         </div>
-                        <div class="sensor-card">
-                            <h4>Carbon Dioxide (CO2)</h4>
-                            <div class="sensor-value" id="val-co2">0.0 <span class="sensor-unit">%</span></div>
-                        </div>
-                        <div class="sensor-card">
-                            <h4>Hydrogen Sulfide (H2S)</h4>
-                            <div class="sensor-value" id="val-h2s">0.0 <span class="sensor-unit">ppm</span></div>
-                        </div>
-                        <div class="sensor-card">
-                            <h4>pH Level</h4>
-                            <div class="sensor-value" id="val-ph">0.0</div>
-                        </div>
-                        <div class="sensor-card">
-                            <h4>Pressure</h4>
-                            <div class="sensor-value" id="val-press">0.00 <span class="sensor-unit">bar</span></div>
+                        <div class="stat-card alert-card">
+                            <h3>Active Complaints</h3>
+                            <div class="stat-value" id="admin-active-complaints">0</div>
                         </div>
                     </div>
 
-                    <!-- Split Grid Container -->
-                    <div class="monitor-data-container">
-                        <div class="chart-container-box">
-                            <h4 style="margin-bottom: 12px;">Real-time Streams</h4>
-                            <div style="height: 300px;">
-                                <canvas id="liveSensorChart"></canvas>
+                    <h3 class="section-title" style="margin-top: 40px; margin-bottom: 20px;">Units Requiring Attention</h3>
+                    <div class="units-grid" id="attention-units-grid">
+                        <!-- Units with critical status will load here -->
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB: DEPLOYMENTS (Add New) -->
+                <div id="admin-deployments" class="admin-tab">
+                    <div class="flex-header">
+                        <h3 class="section-title">Manage Locations & Units</h3>
+                        <button class="btn-primary-small" onclick="openAddDeploymentModal()">+ Add New Unit</button>
+                    </div>
+                    
+                    <div class="units-list" id="all-units-list">
+                        <!-- All locations and units will load here -->
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB: COMPLAINTS (Will build in step 6) -->
+                <!-- ADMIN TAB: COMPLAINTS (CHAT) -->
+                <div id="admin-complaints" class="admin-tab" style="padding: 0; height: calc(100vh - 120px);">
+                    <div class="chat-layout">
+                        <!-- LEFT: Chat List -->
+                        <div class="chat-sidebar">
+                            <h3 style="padding: 20px; margin: 0; border-bottom: 1px solid #E5E7EB;">Active Chats</h3>
+                            <div id="admin-chat-list">
+                                <!-- Customer chat list will load here -->
+                            </div>
+                        </div>
+                        
+                        <!-- RIGHT: Chat Window -->
+                        <div class="chat-main" id="admin-chat-window" style="display: none;">
+                            <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3 id="active-chat-name" style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                                        Customer Name 
+                                        <span id="admin-chat-status" class="badge active" style="font-size: 10px; padding: 4px 8px;">ACTIVE</span>
+                                    </h3>
+                                    <p id="active-chat-phone" style="margin: 0; font-size: 12px; color: var(--text-muted);">Phone</p>
+                                </div>
+                                <button id="btn-resolve" class="btn-secondary-small" onclick="markAsResolved()" style="background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB;">✔️ Mark as Resolved</button>
+                            </div>
+                            <div class="chat-messages" id="admin-chat-messages">
+                                <!-- Messages -->
+                            </div>
+                            <div class="chat-input-area" style="align-items: center;">
+                                <input type="file" id="admin-chat-image" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'admin')">
+                                <button class="btn-chat-icon" title="Upload Image" onclick="document.getElementById('admin-chat-image').click()">📎</button>
+                                <button class="btn-chat-icon" id="admin-mic-btn" title="Hold or Click to Record" onclick="toggleVoiceRecord('admin')">🎤</button>
+                                <input type="text" id="admin-chat-input" placeholder="Type a reply..." onkeypress="handleAdminChatEnter(event)">
+                                <button class="btn-primary-small" onclick="sendAdminMessage()">Reply</button>
+                            </div>
+                        </div>
+                        
+                        <!-- RIGHT: Placeholder (When no chat is selected) -->
+                        <div class="chat-main" id="admin-chat-placeholder" style="align-items: center; justify-content: center;">
+                            <div style="text-align: center; color: #9CA3AF;">
+                                <span style="font-size: 40px;">💬</span>
+                                <h3>Select a conversation</h3>
+                                <p>Choose a customer from the left to start chatting</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SUB-FRAME 2: HISTORY LOG PAGE -->
-                <div id="history-content" class="sub-screen">
-                    <div class="history-card">
-                        <div class="history-header">
-                            <h3 style="color: #1e293b; margin-bottom: 15px;">Stored Data History Logs</h3>
+            </div>
+        </div>
+    </div>
+
+  <!-- MODAL: ADD NEW DEPLOYMENT -->
+    <div id="add-deployment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register Biogas Unit</h3>
+                <span class="close-btn" onclick="closeAddDeploymentModal()">&times;</span>
+            </div>
+            
+            <div class="form-section">
+                <h4>1. Customer Details</h4>
+                <select id="customer-select" class="input-field" onchange="handleCustomerSelection()">
+                    <option value="new">+ Create New Customer</option>
+                </select>
+                
+                <div id="new-customer-fields">
+                    <input type="text" id="cust-name" class="input-field" placeholder="Full Name">
+                    <input type="text" id="cust-phone" class="input-field" placeholder="Phone Number">
+                    
+                    <input type="email" id="cust-email" class="input-field" placeholder="Login Email (e.g. user@biogas.com)">
+                    <input type="password" id="cust-pass" class="input-field" placeholder="Login Password (Min 6 chars)">
+                    
+                    <select id="cust-gender" class="input-field">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>2. Location Details</h4>
+                <select id="location-select" class="input-field" onchange="handleLocationSelection()">
+                    <option value="new">+ Create New Location</option>
+                </select>
+                
+                <div id="new-location-fields">
+                    <input type="text" id="loc-name" class="input-field" placeholder="Location Name (e.g. Base Canteen)">
+                    <input type="text" id="loc-address" class="input-field" placeholder="Full Address">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h4>3. Hardware Details</h4>
+                <input type="text" id="unit-name" class="input-field" placeholder="Unit Name (e.g. Unit 1) - Optional for single units">
+                <input type="text" id="unit-mac" class="input-field" placeholder="Hardware MAC Address">
+            </div>
+            
+            <button class="btn-primary" onclick="saveNewDeployment()">Save Deployment</button>
+            <div id="deployment-msg" style="margin-top: 15px; font-size: 14px;"></div>
+        </div>
+    </div>
+
+
+    <!-- SCREEN 3: CUSTOMER DASHBOARD -->
+    <div id="customer-screen" class="screen">
+        <div class="dashboard-layout">
+            
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div class="brand">BioMonitor<span class="coral-dot">.</span></div>
+                <ul class="nav-links">
+                    <li id="tab-back-admin" onclick="returnToAdmin()" style="display: none; background: #0F172A; color: #FFFFFF; font-weight: 700; margin-bottom: 24px; text-align: center; border-radius: 100px;">
+                        ⬅ Return to Admin Panel
+                    </li>
+                    <li id="tab-cust-overview" onclick="switchCustomerTab('cust-overview'); renderCustomerOverview();" class="active">Overview</li>
+                    <li id="tab-cust-monitor" onclick="switchCustomerTab('cust-monitor'); loadMonitorData();">Monitor</li>
+                    <li id="tab-cust-history" onclick="switchCustomerTab('cust-history'); fetchHistoryData();">History</li>
+                    <li id="tab-cust-reports" onclick="switchCustomerTab('cust-reports'); resetReportFilters();">Reports & Analytics</li>
+                    <li id="tab-cust-sensors" onclick="switchCustomerTab('cust-sensors'); loadSensorStatus();">Sensor Status</li>
+                    <li id="tab-cust-alerts" onclick="switchCustomerTab('cust-alerts'); loadCustomerAlerts();">System Alerts</li>
+                    <li id="tab-cust-settings" onclick="switchCustomerTab('cust-settings')">Settings</li>
+                    <li id="tab-cust-contact" onclick="switchCustomerTab('cust-contact')">Contact Us</li>
+                </ul>
+                <!-- SIDEBAR FOOTER (Support & Sign Out) -->
+                <div class="sidebar-footer" style="margin-top: auto; padding-bottom: 20px;">
+                    <ul class="nav-links" style="margin-bottom: 12px; padding: 0;">
+                        <li id="tab-cust-support" onclick="switchCustomerTab('cust-support'); loadCustomerChatForUnit();" style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 18px;">💬</span> Support Center
+                        </li>
+                    </ul>
+                    <button id="customer-logout-btn" class="btn-logout">
+                        <span style="font-size: 16px;">🚪</span> Sign Out
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <div class="main-content" style="background-color: #F8FAFC;">
+                
+                <div style="display: flex; justify-content: flex-end; padding: 0 24px 10px 24px;">
+                    <div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; padding: 6px 20px 6px 6px; border-radius: 100px; box-shadow: var(--shadow-soft); border: 1px solid #E5E7EB; cursor: default; transition: 0.2s;" onmouseover="this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='var(--shadow-soft)'">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #DCFCE7; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                            👤
                         </div>
-                        <div class="log-table-wrapper">
-                            <table class="log-table" id="historyLogTable">
-                                <thead>
-                                    <tr>
-                                        <th>Timestamp</th>
-                                        <th>CH4 (%)</th>
-                                        <th>CO2 (%)</th>
-                                        <th>H2S (ppm)</th>
-                                        <th>pH Level</th>
-                                        <th>Pressure (bar)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="historyLogBody">
-                                    <!-- දත්ත පැමිණෙන විට මෙතැනට ස්වයංක්‍රීයව එකතු වේ -->
-                                </tbody>
-                            </table>
+                        <div style="text-align: left;">
+                            <h4 id="top-user-name" style="margin: 0; font-size: 14px; color: var(--text-dark); font-weight: 700;">Loading...</h4>
+                            <p id="top-user-email" style="margin: 0; font-size: 11px; color: var(--text-muted); font-weight: 500;">Please wait</p>
                         </div>
                     </div>
                 </div>
 
+                <!-- CUSTOMER TAB: OVERVIEW -->
+                <div id="cust-overview" class="admin-tab active" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Overview</h2>
+                            <p class="text-muted" style="font-size: 14px;">Select a biogas unit to monitor and manage its data across the system.</p>
+                        </div>
+                    </div>
+                    <div id="customer-overview-container"></div>
+                </div>
+
+                <!-- CUSTOMER TAB: MONITOR -->
+                <div id="cust-monitor" class="admin-tab" style="padding: 24px;">
+                    <div id="live-monitor-container">
+                        <div class="flex-header" style="align-items: flex-start; margin-bottom: 24px;">
+                            <div>
+                                <h2 id="live-unit-name" style="font-size: 28px; color: var(--text-dark);">Unit Name</h2>
+                                <p class="text-muted" id="live-unit-location">Location details</p>
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <select id="monitor-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                                    <option value="" disabled>-- Switch Unit --</option>
+                                </select>
+                                <button class="btn-secondary-small" onclick="triggerIssueReport()" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;">⚠️ Report Issue</button>
+                                <div class="badge active" style="padding: 6px 16px; font-size: 13px;">ONLINE</div>
+                            </div>
+                        </div>
+
+                        <div class="params-grid">
+                            <div class="param-card"><h5>Methane (CH4)</h5><div class="val-box"><span id="val-ch4">0.00</span> <small>ppm</small></div></div>
+                            <div class="param-card"><h5>Carbon Dioxide (CO2)</h5><div class="val-box"><span id="val-co2">0.00</span> <small>ppm</small></div></div>
+                            <div class="param-card"><h5>Hydrogen Sulfide (H2S)</h5><div class="val-box"><span id="val-h2s">0.00</span> <small>ppm</small></div></div>
+                            <div class="param-card"><h5>pH Level</h5><div class="val-box"><span id="val-ph">0.0</span></div></div>
+                            <div class="param-card"><h5>Pressure</h5><div class="val-box"><span id="val-pressure">0.0</span> <small>bar</small></div></div>
+                            <div class="param-card"><h5>Temperature</h5><div class="val-box"><span id="val-temp">0.0</span> <small>°C</small></div></div>
+                            <div class="param-card"><h5>Humidity</h5><div class="val-box"><span id="val-hum">0.0</span> <small>%</small></div></div>
+                            <div class="param-card"><h5>Gas Volume</h5><div class="val-box"><span id="val-vol">0.0</span> <small>L</small></div></div>
+                        </div>
+
+                        <div class="visualization-grid">
+                            <div class="viz-card">
+                                <h4>Real-time Streams</h4>
+                                <div id="chart-container" class="chart-placeholder">
+                                    <span class="text-muted">Graph will render here...</span>
+                                </div>
+                            </div>
+                            <div class="viz-card tank-card">
+                                <h4 style="text-align: center;">Tank Volume</h4>
+                                <div class="tank-wrapper">
+                                    <div class="tank-container"><div class="tank-level" id="tank-level-fill" style="height: 0%;"></div></div>
+                                    <div class="tank-text">Distance: <span id="val-distance">0</span> cm</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actuators-grid">
+                            <div class="actuator-card"><h4>Valve 3 Status</h4><div class="status-indicator" id="status-valve">OFF</div></div>
+                            <div class="actuator-card"><h4>Pump Status</h4><div class="status-indicator" id="status-pump">OFF</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: HISTORY -->
+                <div id="cust-history" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header">
+                        <div>
+                            <h2 class="section-title">Historical Data Logs</h2>
+                            <p class="text-muted">View, filter, and export past sensor readings</p>
+                        </div>
+                        <div class="history-actions">
+                            <button class="btn-secondary-small" onclick="exportToCSV()">Export CSV</button>
+                            <button class="btn-primary-small" onclick="exportToPDF()" style="background-color: var(--text-dark); color: white;">Export PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="history-controls">
+                        <div class="input-group" style="margin-bottom: 0; flex: 1;">
+                            <label>Select Biogas Unit</label>
+                            <select id="history-unit-select" class="input-field" onchange="handleUnitSwitch(this.value)">                                <option value="">-- Choose a Unit --</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0; flex: 1;">
+                            <label>Filter by Date</label>
+                            <input type="date" id="history-date-select" class="input-field" onchange="fetchHistoryData()">
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table" id="history-table">
+                            <thead>
+                                <tr><th>Time</th><th>CH4 (ppm)</th><th>CO2 (ppm)</th><th>H2S (ppm)</th><th>Temp (°C)</th><th>pH Level</th><th>Volume (L)</th></tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <tr><td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit to view data logs.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: REPORTS & ANALYTICS -->
+                <div id="cust-reports" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Reports & Analytics</h2>
+                            <p class="text-muted" style="font-size: 14px;">Generate professional performance, safety, and trend reports using real-time sensor logs.</p>
+                        </div>
+                    </div>
+
+                    <div class="param-card" style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; background: #FFFFFF; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-soft);">
+                        <div style="flex: 1; min-width: 180px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">SELECT UNIT</label>
+                            <select id="report-unit-switcher" style="width: 100%; padding: 10px; border: 1px solid #E5E7EB; border-radius: 8px; font-family: inherit; color: var(--text-dark);" onchange="handleUnitSwitch(this.value)">
+                                <option value="" disabled>-- Switch Unit --</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">SELECT REPORT TYPE</label>
+                            <select id="report-type-select" style="width: 100%; padding: 10px; border: 1px solid #E5E7EB; border-radius: 8px; font-family: inherit; color: var(--text-dark);">
+                                <option value="production">1. Biogas Production Report</option>
+                                <option value="quality">2. Gas Quality Report</option>
+                                <option value="process">3. Digester / Process Performance</option>
+                                <option value="safety">4. Safety & Alert Analysis Report</option>
+                                <option value="trend">5. Historical Trend Analysis</option>
+                                <option value="insights">6. Early Warning / Trend Insights</option>
+                                <option value="summary">7. Daily / Weekly / Monthly Summary</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 180px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">DATE RANGE</label>
+                            <select id="report-date-range" style="width: 100%; padding: 10px; border: 1px solid #E5E7EB; border-radius: 8px; font-family: inherit; color: var(--text-dark);">
+                                <option value="today">Today</option>
+                                <option value="7days" selected>Last 7 Days</option>
+                                <option value="30days">Last 30 Days</option>
+                                <option value="custom">Custom Date Range (Select Below)</option>
+                            </select>
+                        </div>
+                        <div id="custom-date-inputs" style="display: none; gap: 10px;">
+                            <div><label style="display: block; font-size: 10px; color: var(--text-muted);">FROM</label><input type="date" id="report-date-from" style="padding: 8px; border: 1px solid #E5E7EB; border-radius: 6px;"></div>
+                            <div><label style="display: block; font-size: 10px; color: var(--text-muted);">TO</label><input type="date" id="report-date-to" style="padding: 8px; border: 1px solid #E5E7EB; border-radius: 6px;"></div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-primary-small" onclick="generateReport()" style="padding: 10px 20px; font-weight: 600;">Generate Report</button>
+                        </div>
+                    </div>
+
+                    <div id="report-preview-container" style="background: #FFFFFF; padding: 30px; border-radius: 16px; box-shadow: var(--shadow-soft); border: 1px solid #E5E7EB; min-height: 400px;">
+                        <div id="report-loading" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <span style="font-size: 40px; display: block; margin-bottom: 10px;">📊</span>
+                            <p style="font-size: 16px; margin: 0;">Select your filters above and click <strong>"Generate Report"</strong> to analyze historical data.</p>
+                        </div>
+                        <div id="report-content" style="display: none;"></div>
+                    </div>
+                    
+                    <div id="report-export-actions" style="display: none; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+                        <button class="btn-secondary-small" onclick="exportReportToCSV()">Export Data (CSV)</button>
+                        <button class="btn-primary-small" style="background: #991B1B;" onclick="exportReportToPDF()">Download PDF Report</button>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: SENSOR STATUS -->
+                <div id="cust-sensors" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Real-time Sensor Status</h2>
+                            <p class="text-muted" style="font-size: 14px;">Monitor individual hardware sensors, their connection states, and safe operating ranges.</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="sensor-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                                <option value="" disabled>-- Switch Unit --</option>
+                            </select>
+                            <button class="btn-secondary-small" onclick="loadSensorStatus()">🔄 Refresh Status</button>
+                        </div>
+                    </div>
+                    <div id="sensor-status-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <p style="color: var(--text-muted);">Loading sensor diagnostics...</p>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: ALERTS -->
+                <div id="cust-alerts" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Alerts</h2>
+                            <p class="text-muted" style="font-size: 14px;">Review out-of-range sensor readings and critical warnings.</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select id="alerts-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                                <option value="" disabled>-- Switch Unit --</option>
+                            </select>
+                            <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh Alerts</button>
+                        </div>
+                    </div>
+                    <div id="customer-alerts-container" style="display: flex; flex-direction: column; gap: 16px;">
+                        <p style="color: var(--text-muted);">Please select a unit to view alerts.</p>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: SUPPORT (CHAT) -->
+                <div id="cust-support" class="admin-tab" style="padding: 0; height: calc(100vh - 40px);">
+                    <div class="chat-layout">
+                        <div class="chat-main">
+                            <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                                        Support Center 
+                                        <span id="cust-chat-status" class="badge active" style="font-size: 10px; padding: 4px 8px;">ACTIVE</span>
+                                    </h3>
+                                    <p style="margin: 0; font-size: 12px; color: var(--accent-coral);">Select a unit to view its chat history</p>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <select id="support-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                                        <option value="" disabled>-- Switch Unit --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="cust-chat-messages"></div>
+                            <div class="chat-input-area" style="align-items: center;">
+                                <input type="file" id="cust-chat-image" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'customer')">
+                                <button class="btn-chat-icon" title="Upload Image" onclick="document.getElementById('cust-chat-image').click()">📎</button>
+                                <button class="btn-chat-icon" id="cust-mic-btn" title="Hold or Click to Record" onclick="toggleVoiceRecord('customer')">🎤</button>
+                                <input type="text" id="cust-chat-input" placeholder="Type your message here..." onkeypress="handleCustChatEnter(event)">
+                                <button class="btn-primary-small" onclick="sendCustMessage()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: SETTINGS -->
+                <div id="cust-settings" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Settings</h2>
+                            <p class="text-muted" style="font-size: 14px;">Customize your application interface and preferences.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; gap: 20px; max-width: 600px;">
+                        <!-- Theme Settings -->
+                        <div class="param-card" style="border: 1px solid #E5E7EB; padding: 24px; border-radius: 12px;">
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🎨 Theme Preferences</h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="theme-select" value="light" onchange="changeTheme(this.value)" checked> Light Mode
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="theme-select" value="dark" onchange="changeTheme(this.value)"> Dark Mode
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="theme-select" value="system" onchange="changeTheme(this.value)"> System Default
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Language Settings -->
+                        <div class="param-card" style="border: 1px solid #E5E7EB; padding: 24px; border-radius: 12px;">
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🌐 Language / භාෂාව / மொழி</h3>
+                            <select id="language-select" onchange="changeLanguage(this.value)" style="width: 100%; padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-family: inherit; font-size: 14px;">
+                                <option value="en" selected>English</option>
+                                <option value="si">සිංහල (Sinhala)</option>
+                                <option value="ta">தமிழ் (Tamil)</option>
+                            </select>
+                            <p style="margin: 10px 0 0 0; font-size: 12px; color: var(--text-muted);">Note: Language changes will be applied to the main UI components.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CUSTOMER TAB: CONTACT US -->
+                <div id="cust-contact" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Contact & Support</h2>
+                            <p class="text-muted" style="font-size: 14px;">Get in touch with the BioGas Solutions team.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                        <!-- Contact Details Card -->
+                        <div class="param-card" style="border: 1px solid #E5E7EB; padding: 30px; border-radius: 12px; background: #F8FAFC;">
+                            <h3 style="margin: 0 0 20px 0; font-size: 18px; color: var(--text-dark);">Reach Out to Us</h3>
+                            
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                <span style="font-size: 20px;">📞</span>
+                                <div>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Call Us</p>
+                                    <a href="tel:+94778852808" style="color: var(--text-dark); font-weight: 600; text-decoration: none;">+94 77 885 2808</a>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                <span style="font-size: 20px;">💬</span>
+                                <div>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">WhatsApp</p>
+                                    <a href="https://wa.me/94778852808" target="_blank" style="color: #16A34A; font-weight: 600; text-decoration: none;">+94 77 885 2808</a>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                                <span style="font-size: 20px;">✉️</span>
+                                <div>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Email</p>
+                                    <a href="mailto:punsalavcc@gmail.com" style="color: var(--text-dark); font-weight: 600; text-decoration: none;">punsalavcc@gmail.com</a>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">📘</span>
+                                <div>
+                                    <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Facebook</p>
+                                    <span style="color: #2563EB; font-weight: 600; cursor: pointer;">BioGas Solutions</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Support Card -->
+                        <div class="param-card" style="border: 1px solid #E5E7EB; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                            <span style="font-size: 48px; margin-bottom: 16px;">🛠️</span>
+                            <h3 style="margin: 0 0 10px 0; font-size: 18px; color: var(--text-dark);">Technical Issue?</h3>
+                            <p style="margin: 0 0 20px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5;">
+                                Having trouble with your biogas unit or sensors? Report it directly to our admin team with images and voice notes.
+                            </p>
+                            <button class="btn-primary-small" onclick="switchCustomerTab('cust-support')" style="padding: 12px 24px; font-size: 14px; border-radius: 8px;">
+                                Open Complaint Center
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+    <!-- ========================================== -->
+    <!-- ALERTS, TOASTS & USER GUIDE MODAL          -->
+    <!-- ========================================== -->
+    
+    <!-- Toast Notification Container (For In-App Alerts) -->
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+
+    <!-- Emergency User Guide Modal -->
+    <div id="guide-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+        <div class="param-card" style="background: var(--bg-primary, #FFFFFF); padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <button onclick="closeGuideModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">✖</button>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                <span style="font-size: 30px;">⚠️</span>
+                <h3 id="guide-title" style="margin: 0; color: #991B1B; font-size: 20px;">Emergency Guide</h3>
             </div>
+            <div id="guide-content" style="font-size: 14px; color: var(--text-dark); line-height: 1.6;">
+                <!-- Content will be dynamically injected -->
+            </div>
+            <button class="btn-secondary-small" onclick="closeGuideModal()" style="width: 100%; margin-top: 20px; padding: 12px; border-radius: 12px;">Close Guide</button>
         </div>
     </div>
+
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        
+        // createUserWithEmailAndPassword අලුතින් එකතු කර ඇත
+        import { getAuth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, set, push, onValue, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+        apiKey: "AIzaSyCl39pRtcuTpeGhcZN_eEdlz3vTCFolAFk",
+        authDomain: "biogas-project-3.firebaseapp.com",
+        databaseURL: "https://biogas-project-3-default-rtdb.firebaseio.com",
+        projectId: "biogas-project-3",
+        storageBucket: "biogas-project-3.firebasestorage.app",
+        messagingSenderId: "69390468626",
+        appId: "1:69390468626:web:69c76433cbcb6d5fe93acb",
+        measurementId: "G-J6ED2B0BYH"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Admin Log out නොවී අලුත් Users ලාව හදන්න Secondary App එකක් සැකසීම
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+        const secondaryAuth = getAuth(secondaryApp);
+
+        window.firebaseAuth = auth;
+        window.firebaseDB = db;
+        window.dbRef = ref;
+        window.dbGet = get;
+        window.dbSet = set;
+        window.dbPush = push;
+        window.dbOnValue = onValue;
+        window.query = query;
+        window.orderByKey = orderByKey;
+        window.limitToLast = limitToLast;
+
+        // අලුත් Customer ගිණුම හදන Global Function එක
+        window.createCustomerAuthAccount = async (email, password) => {
+            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+            await signOut(secondaryAuth); // හැදූ වහාම Secondary එකෙන් Sign out වීම
+            return userCred.user.uid;
+        };
+
+        // ... (පහළින් ඇති Login බොත්තමේ කේතය වෙනස් කරන්න අවශ්‍ය නැත) ...
+
+        // --- LOGIN LOGIC ---
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            const email = document.getElementById('user-email').value;
+            const password = document.getElementById('user-password').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            errorDiv.innerText = "";
+            document.getElementById('login-btn').innerText = "Authenticating...";
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                const userRef = ref(db, `users/${user.uid}`);
+                const snapshot = await get(userRef);
+
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    
+                    // 🔴 මෙම පේළිය අනිවාර්යයෙන්ම තිබිය යුතුය (UID එක අමුණා යැවීම) 🔴
+                    userData.uid = user.uid; 
+
+                    if (userData.role === 'admin') {
+                        loadAdminDashboard(userData);
+                    } else if (userData.role === 'customer') {
+                        loadCustomerDashboard(userData);
+                    } else {
+                        errorDiv.innerText = "Unauthorized access level.";
+                        await signOut(auth);
+                    }
+                } else {
+                    errorDiv.innerText = "User record not found in database.";
+                    await signOut(auth);
+                }
+            } catch (error) {
+                errorDiv.innerText = error.message;
+            } finally {
+                document.getElementById('login-btn').innerText = "Sign In";
+            }
+        });
+    </script>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="script.js"></script>

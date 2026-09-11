@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +17,13 @@
     "firebase-admin": "^14.3.0",
     "mqtt": "^5.15.2",
     "socket.io": "^4.8.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucky0927/biogas-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lucky0927/biogas-system/issues"
+  },
+  "homepage": "https://github.com/lucky0927/biogas-system#readme"
 }
