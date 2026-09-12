@@ -2666,6 +2666,7 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
 }
 
 // --- START LIVE DASHBOARD SYNC (Fixed Memory Leak) ---
+// --- START LIVE DASHBOARD SYNC (Fixed Database Listener) ---
 function startDashboardLiveUpdates() {
     const db = window.firebaseDB;
     
@@ -2673,13 +2674,13 @@ function startDashboardLiveUpdates() {
     let liveChats = null;
     let liveLocations = null;
 
-    // වෙන වෙනම Listeners දමා එකම Update Function එකකට යැවීම
     const triggerUpdate = () => {
         if(liveUnits !== null && liveLocations !== null) {
             updateDashboardStats(liveUnits, liveChats, liveLocations);
         }
     };
 
+    // ඔයාගේ index.html එකට ගැළපෙන්න window.dbOnValue භාවිතා කිරීම
     window.dbOnValue(window.dbRef(db, 'units'), (snap) => { liveUnits = snap.val() || {}; triggerUpdate(); });
     window.dbOnValue(window.dbRef(db, 'chats'), (snap) => { liveChats = snap.val() || {}; triggerUpdate(); });
     window.dbOnValue(window.dbRef(db, 'locations'), (snap) => { liveLocations = snap.val() || {}; triggerUpdate(); });
