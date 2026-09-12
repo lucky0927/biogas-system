@@ -406,8 +406,7 @@ function updateDeploymentsUI(searchQuery = '') {
              <h4>${displayTitle} <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span></h4>
              <p><strong>Customer:</strong> ${cust.name || 'Unknown'} | 📞 ${cust.phone || 'N/A'}</p>
              <p><strong>Location:</strong> ${loc.locationName || 'Unknown'} - ${loc.address || 'No address'}</p>
-             <p><strong>Hardware MAC:</strong> <span class="mac-text">${unit.hardwareMac || 'N/A'}</span></p>
-             <p style="font-size: 12px; margin-top: 10px; color: #A8A29E;">Unit ID: ${unitId}</p>
+             <p><strong>Device Link/Token:</strong> <span class="mac-text" style="color: #059669; font-weight: bold;">${unit.unitToken || 'N/A'}</span></p>             <p style="font-size: 12px; margin-top: 10px; color: #A8A29E;">Unit ID: ${unitId}</p>
 
              <!-- 🔴 අලුත් Dashboard බොත්තම -->
              <button class="btn-view-live" onclick="viewUnitAsAdmin('${unitId}')">View Live Dashboard</button>
@@ -509,6 +508,10 @@ function switchAdminTab(tabId) {
 function openAddDeploymentModal() {
     document.getElementById('add-deployment-modal').classList.add('active');
     handleCustomerSelection();
+    
+    // Generate a random 6-character token/link for the new unit (e.g., BIO-A1B2C3)
+    const randomToken = 'BIO-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    document.getElementById('unit-token').value = randomToken;
 }
 
 function closeAddDeploymentModal() {
@@ -562,11 +565,11 @@ async function saveNewDeployment() {
     const msgDiv = document.getElementById('deployment-msg');
 
     const unitName = document.getElementById('unit-name').value.trim() || 'Unit 1';
-    const unitMac = document.getElementById('unit-mac').value.trim();
+    const unitToken = document.getElementById('unit-token').value;
 
-    if (!unitMac) {
-        msgDiv.innerHTML = "<span style='color: #ef4444;'>Hardware MAC address is required!</span>";
-        return;
+    if (!unitToken) {
+    msgDiv.innerHTML = "<span style='color: #ef4444;'>System Link generation failed!</span>";
+    return;
     }
 
     btn.innerText = "Saving to Database...";
@@ -633,7 +636,7 @@ async function saveNewDeployment() {
         
         await window.dbSet(newUnitRef, {
             locationId: locationId,
-            hardwareMac: unitMac,
+            unitToken: unitToken,
             unitName: unitName,
             status: 'active',
             createdAt: new Date().toISOString()

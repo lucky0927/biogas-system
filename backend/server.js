@@ -44,17 +44,17 @@ client.on('message', async (topic, message) => {
         const sensorData = JSON.parse(message.toString());
         console.log("New Data Received from ESP32:", sensorData);
         
-        // ESP32 එකෙන් එවන MAC Address එක ලබාගැනීම
-        const macAddress = sensorData.mac || sensorData.unitId;
+        // ESP32 එකෙන් එවන Link එක/Token එක ලබාගැනීම
+        const incomingToken = sensorData.token || sensorData.link || sensorData.unitId;
 
-        if (!macAddress) {
-            console.log("No MAC address found in payload.");
+        if (!incomingToken) {
+            console.log("No Link/Token found in payload.");
             return;
         }
 
-        // 1. Database එකේ units යටතේ අදාළ MAC එකට හිමි නියම Firebase ID එක සෙවීම
+        // 1. Database එකේ units යටතේ අදාළ Token එකට හිමි නියම Firebase ID එක සෙවීම
         const unitsRef = db.ref('units');
-        const snapshot = await unitsRef.orderByChild('hardwareMac').equalTo(String(macAddress)).once('value');
+        const snapshot = await unitsRef.orderByChild('unitToken').equalTo(String(incomingToken)).once('value');
 
         if (snapshot.exists()) {
             const units = snapshot.val();
