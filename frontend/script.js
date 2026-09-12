@@ -2607,8 +2607,16 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
         Object.entries(unitsData).forEach(([unitId, unit]) => {
             total++;
             
-            if (unit.activeAlerts > 0 || unit.status === 'critical') {
-                critical++; 
+            // 🔴 අලුත්: Critical සහ Warning දෙකම ලිස්ට් එකට ගන්නවා
+            if (unit.status === 'offline') {
+                offline++;
+            } else if (unit.activeAlerts > 0 || unit.status === 'critical' || unit.status === 'warning') {
+                
+                let isCritical = unit.activeAlerts > 0 || unit.status === 'critical';
+                
+                if (isCritical) critical++;
+                else warning++;
+
                 const loc = locationsData && locationsData[unit.locationId] ? locationsData[unit.locationId] : {};
                 const locName = loc.locationName || 'Unknown Location';
                 const custId = loc.customerId;
@@ -2616,23 +2624,27 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
                 const custPhone = globalCustomers[custId] ? globalCustomers[custId].phone : '';
                 const displayTitle = unit.unitName ? `${locName} - ${unit.unitName}` : locName;
                 
+                // Warning සහ Critical වලට අදාළව පාට වෙනස් කිරීම
+                const borderColor = isCritical ? '#FCA5A5' : '#FDE68A';
+                const leftBorder = isCritical ? '#EF4444' : '#F59E0B';
+                const titleColor = isCritical ? '#991B1B' : '#D97706';
+                const icon = isCritical ? '🚨' : '⚠️';
+                
                 attentionHTML += `
-                    <div style="background: #FFFFFF; border: 1px solid #FCA5A5; border-left: 4px solid #EF4444; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="background: #FFFFFF; border: 1px solid ${borderColor}; border-left: 4px solid ${leftBorder}; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div>
-                                <div style="font-weight: 700; color: #991B1B; font-size: 16px; margin-bottom: 4px;">🚨 ${displayTitle} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px; font-family: monospace;">ID: ${unitId}</span></div>
+                                <div style="font-weight: 700; color: ${titleColor}; font-size: 16px; margin-bottom: 4px;">${icon} ${displayTitle} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px; font-family: monospace;">ID: ${unitId}</span></div>
                                 <div style="font-size: 13px; color: #475569; font-weight: 500;">👤 ${custName} | 📞 ${custPhone}</div>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">View Unit</button>
-                                <!-- 🔴 අලුත් Chat බටන් එක (කෙළින්ම චැට් එකට යයි) -->
                                 <button onclick="switchAdminTab('admin-complaints'); setTimeout(() => openAdminChat('${unitId}', {name:'${custName}', phone:'${custPhone}'}, '${displayTitle}'), 100);" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Customer Chat</button>
                             </div>
                         </div>
                         
-                        <!-- 🔴 මෙතනට තමා ලොකුවට Issues ලිස්ට් එක එන්නේ -->
-                        <div id="issues-${unitId}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #FCA5A5;">
-                            <span style="font-size: 13px; color: #991B1B;">⏳ Fetching specific alert details...</span>
+                        <div id="issues-${unitId}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed ${borderColor};">
+                            <span style="font-size: 13px; color: ${titleColor};">⏳ Fetching specific alert details...</span>
                         </div>
                     </div>
                 `;
@@ -2644,23 +2656,28 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
                         const log = Object.values(snap.val())[0];
                         let issues = [];
                         
-                        if (log.pressure > 1.3) issues.push(`High System Pressure: ${log.pressure} bar (Safe limit: 1.20)`);
-                        if (log.h2s > 1.8) issues.push(`Toxic Gas Alert (High H2S): ${log.h2s} ppm`);
+                        // 🔴 අලුත්: Warning සහ Critical වෙන් කර පෙන්වීම
+                        if (log.pressure > 1.3) issues.push(`High System Pressure: ${log.pressure} bar (Critical)`);
+                        else if (log.pressure > 1.1) issues.push(`Warning: Pressure is rising (${log.pressure} bar)`);
+
+                        if (log.h2s > 1.8) issues.push(`Toxic Gas Alert: ${log.h2s} ppm (Critical)`);
+                        else if (log.h2s > 1.5) issues.push(`Warning: H2S levels rising (${log.h2s} ppm)`);
+
                         if (log.temperature > 40) issues.push(`High Temperature Detected: ${log.temperature}°C`);
                         if (log.ph < 6.0 || log.ph > 8.0) issues.push(`pH Level Imbalance: ${log.ph}`);
                         
                         if(issues.length > 0) {
-                            issuesContainer.innerHTML = issues.map(i => `<div style="background: #FEE2E2; color: #991B1B; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid #FCA5A5; display: inline-block; width: fit-content;">⚠️ ${i}</div>`).join('');
+                            const issueBg = isCritical ? '#FEE2E2' : '#FEF3C7';
+                            const issueText = isCritical ? '#991B1B' : '#D97706';
+                            const issueBorder = isCritical ? '#FCA5A5' : '#FDE68A';
+
+                            issuesContainer.innerHTML = issues.map(i => `<div style="background: ${issueBg}; color: ${issueText}; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid ${issueBorder}; display: inline-block; width: fit-content;">${isCritical ? '🚨' : '⚠️'} ${i}</div>`).join('');
                         } else {
                             issuesContainer.innerHTML = `<span style="color: #475569; font-size: 13px;">Alert triggered, but recent logs show normal values.</span>`;
                         }
                     }
                 });
 
-            } else if (unit.status === 'warning') {
-                warning++;
-            } else if (unit.status === 'offline') {
-                offline++;
             } else {
                 online++;
             }
