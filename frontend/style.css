@@ -230,7 +230,14 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 48px;
+    margin-bottom: 32px;
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-primary); /* පල්ලෙහාට යද්දී යට තියෙන ඒවා පේන්නේ නැති වෙන්න */
+    padding: 20px 0;
+    margin-top: -20px;
+    z-index: 100;
+    box-shadow: 0 10px 15px -10px rgba(0,0,0,0.05); /* ලස්සන Shadow එකක් */
 }
 
 .text-muted {
@@ -1148,4 +1155,16 @@ body.dark-theme .btn-logout:hover {
     color: #FFFFFF !important;
     border-color: #0F172A !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* Floating Action Button (FAB) */
+.btn-floating-add {
+    position: fixed !important;
+    bottom: 40px !important;
+    right: 40px !important;
+    z-index: 999 !important;
+    padding: 16px 32px !important;
+    font-size: 16px !important;
+    border-radius: 50px !important;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4) !important;
 }
