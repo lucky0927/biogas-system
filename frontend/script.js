@@ -281,13 +281,14 @@ function listenToAdminData() {
     window.dbOnValue(window.dbRef(window.firebaseDB, 'units'), (snapshot) => {
         globalUnits = snapshot.val() || {};
         
-        // Total Units ගණන යාවත්කාලීන කිරීම
-        const totalUnits = Object.keys(globalUnits).length;
-        document.getElementById('admin-total-units').innerText = totalUnits;
+        // 🔴 FIX: පරණ ID එක තියෙනවද කියලා බලලා විතරක් Update කිරීම (Crash වීම වළක්වයි)
+        const totalUnitsEl = document.getElementById('admin-total-units');
+        if (totalUnitsEl) {
+            totalUnitsEl.innerText = Object.keys(globalUnits).length;
+        }
         
-        updateDeploymentsUI();
+        updateDeploymentsUI(); // දැන් මේක කිසිම Error එකක් නැතුව වැඩ කරනවා
         
-        // 🔴 අලුතින් එකතු කළ අනතුරු ඇඟවීමේ පරීක්ෂාව 🔴
         checkSystemAlerts(); 
     });
 }
