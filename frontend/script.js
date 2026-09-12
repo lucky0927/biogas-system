@@ -405,70 +405,79 @@ function updateDeploymentsUI(searchQuery = '') {
         const toggleBg = isAccessOn ? '#10B981' : '#E5E7EB';
         const toggleDot = isAccessOn ? 'calc(100% - 18px)' : '2px';
 
+        // දත්ත ගබඩාවෙන් Alerts සහ Messages ගණන ගන්නවා (නැත්නම් 0 ලෙස පෙන්වයි)
+        const unreadChat = cust.unreadMessages || 0; 
+        const activeAlerts = unit.activeAlerts || 0; 
+
         card.innerHTML = `
-            <div class="dep-info">
-             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                 <h4>${displayTitle} <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span></h4>
+            <div class="dep-info" style="padding: 20px;">
+             <!-- Header Section -->
+             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                 <div style="display: flex; align-items: center; gap: 12px;">
+                     <h4 style="margin: 0; font-size: 18px; color: #0F172A;">${displayTitle}</h4>
+                     <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span>
+                     
+                     <!-- Alerts / Status Indicator -->
+                     ${activeAlerts > 0 ? 
+                        `<span style="background: #FEE2E2; color: #DC2626; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #FCA5A5; display: flex; align-items: center; gap: 4px;" onclick="switchScreen('complaints-screen')">⚠️ ${activeAlerts} Critical Alerts</span>` 
+                        : 
+                        `<span style="background: #DCFCE7; color: #16A34A; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid #86EFAC;">✅ System Stable</span>`
+                     }
+                 </div>
                  
+                 <!-- Access Toggle -->
                  <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleCustomerAccess('${loc.customerId}', ${isAccessOn})">
                      <span style="font-size: 11px; font-weight: 700; color: ${isAccessOn ? '#10B981' : '#9CA3AF'};">${isAccessOn ? 'ACCESS ON' : 'ACCESS OFF'}</span>
                      <div style="width: 36px; height: 20px; background: ${toggleBg}; border-radius: 20px; position: relative; transition: 0.3s;">
-                         <div style="width: 16px; height: 16px; background: #FFF; border-radius: 50%; position: absolute; top: 2px; left: ${toggleDot}; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+                         <div style="width: 16px; height: 16px; background: #FFF; border-radius: 50%; position: absolute; top: 2px; left: ${toggleDot}; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div>
                      </div>
                  </div>
              </div>
 
-             <p style="font-size: 15px; margin-bottom: 6px; color: #334155;"><strong>Customer:</strong> ${cust.name || 'Unknown'} <span style="color: #CBD5E1; margin: 0 8px;">|</span> Phone: ${cust.phone || 'N/A'}</p>
-             <p style="font-size: 15px; margin-bottom: 16px; color: #334155;"><strong>Location:</strong> ${loc.locationName || 'Unknown'} - ${loc.address || 'No address'}</p>
+             <!-- Info Row (Compact) -->
+             <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; color: #475569; margin-bottom: 16px; align-items: center;">
+                 <span><strong>Customer:</strong> ${cust.name || 'Unknown'}</span>
+                 <span style="color: #CBD5E1;">|</span>
+                 <span><strong>Phone:</strong> ${cust.phone || 'N/A'}</span>
+                 <span style="color: #CBD5E1;">|</span>
+                 <span><strong>Unit ID:</strong> <span style="font-family: monospace; background: #F1F5F9; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #0F172A; border: 1px solid #E2E8F0;">${unitId}</span></span>
+             </div>
              
-             <!-- Credentials Section (Modern Grid Layout) -->
-             <div style="background: #F8FAFC; padding: 24px; border-radius: 12px; margin: 16px 0; border: 1px solid #E2E8F0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                 
-                 <!-- Username Box -->
-                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Username</span>
-                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                         <span style="color: #0F172A; font-weight: 600; font-size: 16px;">${cust.email || 'N/A'}</span>
-                         <span style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #E0F2FE; border-radius: 6px; font-size: 14px;" onclick="copyText('${cust.email}')" title="Click to copy">Copy</span>
-                     </div>
+             <!-- Credentials Section (Compact Inline Flex) -->
+             <div style="background: #F8FAFC; padding: 12px 16px; border-radius: 8px; border: 1px solid #E2E8F0; display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+                 <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 180px;">
+                     <span style="color: #64748B; font-size: 13px; font-weight: 500;">User:</span>
+                     <strong style="font-size: 14px; color: #0F172A;">${cust.email || 'N/A'}</strong>
+                     <span style="color: #0284C7; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto;" onclick="copyText('${cust.email}')">Copy</span>
                  </div>
-
-                 <!-- Password Box -->
-                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Password</span>
-                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                         <span style="color: #0F172A; font-weight: 600; font-size: 16px;">${cust.rawPass || 'N/A'}</span>
-                         <span style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #E0F2FE; border-radius: 6px; font-size: 14px;" onclick="copyText('${cust.rawPass}')" title="Click to copy">Copy</span>
-                     </div>
+                 <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 150px;">
+                     <span style="color: #64748B; font-size: 13px; font-weight: 500;">Pass:</span>
+                     <strong style="font-size: 14px; color: #0F172A;">${cust.rawPass || 'N/A'}</strong>
+                     <span style="color: #0284C7; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto;" onclick="copyText('${cust.rawPass}')">Copy</span>
                  </div>
-
-                 <!-- Login Link Box -->
-                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Login Link</span>
-                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                         <span style="color: #94A3B8; font-size: 16px;">Secure URL</span>
-                         <span style="color: #059669; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #D1FAE5; border-radius: 6px; font-size: 14px;" onclick="copyText('${cust.loginLink}')" title="Click to copy">Copy Link</span>
-                     </div>
+                 <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 140px;">
+                     <span style="color: #64748B; font-size: 13px; font-weight: 500;">Web:</span>
+                     <span style="color: #059669; font-size: 12px; font-weight: 700; cursor: pointer; margin-left: auto; background: #D1FAE5; padding: 4px 10px; border-radius: 6px;" onclick="copyText('${cust.loginLink}')">Copy Link</span>
                  </div>
-
-                 <!-- Device Endpoint Box -->
-                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Device Endpoint</span>
-                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                         <span style="color: #94A3B8; font-size: 16px;">API Token</span>
-                         <span style="color: #D97706; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #FEF3C7; border-radius: 6px; font-size: 14px;" onclick="copyText('${unit.unitToken}')" title="Click to copy">Copy Endpoint</span>
-                     </div>
+                 <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 140px;">
+                     <span style="color: #64748B; font-size: 13px; font-weight: 500;">Device:</span>
+                     <span style="color: #D97706; font-size: 12px; font-weight: 700; cursor: pointer; margin-left: auto; background: #FEF3C7; padding: 4px 10px; border-radius: 6px;" onclick="copyText('${unit.unitToken}')">Copy API</span>
                  </div>
-
              </div>
 
-             <!-- Action Buttons -->
-             <div style="display: flex; gap: 12px; margin-top: 24px;">
-                 <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="flex: 1; padding: 12px; font-size: 14px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: 0.2s;">View Dashboard</button>
+             <!-- Action Buttons Row -->
+             <div style="display: flex; gap: 12px; margin-top: 20px;">
+                 <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="flex: 2; padding: 12px; font-size: 14px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: 600;">View Dashboard</button>
                  
-                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1; padding: 12px; font-size: 14px; background: #0F172A; color: #FFFFFF; border: 1px solid #0F172A; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: 0.2s;">Share Details</button>
+                 <!-- Chat Button with Notification Badge -->
+                 <button class="btn-primary-small" style="flex: 1; padding: 12px; font-size: 14px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 8px; font-weight: 600; position: relative;">
+                     Customer Chat
+                     ${unreadChat > 0 ? `<span style="position: absolute; top: -8px; right: -8px; background: #EF4444; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #FFF; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${unreadChat}</span>` : ''}
+                 </button>
+
+                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1.5; padding: 12px; font-size: 14px; background: #0F172A; color: #FFFFFF; border: none; border-radius: 8px; font-weight: 600;">Share Details</button>
                  
-                 <button class="btn-primary-small" onclick="deleteUnit('${unitId}', '${displayTitle}')" style="padding: 12px 24px; font-size: 14px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; transition: 0.2s;" title="Delete Unit">Delete</button>
+                 <button class="btn-primary-small" onclick="deleteUnit('${unitId}', '${displayTitle}')" style="padding: 12px 20px; font-size: 14px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; font-weight: 600;">Delete</button>
              </div>
          </div>
      `;
