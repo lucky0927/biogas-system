@@ -241,6 +241,7 @@ function loadAdminDashboard(userData) {
     
     document.getElementById('admin-welcome-msg').innerText = `Welcome, ${userData.name}`;
     
+    startDashboardLiveUpdates();
     listenToAdminData();
     initAdminChat();
     initRealtimeListeners();
@@ -2652,6 +2653,28 @@ function updateDashboardStats(unitsData, complaintsData, locationsData) {
             attentionList.innerHTML = attentionHTML;
         }
     }
+}
+
+// --- START LIVE DASHBOARD SYNC ---
+function startDashboardLiveUpdates() {
+    // Firebase references
+    const db = window.firebaseDB;
+    const unitsRef = window.dbRef(db, 'units');
+    const complaintsRef = window.dbRef(db, 'complaints');
+    const locRef = window.dbRef(db, 'locations');
+
+    // Listen for live data changes
+    window.onValue(unitsRef, (uSnap) => {
+        window.onValue(complaintsRef, (cSnap) => {
+            window.onValue(locRef, (lSnap) => {
+                updateDashboardStats(
+                    uSnap.exists() ? uSnap.val() : null,
+                    cSnap.exists() ? cSnap.val() : null,
+                    lSnap.exists() ? lSnap.val() : null
+                );
+            });
+        });
+    });
 }
 
 // Function to Clear All Alerts
