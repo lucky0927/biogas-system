@@ -2806,7 +2806,58 @@ async function clearAllAlerts() {
 // --- ADMIN: CUSTOMER MANAGEMENT LOGIC ---
 // ==========================================
 
+// ==========================================
+// --- ADMIN: CUSTOMER MANAGEMENT LOGIC ---
+// ==========================================
+
+// 🔴 අලුත්: HTML Modals ඉබේම පිටුවට එකතු කරන කේතය (100% වැඩ කරන ක්‍රමය)
+function ensureEditModalsExist() {
+    if (!document.getElementById('edit-customer-modal')) {
+        const modalDiv = document.createElement('div');
+        modalDiv.innerHTML = `
+            <!-- MODAL: EDIT CUSTOMER -->
+            <div id="edit-customer-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Edit Customer Profile</h3>
+                        <span class="close-btn" onclick="closeEditCustomerModal()">&times;</span>
+                    </div>
+                    <div class="form-section">
+                        <input type="hidden" id="edit-cust-id">
+                        <label style="font-size: 13px; font-weight: 600; color: #64748B;">Customer Name</label>
+                        <input type="text" id="edit-cust-name" class="input-field" placeholder="Full Name">
+                        <label style="font-size: 13px; font-weight: 600; color: #64748B; margin-top: 10px;">Phone Number</label>
+                        <input type="text" id="edit-cust-phone" class="input-field" placeholder="Phone Number">
+                    </div>
+                    <button class="btn-primary" onclick="saveCustomerEdit()">Save Changes</button>
+                </div>
+            </div>
+
+            <!-- MODAL: EDIT LOCATION -->
+            <div id="edit-location-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Edit Location Details</h3>
+                        <span class="close-btn" onclick="closeEditLocationModal()">&times;</span>
+                    </div>
+                    <div class="form-section">
+                        <input type="hidden" id="edit-loc-id">
+                        <label style="font-size: 13px; font-weight: 600; color: #64748B;">Location Name</label>
+                        <input type="text" id="edit-loc-name" class="input-field" placeholder="e.g. Base Canteen">
+                        <label style="font-size: 13px; font-weight: 600; color: #64748B; margin-top: 10px;">Full Address</label>
+                        <input type="text" id="edit-loc-address" class="input-field" placeholder="Address">
+                    </div>
+                    <button class="btn-primary" onclick="saveLocationEdit()">Save Changes</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+    }
+}
+
 function renderCustomersList() {
+    ensureEditModalsExist(); // අනිවාර්යයෙන්ම Modal එක තියෙනවද බලනවා
+    
     const container = document.getElementById('customers-list-container');
     if(!container) return;
     container.innerHTML = '';
@@ -2823,7 +2874,6 @@ function renderCustomersList() {
         let locHTML = '';
         Object.entries(globalLocations).forEach(([locId, loc]) => {
             if (loc.customerId === custId) {
-                // 🔴 Location Edit Button එකතු කර ඇත
                 locHTML += `
                     <div style="margin-top: 12px; padding: 16px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; position: relative;">
                         <button onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s;">✏️ Edit</button>
@@ -2852,9 +2902,8 @@ function renderCustomersList() {
         const safePhone = cust.phone || 'N/A';
 
         const card = document.createElement('div');
-        card.style.cssText = "background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);";
+        card.style.cssText = "background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px;";
         
-        // 🔴 Customer Profile Edit Button එකතු කර ඇත
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; gap: 16px; align-items: center;">
@@ -2883,7 +2932,6 @@ function renderCustomersList() {
 // --- EDIT MODAL LOGIC (CUSTOMERS & LOCATIONS) ---
 // ==========================================
 
-// Customer Edit
 function openEditCustomerModal(custId) {
     const cust = globalCustomers[custId];
     if(!cust) return;
@@ -2915,12 +2963,11 @@ async function saveCustomerEdit() {
         
         closeEditCustomerModal();
         renderCustomersList();
-        updateDeploymentsUI(); // Deployments tab එකත් ඉබේම අලුත් වෙන්න
+        updateDeploymentsUI(); 
         
     } catch(e) { alert("Error updating customer: " + e.message); }
 }
 
-// Location Edit
 function openEditLocationModal(locId) {
     const loc = globalLocations[locId];
     if(!loc) return;
@@ -2952,53 +2999,43 @@ async function saveLocationEdit() {
         
         closeEditLocationModal();
         renderCustomersList();
-        updateDeploymentsUI(); // Deployments tab එකත් ඉබේම අලුත් වෙන්න
+        updateDeploymentsUI(); 
         
     } catch(e) { alert("Error updating location: " + e.message); }
 }
 
-// Function to delete a customer and ALL their associated data
+// --- DELETE CUSTOMER ---
 async function deleteCustomerRecord(custId, custName) {
     if(confirm(`⚠️ CRITICAL WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will permanently delete their account AND all their assigned locations, biogas units, sensor logs, and chat histories. This action CANNOT be undone.`)) {
         try {
             const db = window.firebaseDB;
-            const updates = {}; // එකපාර දත්ත ගොඩක් මකන්න අපි මේක පාවිච්චි කරනවා
+            const updates = {}; 
             
-            // 1. අදාළ Customer ගේ Locations සහ Units හොයාගෙන මකා දැමීම
             Object.entries(globalLocations).forEach(([locId, loc]) => {
                 if (loc.customerId === custId) {
-                    
-                    // ඒ Location එකට අයිති Units මකා දැමීම
                     Object.entries(globalUnits).forEach(([unitId, unit]) => {
                         if (unit.locationId === locId) {
                             updates[`units/${unitId}`] = null;
                             updates[`sensor_logs/${unitId}`] = null;
                             updates[`chats/${unitId}`] = null;
-                            
-                            delete globalUnits[unitId]; // Local මතකයෙන් ඉවත් කිරීම
+                            delete globalUnits[unitId]; 
                         }
                     });
-                    
-                    // Location එක මකා දැමීම
                     updates[`locations/${locId}`] = null;
-                    delete globalLocations[locId]; // Local මතකයෙන් ඉවත් කිරීම
+                    delete globalLocations[locId]; 
                 }
             });
 
-            // 2. Customer ගිණුම මකා දැමීම
             updates[`users/${custId}`] = null;
-            delete globalCustomers[custId]; // Local මතකයෙන් ඉවත් කිරීම
+            delete globalCustomers[custId]; 
 
-            // 3. Database එකට Update එක යැවීම (එකපාර ඔක්කොම මැකී යයි)
             await window.dbUpdate(window.dbRef(db), updates);
             
             alert(`Customer "${custName}" and all associated data deleted successfully!`);
             
-            // 4. කිසිම Refresh කිරීමකින් තොරව UI එක අලුත් කිරීම
             renderCustomersList(); 
-            updateDeploymentsUI(); // Deployments tab එකෙනුත් ඉබේම මැකී යයි
+            updateDeploymentsUI(); 
             
-            // Overview එකේ ගණන් (Counts) හරිගැස්සීම
             const totalUnitsEl = document.getElementById('admin-total-units');
             if (totalUnitsEl) totalUnitsEl.innerText = Object.keys(globalUnits).length;
             
