@@ -2598,20 +2598,18 @@ async function deleteUnit(unitId, unitName) {
 }
 
 // --- PRO OVERVIEW DASHBOARD LOGIC ---
-function updateDashboardStats(unitsData, complaintsData, locationsData) {
+// --- PRO OVERVIEW DASHBOARD LOGIC ---
+function updateDashboardStats(unitsData, chatsData, locationsData) {
     let total = 0, online = 0, warning = 0, critical = 0, offline = 0;
     const attentionList = document.getElementById('attention-list-container');
     let attentionHTML = '';
 
-    // Calculate Unit Stats
     if (unitsData) {
         Object.entries(unitsData).forEach(([unitId, unit]) => {
             total++;
-            // Basic logic: if activeAlerts > 0 it's critical, else online
-            if (unit.activeAlerts > 0) {
-                critical++;
-                
-                // Build Professional Alert Card (No Emojis, Clean UI)
+            
+            if (unit.activeAlerts > 0 || unit.status === 'critical') {
+                critical++; // Critical Alert එකක් හඳුනාගැනීම
                 const locName = locationsData && locationsData[unit.locationId] ? locationsData[unit.locationId].locationName : 'Unknown Location';
                 
                 attentionHTML += `
@@ -2621,79 +2619,87 @@ function updateDashboardStats(unitsData, complaintsData, locationsData) {
                             <div style="font-size: 13px; color: #475569; font-weight: 500;">Critical System Alerts Detected (${unit.activeAlerts} Issues)</div>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button onclick="switchScreen('complaints-screen')" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer;">View Alert</button>
-                            <button onclick="alert('Navigating to chat for unit: ${unitId}')" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer;">Customer Chat</button>
+                            <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}';" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer;">View Unit</button>
+                            <button onclick="switchAdminTab('admin-complaints')" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer;">Customer Chat</button>
                         </div>
                     </div>
                 `;
+            } else if (unit.status === 'warning') {
+                warning++;
+            } else if (unit.status === 'offline') {
+                offline++;
             } else {
                 online++;
             }
         });
     }
 
-    // Calculate Complaints Count
-    const totalComplaints = complaintsData ? Object.keys(complaintsData).length : 0;
+    // 🔴 Complaints ගණනය කිරීම (Chats Table එකේ 'active' ඒවා පමණක්) 🔴
+    let activeComplaintsCount = 0;
+    if (chatsData) {
+        Object.values(chatsData).forEach(chat => {
+            if (chat.status === 'active') activeComplaintsCount++;
+        });
+    }
 
-    // Update DOM
-    if(document.getElementById('dash-total')) {
-        document.getElementById('dash-total').innerText = total;
-        document.getElementById('dash-online').innerText = online;
-        document.getElementById('dash-warning').innerText = warning;
-        document.getElementById('dash-critical').innerText = critical;
-        document.getElementById('dash-offline').innerText = offline;
-        document.getElementById('dash-complaints').innerText = totalComplaints; // Fixes the complaint count issue
+    // HTML Update කිරීම
+    const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
+    
+    setVal('dash-total', total);
+    setVal('dash-online', online);
+    setVal('dash-warning', warning);
+    setVal('dash-critical', critical);
+    setVal('dash-complaints', activeComplaintsCount);
 
-        document.getElementById('stat-norm').innerText = online;
-        document.getElementById('stat-warn').innerText = warning;
-        document.getElementById('stat-crit').innerText = critical;
-        document.getElementById('stat-off').innerText = offline;
+    setVal('stat-norm', online);
+    setVal('stat-warn', warning);
+    setVal('stat-crit', critical);
+    setVal('stat-off', offline);
 
+    if (attentionList) {
         if (attentionHTML !== '') {
             attentionList.innerHTML = attentionHTML;
+        } else {
+            attentionList.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748B; font-size: 14px; background: #F8FAFC; border-radius: 8px;">✅ No critical alerts at the moment. System is stable.</div>`;
         }
     }
 }
 
-// --- START LIVE DASHBOARD SYNC ---
+// --- START LIVE DASHBOARD SYNC (Fixed Memory Leak) ---
 function startDashboardLiveUpdates() {
-    // Firebase references
     const db = window.firebaseDB;
-    const unitsRef = window.dbRef(db, 'units');
-    const complaintsRef = window.dbRef(db, 'complaints');
-    const locRef = window.dbRef(db, 'locations');
+    
+    let liveUnits = null;
+    let liveChats = null;
+    let liveLocations = null;
 
-    // Listen for live data changes
-    window.onValue(unitsRef, (uSnap) => {
-        window.onValue(complaintsRef, (cSnap) => {
-            window.onValue(locRef, (lSnap) => {
-                updateDashboardStats(
-                    uSnap.exists() ? uSnap.val() : null,
-                    cSnap.exists() ? cSnap.val() : null,
-                    lSnap.exists() ? lSnap.val() : null
-                );
-            });
-        });
-    });
+    // වෙන වෙනම Listeners දමා එකම Update Function එකකට යැවීම
+    const triggerUpdate = () => {
+        if(liveUnits !== null && liveLocations !== null) {
+            updateDashboardStats(liveUnits, liveChats, liveLocations);
+        }
+    };
+
+    window.dbOnValue(window.dbRef(db, 'units'), (snap) => { liveUnits = snap.val() || {}; triggerUpdate(); });
+    window.dbOnValue(window.dbRef(db, 'chats'), (snap) => { liveChats = snap.val() || {}; triggerUpdate(); });
+    window.dbOnValue(window.dbRef(db, 'locations'), (snap) => { liveLocations = snap.val() || {}; triggerUpdate(); });
 }
 
-// Function to Clear All Alerts
+// --- CLEAR ALL ALERTS FUNCTION ---
 async function clearAllAlerts() {
     if(confirm("Are you sure you want to clear all active alerts from the system?")) {
         try {
-            // Get all units and set activeAlerts to 0
             const snapshot = await window.dbGet(window.dbRef(window.firebaseDB, 'units'));
             if(snapshot.exists()) {
                 const updates = {};
                 Object.keys(snapshot.val()).forEach(unitId => {
                     updates[`units/${unitId}/activeAlerts`] = 0;
+                    updates[`units/${unitId}/status`] = 'active'; // Reset status to normal
                 });
                 await window.dbUpdate(window.dbRef(window.firebaseDB), updates);
-                alert("All alerts have been cleared successfully.");
             }
         } catch(e) {
-            console.error(e);
-            alert("Failed to clear alerts.");
+            alert("Failed to clear alerts: " + e.message);
         }
     }
 }

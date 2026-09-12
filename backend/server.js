@@ -80,6 +80,31 @@ client.on('message', async (topic, message) => {
                 pump: sensorData.pump || 'OFF',
                 timestamp: new Date().toISOString()
             });
+
+            // 🔴 4. SMART ALERT ENGINE: ESP32 දත්ත පරීක්ෂා කර Unit Status එක Update කිරීම 🔴
+            let activeAlertsCount = 0;
+            let newStatus = 'active';
+
+            // Safety Thresholds පරීක්ෂාව
+            if (sensorData.pressure > 1.3) activeAlertsCount++;
+            if (sensorData.h2s > 1.8) activeAlertsCount++;
+            if (sensorData.temperature > 40) activeAlertsCount++;
+            if (sensorData.ph < 6.0 || sensorData.ph > 8.0) activeAlertsCount++;
+
+            // Warning හෝ Critical බව තීරණය කිරීම
+            if (activeAlertsCount > 0) {
+                newStatus = 'critical';
+            } else if (sensorData.pressure > 1.1 || sensorData.h2s > 1.5) {
+                newStatus = 'warning';
+            } else {
+                newStatus = 'active';
+            }
+
+            // Firebase හි units ගොනුව යාවත්කාලීන කිරීම (මෙතැනින් Dashboard එකට සජීවීව දත්ත යයි)
+            await db.ref(`units/${firebaseUnitId}`).update({
+                activeAlerts: activeAlertsCount,
+                status: newStatus
+            });
             
             console.log(`Data saved to database for unit: ${firebaseUnitId}`);
         } else {
