@@ -692,34 +692,50 @@
 
         // ... (පහළින් ඇති Login බොත්තමේ කේතය වෙනස් කරන්න අවශ්‍ය නැත) ...
 
-        // --- AUTO-LOGIN (PERSISTENT) LOGIC ---
-        auth.onAuthStateChanged(async (user) => {
+        // --- AUTO-LOGIN (PERSISTENT) & REAL-TIME ACCESS MONITORING ---
+        auth.onAuthStateChanged((user) => {
             if (user) {
-                const snapshot = await get(ref(db, `users/${user.uid}`));
-                if (snapshot.exists()) {
-                    const userData = snapshot.val();
-                    userData.uid = user.uid;
-                    
-                    if (userData.role === 'customer') {
-                        // Check URL parameter for Customer
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const clientParam = urlParams.get('client');
+                // get() වෙනුවට onValue() යොදාගෙන සජීවීව Database එක නිරීක්ෂණය කිරීම
+                onValue(ref(db, `users/${user.uid}`), (snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        userData.uid = user.uid;
                         
-                        if (userData.accessGranted === false) {
-                            signOut(auth);
-                            alert("Access Denied: Your account has been temporarily disabled by the Admin.");
-                            return;
+                        if (userData.role === 'customer') {
+                            // 1. LIVE LOGOUT LOGIC: Admin Access Off කළ සැනින් ක්‍රියාත්මක වේ
+                            if (userData.accessGranted === false) {
+                                signOut(auth).then(() => {
+                                    alert("Access Revoked: You have been disconnected by the Administrator.");
+                                    window.location.reload(); // වෙබ්සයිට් එක අලුත් කරලා සම්පූර්ණයෙන්ම Login එකට යවයි
+                                });
+                                return;
+                            }
+
+                            // 2. Unique Link පරීක්ෂාව
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const clientParam = urlParams.get('client');
+                            
+                            if (clientParam !== userData.clientId) {
+                                signOut(auth);
+                                alert("Invalid Login Link. Please use the exact unique link provided to you.");
+                                return;
+                            }
+                            
+                            // 3. Dashboard එකට ඇතුළු කිරීම (දැනටමත් ඇතුළේ නැත්නම් පමණක්)
+                            if (!document.getElementById('customer-screen').classList.contains('active')) {
+                                loadCustomerDashboard(userData);
+                            }
+                        } else if (userData.role === 'admin') {
+                            if (!document.getElementById('admin-screen').classList.contains('active')) {
+                                loadAdminDashboard(userData);
+                            }
                         }
-                        if (clientParam !== userData.clientId) {
-                            signOut(auth);
-                            alert("Invalid Login Link. Please use the exact unique link provided to you.");
-                            return;
-                        }
-                        loadCustomerDashboard(userData);
-                    } else if (userData.role === 'admin') {
-                        loadAdminDashboard(userData);
                     }
-                }
+                });
+            } else {
+                // කවුරුහරි Log out වුණොත් අනිවාර්යයෙන්ම Login Screen එකට යැවීම
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('login-screen').classList.add('active');
             }
         });
 
