@@ -1083,3 +1083,69 @@ body.dark-theme .btn-logout:hover {
     border-radius: 20px;
     border: 1px solid #FCA5A5;
 }
+
+/* ==========================================
+   --- MODERN ADMIN & CARDS UI POLISH ---
+   ========================================== */
+
+/* 1. Add New Unit Button */
+.btn-add-unit {
+    background: linear-gradient(135deg, #10B981, #059669) !important;
+    color: #FFFFFF !important;
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3) !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+}
+
+.btn-add-unit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45) !important;
+    background: linear-gradient(135deg, #059669, #047857) !important;
+}
+
+/* 2. Admin Deployment & Unit Cards */
+.deployment-card, .unit-card {
+    background: #FFFFFF !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.3s ease !important;
+}
+
+.deployment-card:hover, .unit-card:hover {
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08) !important;
+    border-color: #CBD5E1 !important;
+    transform: translateY(-3px);
+}
+
+/* 3. View Live Dashboard Button */
+.btn-view-live {
+    background: #F8FAFC !important;
+    color: #0F172A !important;
+    border: 1px solid #E2E8F0 !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    text-align: center !important;
+    display: block !important;
+    margin-top: 16px !important;
+    text-decoration: none !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer;
+}
+
+.btn-view-live:hover {
+    background: #0F172A !important;
+    color: #FFFFFF !important;
+    border-color: #0F172A !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}

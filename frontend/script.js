@@ -410,7 +410,7 @@ function updateDeploymentsUI(searchQuery = '') {
              <p style="font-size: 12px; margin-top: 10px; color: #A8A29E;">Unit ID: ${unitId}</p>
 
              <!-- 🔴 අලුත් Dashboard බොත්තම -->
-             <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="margin-top: 16px; width: 100%; background: #F8FAFC; color: #0F172A; border: 1px solid #E5E7EB;">📊 View Live Dashboard</button>
+             <button class="btn-view-live" onclick="viewUnitAsAdmin('${unitId}')">View Live Dashboard</button>
          </div>
      `;
         listContainer.appendChild(card);
