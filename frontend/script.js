@@ -2598,7 +2598,6 @@ async function deleteUnit(unitId, unitName) {
 }
 
 // --- PRO OVERVIEW DASHBOARD LOGIC ---
-// --- PRO OVERVIEW DASHBOARD LOGIC ---
 function updateDashboardStats(unitsData, chatsData, locationsData) {
     let total = 0, online = 0, warning = 0, critical = 0, offline = 0;
     const attentionList = document.getElementById('attention-list-container');
@@ -2609,21 +2608,55 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
             total++;
             
             if (unit.activeAlerts > 0 || unit.status === 'critical') {
-                critical++; // Critical Alert එකක් හඳුනාගැනීම
-                const locName = locationsData && locationsData[unit.locationId] ? locationsData[unit.locationId].locationName : 'Unknown Location';
+                critical++; 
+                const loc = locationsData && locationsData[unit.locationId] ? locationsData[unit.locationId] : {};
+                const locName = loc.locationName || 'Unknown Location';
+                const custId = loc.customerId;
+                const custName = globalCustomers[custId] ? globalCustomers[custId].name : 'Customer';
+                const custPhone = globalCustomers[custId] ? globalCustomers[custId].phone : '';
+                const displayTitle = unit.unitName ? `${locName} - ${unit.unitName}` : locName;
                 
                 attentionHTML += `
-                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #EF4444; border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
-                        <div>
-                            <div style="font-weight: 700; color: #0F172A; font-size: 15px; margin-bottom: 4px;">${locName} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px;">ID: ${unitId}</span></div>
-                            <div style="font-size: 13px; color: #475569; font-weight: 500;">Critical System Alerts Detected (${unit.activeAlerts} Issues)</div>
+                    <div style="background: #FFFFFF; border: 1px solid #FCA5A5; border-left: 4px solid #EF4444; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-weight: 700; color: #991B1B; font-size: 16px; margin-bottom: 4px;">🚨 ${displayTitle} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px; font-family: monospace;">ID: ${unitId}</span></div>
+                                <div style="font-size: 13px; color: #475569; font-weight: 500;">👤 ${custName} | 📞 ${custPhone}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">View Unit</button>
+                                <!-- 🔴 අලුත් Chat බටන් එක (කෙළින්ම චැට් එකට යයි) -->
+                                <button onclick="switchAdminTab('admin-complaints'); setTimeout(() => openAdminChat('${unitId}', {name:'${custName}', phone:'${custPhone}'}, '${displayTitle}'), 100);" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Customer Chat</button>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}';" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer;">View Unit</button>
-                            <button onclick="switchAdminTab('admin-complaints')" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer;">Customer Chat</button>
+                        
+                        <!-- 🔴 මෙතනට තමා ලොකුවට Issues ලිස්ට් එක එන්නේ -->
+                        <div id="issues-${unitId}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #FCA5A5;">
+                            <span style="font-size: 13px; color: #991B1B;">⏳ Fetching specific alert details...</span>
                         </div>
                     </div>
                 `;
+
+                // Live Database එකෙන් අදාළ Unit එකේ අවුල මොකක්ද කියලා අරන් පෙන්නනවා
+                window.dbGet(window.query(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), window.orderByKey(), window.limitToLast(1))).then(snap => {
+                    const issuesContainer = document.getElementById(`issues-${unitId}`);
+                    if (snap.exists() && issuesContainer) {
+                        const log = Object.values(snap.val())[0];
+                        let issues = [];
+                        
+                        if (log.pressure > 1.3) issues.push(`High System Pressure: ${log.pressure} bar (Safe limit: 1.20)`);
+                        if (log.h2s > 1.8) issues.push(`Toxic Gas Alert (High H2S): ${log.h2s} ppm`);
+                        if (log.temperature > 40) issues.push(`High Temperature Detected: ${log.temperature}°C`);
+                        if (log.ph < 6.0 || log.ph > 8.0) issues.push(`pH Level Imbalance: ${log.ph}`);
+                        
+                        if(issues.length > 0) {
+                            issuesContainer.innerHTML = issues.map(i => `<div style="background: #FEE2E2; color: #991B1B; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid #FCA5A5; display: inline-block; width: fit-content;">⚠️ ${i}</div>`).join('');
+                        } else {
+                            issuesContainer.innerHTML = `<span style="color: #475569; font-size: 13px;">Alert triggered, but recent logs show normal values.</span>`;
+                        }
+                    }
+                });
+
             } else if (unit.status === 'warning') {
                 warning++;
             } else if (unit.status === 'offline') {
@@ -2634,7 +2667,6 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
         });
     }
 
-    // 🔴 Complaints ගණනය කිරීම (Chats Table එකේ 'active' ඒවා පමණක්) 🔴
     let activeComplaintsCount = 0;
     if (chatsData) {
         Object.values(chatsData).forEach(chat => {
@@ -2642,7 +2674,6 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
         });
     }
 
-    // HTML Update කිරීම
     const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
     
     setVal('dash-total', total);

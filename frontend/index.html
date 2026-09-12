@@ -673,30 +673,28 @@
         </div>
     </div>
 
-    <!-- Firebase SDK (Modular) -->
+   <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        
-        // createUserWithEmailAndPassword අලුතින් එකතු කර ඇත
         import { getAuth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getDatabase, ref, get, set, push, onValue, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        // මෙතන update එකතු කර ඇත
+        import { getDatabase, ref, get, set, push, onValue, update, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         const firebaseConfig = {
-        apiKey: "AIzaSyCl39pRtcuTpeGhcZN_eEdlz3vTCFolAFk",
-        authDomain: "biogas-project-3.firebaseapp.com",
-        databaseURL: "https://biogas-project-3-default-rtdb.firebaseio.com",
-        projectId: "biogas-project-3",
-        storageBucket: "biogas-project-3.firebasestorage.app",
-        messagingSenderId: "69390468626",
-        appId: "1:69390468626:web:69c76433cbcb6d5fe93acb",
-        measurementId: "G-J6ED2B0BYH"
-};
+            apiKey: "AIzaSyCl39pRtcuTpeGhcZN_eEdlz3vTCFolAFk",
+            authDomain: "biogas-project-3.firebaseapp.com",
+            databaseURL: "https://biogas-project-3-default-rtdb.firebaseio.com",
+            projectId: "biogas-project-3",
+            storageBucket: "biogas-project-3.firebasestorage.app",
+            messagingSenderId: "69390468626",
+            appId: "1:69390468626:web:69c76433cbcb6d5fe93acb",
+            measurementId: "G-J6ED2B0BYH"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Admin Log out නොවී අලුත් Users ලාව හදන්න Secondary App එකක් සැකසීම
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
         const secondaryAuth = getAuth(secondaryApp);
 
@@ -706,6 +704,7 @@
         window.dbGet = get;
         window.dbSet = set;
         window.dbPush = push;
+        window.dbUpdate = update; // 🔴 අලුතින් එකතු කළ කොටස (Clear Alerts Error එක හදයි)
         window.dbOnValue = onValue;
         window.query = query;
         window.orderByKey = orderByKey;
