@@ -2802,6 +2802,10 @@ async function clearAllAlerts() {
 // --- ADMIN: CUSTOMER MANAGEMENT LOGIC ---
 // ==========================================
 
+// ==========================================
+// --- ADMIN: CUSTOMER MANAGEMENT LOGIC ---
+// ==========================================
+
 function renderCustomersList() {
     const container = document.getElementById('customers-list-container');
     if(!container) return;
@@ -2816,12 +2820,14 @@ function renderCustomersList() {
     customerKeys.forEach(custId => {
         const cust = globalCustomers[custId];
         
-        // අදාළ Customer ගේ Locations සහ Units සෙවීම
         let locHTML = '';
         Object.entries(globalLocations).forEach(([locId, loc]) => {
             if (loc.customerId === custId) {
+                // 🔴 Location Edit Button එකතු කර ඇත
                 locHTML += `
-                    <div style="margin-top: 12px; padding: 16px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <div style="margin-top: 12px; padding: 16px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; position: relative;">
+                        <button onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s;">✏️ Edit</button>
+                        
                         <strong style="color: #0F172A; font-size: 14px;">📍 ${loc.locationName || 'Location'}</strong><br>
                         <span style="font-size: 12px; color: #64748B;">${loc.address || 'No address provided'}</span>
                         <ul style="margin-top: 12px; padding-left: 20px; font-size: 13px; color: #475569; list-style-type: square;">`;
@@ -2834,16 +2840,12 @@ function renderCustomersList() {
                     }
                 });
                 
-                if (!hasUnits) {
-                    locHTML += `<li style="color: #94A3B8; list-style: none; margin-left: -20px;">No units assigned yet</li>`;
-                }
+                if (!hasUnits) locHTML += `<li style="color: #94A3B8; list-style: none; margin-left: -20px;">No units assigned yet</li>`;
                 locHTML += `</ul></div>`;
             }
         });
 
-        if (locHTML === '') {
-            locHTML = '<p style="font-size: 13px; color: #94A3B8; margin-top: 8px; padding: 12px; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">No locations or units assigned to this customer yet.</p>';
-        }
+        if (locHTML === '') locHTML = '<p style="font-size: 13px; color: #94A3B8; margin-top: 8px; padding: 12px; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">No locations or units assigned to this customer yet.</p>';
 
         const safeName = cust.name || 'Unknown Customer';
         const safeEmail = cust.email || 'N/A';
@@ -2851,8 +2853,10 @@ function renderCustomersList() {
 
         const card = document.createElement('div');
         card.style.cssText = "background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);";
+        
+        // 🔴 Customer Profile Edit Button එකතු කර ඇත
         card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; gap: 16px; align-items: center;">
                     <div style="width: 48px; height: 48px; background: #EFF6FF; color: #1D4ED8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
                     <div>
@@ -2860,7 +2864,10 @@ function renderCustomersList() {
                         <p style="margin: 0; font-size: 13px; color: #475569; font-weight: 500;">📧 ${safeEmail} <span style="color: #CBD5E1; margin: 0 8px;">|</span> 📞 ${safePhone}</p>
                     </div>
                 </div>
-                <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Delete Customer</button>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="openEditCustomerModal('${custId}')" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">✏️ Edit Profile</button>
+                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">🗑️ Delete</button>
+                </div>
             </div>
             
             <div style="border-top: 1px solid #F1F5F9; padding-top: 16px;">
@@ -2870,6 +2877,84 @@ function renderCustomersList() {
         `;
         container.appendChild(card);
     });
+}
+
+// ==========================================
+// --- EDIT MODAL LOGIC (CUSTOMERS & LOCATIONS) ---
+// ==========================================
+
+// Customer Edit
+function openEditCustomerModal(custId) {
+    const cust = globalCustomers[custId];
+    if(!cust) return;
+    document.getElementById('edit-cust-id').value = custId;
+    document.getElementById('edit-cust-name').value = cust.name || '';
+    document.getElementById('edit-cust-phone').value = cust.phone || '';
+    document.getElementById('edit-customer-modal').classList.add('active');
+}
+
+function closeEditCustomerModal() {
+    document.getElementById('edit-customer-modal').classList.remove('active');
+}
+
+async function saveCustomerEdit() {
+    const custId = document.getElementById('edit-cust-id').value;
+    const newName = document.getElementById('edit-cust-name').value.trim();
+    const newPhone = document.getElementById('edit-cust-phone').value.trim();
+    
+    if(!newName || !newPhone) return alert("Name and Phone number cannot be empty!");
+    
+    try {
+        await window.dbUpdate(window.dbRef(window.firebaseDB, `users/${custId}`), {
+            name: newName,
+            phone: newPhone
+        });
+        
+        globalCustomers[custId].name = newName;
+        globalCustomers[custId].phone = newPhone;
+        
+        closeEditCustomerModal();
+        renderCustomersList();
+        updateDeploymentsUI(); // Deployments tab එකත් ඉබේම අලුත් වෙන්න
+        
+    } catch(e) { alert("Error updating customer: " + e.message); }
+}
+
+// Location Edit
+function openEditLocationModal(locId) {
+    const loc = globalLocations[locId];
+    if(!loc) return;
+    document.getElementById('edit-loc-id').value = locId;
+    document.getElementById('edit-loc-name').value = loc.locationName || '';
+    document.getElementById('edit-loc-address').value = loc.address || '';
+    document.getElementById('edit-location-modal').classList.add('active');
+}
+
+function closeEditLocationModal() {
+    document.getElementById('edit-location-modal').classList.remove('active');
+}
+
+async function saveLocationEdit() {
+    const locId = document.getElementById('edit-loc-id').value;
+    const newLocName = document.getElementById('edit-loc-name').value.trim();
+    const newAddress = document.getElementById('edit-loc-address').value.trim();
+    
+    if(!newLocName) return alert("Location Name cannot be empty!");
+    
+    try {
+        await window.dbUpdate(window.dbRef(window.firebaseDB, `locations/${locId}`), {
+            locationName: newLocName,
+            address: newAddress
+        });
+        
+        globalLocations[locId].locationName = newLocName;
+        globalLocations[locId].address = newAddress;
+        
+        closeEditLocationModal();
+        renderCustomersList();
+        updateDeploymentsUI(); // Deployments tab එකත් ඉබේම අලුත් වෙන්න
+        
+    } catch(e) { alert("Error updating location: " + e.message); }
 }
 
 // Function to delete a customer and ALL their associated data
