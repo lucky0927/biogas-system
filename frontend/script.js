@@ -2872,23 +2872,53 @@ function renderCustomersList() {
     });
 }
 
-// Function to delete a customer
+// Function to delete a customer and ALL their associated data
 async function deleteCustomerRecord(custId, custName) {
-    if(confirm(`⚠️ WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will revoke their login access immediately. Their existing devices will remain in the system unless deleted manually.`)) {
+    if(confirm(`⚠️ CRITICAL WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will permanently delete their account AND all their assigned locations, biogas units, sensor logs, and chat histories. This action CANNOT be undone.`)) {
         try {
-            // Customer ව Firebase users table එකෙන් ඉවත් කිරීම
-            await window.dbSet(window.dbRef(window.firebaseDB, `users/${custId}`), null);
+            const db = window.firebaseDB;
+            const updates = {}; // එකපාර දත්ත ගොඩක් මකන්න අපි මේක පාවිච්චි කරනවා
             
-            // Local Data Update කිරීම
-            if (globalCustomers[custId]) {
-                delete globalCustomers[custId];
-            }
+            // 1. අදාළ Customer ගේ Locations සහ Units හොයාගෙන මකා දැමීම
+            Object.entries(globalLocations).forEach(([locId, loc]) => {
+                if (loc.customerId === custId) {
+                    
+                    // ඒ Location එකට අයිති Units මකා දැමීම
+                    Object.entries(globalUnits).forEach(([unitId, unit]) => {
+                        if (unit.locationId === locId) {
+                            updates[`units/${unitId}`] = null;
+                            updates[`sensor_logs/${unitId}`] = null;
+                            updates[`chats/${unitId}`] = null;
+                            
+                            delete globalUnits[unitId]; // Local මතකයෙන් ඉවත් කිරීම
+                        }
+                    });
+                    
+                    // Location එක මකා දැමීම
+                    updates[`locations/${locId}`] = null;
+                    delete globalLocations[locId]; // Local මතකයෙන් ඉවත් කිරීම
+                }
+            });
+
+            // 2. Customer ගිණුම මකා දැමීම
+            updates[`users/${custId}`] = null;
+            delete globalCustomers[custId]; // Local මතකයෙන් ඉවත් කිරීම
+
+            // 3. Database එකට Update එක යැවීම (එකපාර ඔක්කොම මැකී යයි)
+            await window.dbUpdate(window.dbRef(db), updates);
             
-            alert(`Customer "${custName}" deleted successfully!`);
-            renderCustomersList(); // UI එක Refresh කිරීම
+            alert(`Customer "${custName}" and all associated data deleted successfully!`);
+            
+            // 4. කිසිම Refresh කිරීමකින් තොරව UI එක අලුත් කිරීම
+            renderCustomersList(); 
+            updateDeploymentsUI(); // Deployments tab එකෙනුත් ඉබේම මැකී යයි
+            
+            // Overview එකේ ගණන් (Counts) හරිගැස්සීම
+            const totalUnitsEl = document.getElementById('admin-total-units');
+            if (totalUnitsEl) totalUnitsEl.innerText = Object.keys(globalUnits).length;
             
         } catch(error) {
-            alert("Error deleting customer: " + error.message);
+            alert("Error deleting customer and data: " + error.message);
         }
     }
 }
