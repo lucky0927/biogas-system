@@ -401,7 +401,7 @@ function updateDeploymentsUI(searchQuery = '') {
         
         const card = document.createElement('div');
         card.className = 'deployment-card';
-        const isAccessOn = cust.accessGranted !== false; // Default is true
+        const isAccessOn = cust.accessGranted !== false; 
         const toggleBg = isAccessOn ? '#10B981' : '#E5E7EB';
         const toggleDot = isAccessOn ? 'calc(100% - 18px)' : '2px';
 
@@ -421,28 +421,45 @@ function updateDeploymentsUI(searchQuery = '') {
              <p style="font-size: 15px; margin-bottom: 6px; color: #334155;"><strong>Customer:</strong> ${cust.name || 'Unknown'} <span style="color: #CBD5E1; margin: 0 8px;">|</span> Phone: ${cust.phone || 'N/A'}</p>
              <p style="font-size: 15px; margin-bottom: 16px; color: #334155;"><strong>Location:</strong> ${loc.locationName || 'Unknown'} - ${loc.address || 'No address'}</p>
              
-             <!-- Credentials Section (Clean, Column-Aligned & Professional) -->
-             <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; margin: 16px 0; border: 1px solid #E2E8F0;">
-                 <div style="display: flex; align-items: center; margin-bottom: 14px; font-size: 15px;">
-                     <span style="width: 140px; color: #64748B; font-weight: 500;">Username</span>
-                     <span style="min-width: 250px; color: #0F172A; font-weight: 600;">${cust.email || 'N/A'}</span>
-                     <span style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 4px 12px; background: #E0F2FE; border-radius: 6px; font-size: 13px;" onclick="copyText('${cust.email}')" title="Click to copy">Copy</span>
+             <!-- Credentials Section (Modern Grid Layout) -->
+             <div style="background: #F8FAFC; padding: 24px; border-radius: 12px; margin: 16px 0; border: 1px solid #E2E8F0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                 
+                 <!-- Username Box -->
+                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Username</span>
+                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                         <span style="color: #0F172A; font-weight: 600; font-size: 16px;">${cust.email || 'N/A'}</span>
+                         <span style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #E0F2FE; border-radius: 6px; font-size: 14px;" onclick="copyText('${cust.email}')" title="Click to copy">Copy</span>
+                     </div>
                  </div>
-                 <div style="display: flex; align-items: center; margin-bottom: 14px; font-size: 15px;">
-                     <span style="width: 140px; color: #64748B; font-weight: 500;">Password</span>
-                     <span style="min-width: 250px; color: #0F172A; font-weight: 600;">${cust.rawPass || 'N/A'}</span>
-                     <span style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 4px 12px; background: #E0F2FE; border-radius: 6px; font-size: 13px;" onclick="copyText('${cust.rawPass}')" title="Click to copy">Copy</span>
+
+                 <!-- Password Box -->
+                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Password</span>
+                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                         <span style="color: #0F172A; font-weight: 600; font-size: 16px;">${cust.rawPass || 'N/A'}</span>
+                         <span style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #E0F2FE; border-radius: 6px; font-size: 14px;" onclick="copyText('${cust.rawPass}')" title="Click to copy">Copy</span>
+                     </div>
                  </div>
-                 <div style="display: flex; align-items: center; margin-bottom: 14px; font-size: 15px;">
-                     <span style="width: 140px; color: #64748B; font-weight: 500;">Login Link</span>
-                     <span style="min-width: 250px; color: #94A3B8;">Secure URL</span>
-                     <span style="color: #059669; font-weight: 600; cursor: pointer; padding: 4px 12px; background: #D1FAE5; border-radius: 6px; font-size: 13px;" onclick="copyText('${cust.loginLink}')" title="Click to copy">Copy Link</span>
+
+                 <!-- Login Link Box -->
+                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Login Link</span>
+                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                         <span style="color: #94A3B8; font-size: 16px;">Secure URL</span>
+                         <span style="color: #059669; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #D1FAE5; border-radius: 6px; font-size: 14px;" onclick="copyText('${cust.loginLink}')" title="Click to copy">Copy Link</span>
+                     </div>
                  </div>
-                 <div style="display: flex; align-items: center; font-size: 15px;">
-                     <span style="width: 140px; color: #64748B; font-weight: 500;">Device Endpoint</span>
-                     <span style="min-width: 250px; color: #94A3B8;">API Token</span>
-                     <span style="color: #D97706; font-weight: 600; cursor: pointer; padding: 4px 12px; background: #FEF3C7; border-radius: 6px; font-size: 13px;" onclick="copyText('${unit.unitToken}')" title="Click to copy">Copy Endpoint</span>
+
+                 <!-- Device Endpoint Box -->
+                 <div style="display: flex; flex-direction: column; gap: 8px; background: #FFFFFF; padding: 16px; border-radius: 8px; border: 1px solid #E5E7EB; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                     <span style="color: #64748B; font-weight: 500; font-size: 14px;">Device Endpoint</span>
+                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                         <span style="color: #94A3B8; font-size: 16px;">API Token</span>
+                         <span style="color: #D97706; font-weight: 600; cursor: pointer; padding: 8px 16px; background: #FEF3C7; border-radius: 6px; font-size: 14px;" onclick="copyText('${unit.unitToken}')" title="Click to copy">Copy Endpoint</span>
+                     </div>
                  </div>
+
              </div>
 
              <!-- Action Buttons -->
