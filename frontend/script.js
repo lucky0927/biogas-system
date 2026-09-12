@@ -401,13 +401,38 @@ function updateDeploymentsUI(searchQuery = '') {
         
         const card = document.createElement('div');
         card.className = 'deployment-card';
+        const isAccessOn = cust.accessGranted !== false; // Default is true
+        const toggleBg = isAccessOn ? '#10B981' : '#E5E7EB';
+        const toggleDot = isAccessOn ? 'calc(100% - 18px)' : '2px';
+
         card.innerHTML = `
             <div class="dep-info">
-             <h4>${displayTitle} <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span></h4>
+             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                 <h4>${displayTitle} <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span></h4>
+                 
+                 <!-- ACCESS TOGGLE SWITCH -->
+                 <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleCustomerAccess('${loc.customerId}', ${isAccessOn})">
+                     <span style="font-size: 11px; font-weight: 700; color: ${isAccessOn ? '#10B981' : '#9CA3AF'};">${isAccessOn ? 'ACCESS ON' : 'ACCESS OFF'}</span>
+                     <div style="width: 36px; height: 20px; background: ${toggleBg}; border-radius: 20px; position: relative; transition: 0.3s;">
+                         <div style="width: 16px; height: 16px; background: #FFF; border-radius: 50%; position: absolute; top: 2px; left: ${toggleDot}; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></div>
+                     </div>
+                 </div>
+             </div>
+
              <p><strong>Customer:</strong> ${cust.name || 'Unknown'} | 📞 ${cust.phone || 'N/A'}</p>
              <p><strong>Location:</strong> ${loc.locationName || 'Unknown'} - ${loc.address || 'No address'}</p>
-             <p><strong>Device Link:</strong> <span onclick="navigator.clipboard.writeText('${unit.unitToken}'); alert('Device Link Copied: ' + '${unit.unitToken}');" style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 4px 8px; background: #E0F2FE; border-radius: 6px; border: 1px dashed #7DD3FC;" title="Click to Copy">📋 ${unit.unitToken || 'No Link Assigned'}</span></p>             <!-- 🔴 අලුත් Dashboard බොත්තම -->
-             <button class="btn-view-live" onclick="viewUnitAsAdmin('${unitId}')">View Live Dashboard</button>
+             
+             <div style="background: #F8FAFC; padding: 12px; border-radius: 8px; margin: 12px 0; border: 1px solid #E2E8F0;">
+                 <p style="margin-bottom: 6px; font-size: 12px;"><strong>Username:</strong> <span style="color: #0284C7; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.email}')" title="Click to copy">📋 ${cust.email || 'N/A'}</span></p>
+                 <p style="margin-bottom: 6px; font-size: 12px;"><strong>Password:</strong> <span style="color: #0284C7; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.rawPass}')" title="Click to copy">📋 ${cust.rawPass || 'N/A'}</span></p>
+                 <p style="margin-bottom: 6px; font-size: 12px;"><strong>Login Link:</strong> <span style="color: #059669; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.loginLink}')" title="Click to copy">🔗 Copy Link</span></p>
+                 <p style="margin-bottom: 0; font-size: 12px;"><strong>Device Endpoint:</strong> <span style="color: #D97706; font-weight: 600; cursor: pointer;" onclick="copyText('${unit.unitToken}')" title="Click to copy">📡 Copy Endpoint</span></p>
+             </div>
+
+             <div style="display: flex; gap: 10px; margin-top: 16px;">
+                 <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="flex: 1; background: #F8FAFC; color: #0F172A; border: 1px solid #E5E7EB;">📊 Dashboard</button>
+                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1; background: #0F172A; color: #FFF;">📲 Share to WhatsApp</button>
+             </div>
          </div>
      `;
         listContainer.appendChild(card);
@@ -577,34 +602,44 @@ async function saveNewDeployment() {
     btn.disabled = true;
 
     try {
-        let customerId = customerSelect;
+        let generatedCredentials = null;
 
         if (customerId === 'new') {
             const custName = document.getElementById('cust-name').value.trim();
             const custPhone = document.getElementById('cust-phone').value.trim();
-            const custEmail = document.getElementById('cust-email').value.trim();
-            const custPass = document.getElementById('cust-pass').value;
             const custGender = document.getElementById('cust-gender').value;
 
-            if (!custName || !custPhone || !custEmail || !custPass) {
-                msgDiv.innerHTML = "<span style='color: #ef4444;'>Please fill all new customer details including Email & Password!</span>";
+            if (!custName || !custPhone) {
+                msgDiv.innerHTML = "<span style='color: #ef4444;'>Please fill Customer Name and Phone!</span>";
                 btn.innerText = "Save Deployment";
                 btn.disabled = false;
                 return;
             }
 
+            // --- AUTO GENERATE USERNAME & PASSWORD ---
+            const uniqueClientId = 'CUST-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+            const autoEmail = uniqueClientId.toLowerCase() + '@biogas.com';
+            const autoPass = Math.random().toString(36).slice(-8); // 8-char random password
+            const loginLink = `https://biogas-system-gay5.vercel.app/?client=${uniqueClientId}`;
+
             // 1. Firebase Authentication හි ගිණුම සෑදීම
-            customerId = await window.createCustomerAuthAccount(custEmail, custPass);
+            customerId = await window.createCustomerAuthAccount(autoEmail, autoPass);
             
-            // 2. Database හි සටහන් කිරීම (push වෙනුවට set භාවිතයෙන් නිශ්චිත UID එක ලබාදීම)
+            // 2. Database හි සටහන් කිරීම
             await window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}`), {
                 role: 'customer',
                 name: custName,
                 phone: custPhone,
-                email: custEmail,
+                email: autoEmail,
+                rawPass: autoPass, // Storing for admin visibility (Only accessible by admin)
+                clientId: uniqueClientId,
+                loginLink: loginLink,
                 gender: custGender,
+                accessGranted: true, // Default ON
                 createdAt: new Date().toISOString()
             });
+
+            generatedCredentials = { user: autoEmail, pass: autoPass, login: loginLink };
         }
 
         let locationId = locationSelect;
@@ -648,7 +683,15 @@ async function saveNewDeployment() {
         document.getElementById('customer-select').value = "new";
         handleCustomerSelection();
 
-        setTimeout(closeAddDeploymentModal, 2000);
+        closeAddDeploymentModal();
+        
+        if (generatedCredentials) {
+            document.getElementById('succ-user').innerText = generatedCredentials.user;
+            document.getElementById('succ-pass').innerText = generatedCredentials.pass;
+            document.getElementById('succ-login').innerText = generatedCredentials.login;
+            document.getElementById('succ-device').innerText = unitToken;
+            document.getElementById('success-deployment-modal').classList.add('active');
+        }
 
     } catch (error) {
         console.error("Firebase Error: ", error);
@@ -2461,4 +2504,39 @@ function returnToAdmin() {
     }
     currentMonitorUnitId = null;
     globalSelectedUnitId = null;
+}
+
+// --- SHARE & COPY FUNCTIONS ---
+function copyText(text) {
+    if(!text || text === 'undefined') return;
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard: ' + text);
+}
+
+function shareCustomerDetails(name, user, pass, loginLink, deviceLink) {
+    const shareText = `🌱 *BioGas System Setup*\n\n👤 *Customer:* ${name}\n\n🔗 *Your Secure Login Link:*\n${loginLink}\n\n👤 *Username:* ${user}\n🔑 *Password:* ${pass}\n\n📡 *Device Setup Token:*\n${deviceLink}\n\n_Please do not share these details with anyone._`;
+    navigator.clipboard.writeText(shareText);
+    alert('All details formatted and copied! Ready to paste in WhatsApp.');
+}
+
+function copySuccessDetails() {
+    const user = document.getElementById('succ-user').innerText;
+    const pass = document.getElementById('succ-pass').innerText;
+    const login = document.getElementById('succ-login').innerText;
+    const device = document.getElementById('succ-device').innerText;
+    shareCustomerDetails('New Customer', user, pass, login, device);
+}
+
+// --- ACCESS CONTROL FUNCTION ---
+function toggleCustomerAccess(customerId, currentStatus) {
+    if (!customerId || customerId === 'undefined') return;
+    const newStatus = !currentStatus;
+    const action = newStatus ? "GRANT" : "REVOKE";
+    
+    if(confirm(`Are you sure you want to ${action} login access for this customer?`)) {
+        window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}/accessGranted`), newStatus)
+        .then(() => {
+            triggerNotification('Access Updated', `Customer login access has been ${newStatus ? 'Granted' : 'Revoked'}.`, newStatus ? 'info' : 'critical');
+        }).catch(err => alert("Error updating access: " + err.message));
+    }
 }

@@ -229,6 +229,27 @@
         </div>
     </div>
 
+    <!-- MODAL: SUCCESS DEPLOYMENT & CREDENTIALS -->
+    <div id="success-deployment-modal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 48px; color: #10B981; margin-bottom: 16px;">✅</div>
+            <h3 style="margin-bottom: 8px;">Deployment Successful!</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Customer account and links auto-generated.</p>
+            
+            <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; text-align: left; border: 1px solid #E2E8F0; margin-bottom: 24px;">
+                <p style="margin-bottom: 8px; font-size: 13px;"><strong>👤 Username:</strong> <span id="succ-user" style="color: #0284C7; font-weight: 600;"></span></p>
+                <p style="margin-bottom: 8px; font-size: 13px;"><strong>🔑 Password:</strong> <span id="succ-pass" style="color: #0284C7; font-weight: 600;"></span></p>
+                <p style="margin-bottom: 8px; font-size: 13px;"><strong>🔗 Login Link:</strong> <span id="succ-login" style="color: #059669; font-size: 11px; word-break: break-all;"></span></p>
+                <p style="margin-bottom: 0; font-size: 13px;"><strong>📡 Device Link:</strong> <span id="succ-device" style="color: #D97706; font-size: 11px; word-break: break-all;"></span></p>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-secondary-small" onclick="document.getElementById('success-deployment-modal').classList.remove('active')" style="flex: 1;">Close</button>
+                <button class="btn-primary-small" onclick="copySuccessDetails()" style="flex: 1; background: #0F172A; color: white;">📋 Copy & Share</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- SCREEN 3: CUSTOMER DASHBOARD -->
     <div id="customer-screen" class="screen">
@@ -258,7 +279,7 @@
                         </li>
                     </ul>
                     <button id="customer-logout-btn" class="btn-logout">
-                        <span style="font-size: 16px;">🚪</span> Sign Out
+                        Sign Out
                     </button>
                 </div>
             </div>
@@ -674,7 +695,38 @@
 
         // ... (පහළින් ඇති Login බොත්තමේ කේතය වෙනස් කරන්න අවශ්‍ය නැත) ...
 
-        // --- LOGIN LOGIC ---
+        // --- AUTO-LOGIN (PERSISTENT) LOGIC ---
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const snapshot = await get(ref(db, `users/${user.uid}`));
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    userData.uid = user.uid;
+                    
+                    if (userData.role === 'customer') {
+                        // Check URL parameter for Customer
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const clientParam = urlParams.get('client');
+                        
+                        if (userData.accessGranted === false) {
+                            signOut(auth);
+                            alert("Access Denied: Your account has been temporarily disabled by the Admin.");
+                            return;
+                        }
+                        if (clientParam !== userData.clientId) {
+                            signOut(auth);
+                            alert("Invalid Login Link. Please use the exact unique link provided to you.");
+                            return;
+                        }
+                        loadCustomerDashboard(userData);
+                    } else if (userData.role === 'admin') {
+                        loadAdminDashboard(userData);
+                    }
+                }
+            }
+        });
+
+        // --- MANUAL LOGIN LOGIC ---
         document.getElementById('login-btn').addEventListener('click', async () => {
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-password').value;
@@ -686,32 +738,35 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-
-                const userRef = ref(db, `users/${user.uid}`);
-                const snapshot = await get(userRef);
+                const snapshot = await get(ref(db, `users/${user.uid}`));
 
                 if (snapshot.exists()) {
                     const userData = snapshot.val();
-                    
-                    // 🔴 මෙම පේළිය අනිවාර්යයෙන්ම තිබිය යුතුය (UID එක අමුණා යැවීම) 🔴
                     userData.uid = user.uid; 
 
-                    if (userData.role === 'admin') {
-                        loadAdminDashboard(userData);
-                    } else if (userData.role === 'customer') {
+                    if (userData.role === 'customer') {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const clientParam = urlParams.get('client');
+                        
+                        if (userData.accessGranted === false) {
+                            await signOut(auth);
+                            errorDiv.innerText = "Access Denied: Account disabled by Admin.";
+                            return;
+                        }
+                        if (clientParam !== userData.clientId) {
+                            await signOut(auth);
+                            errorDiv.innerText = "Invalid Login Link! Use your unique customer link.";
+                            return;
+                        }
                         loadCustomerDashboard(userData);
-                    } else {
-                        errorDiv.innerText = "Unauthorized access level.";
-                        await signOut(auth);
+                    } else if (userData.role === 'admin') {
+                        loadAdminDashboard(userData);
                     }
-                } else {
-                    errorDiv.innerText = "User record not found in database.";
-                    await signOut(auth);
                 }
             } catch (error) {
                 errorDiv.innerText = error.message;
             } finally {
-                document.getElementById('login-btn').innerText = "Sign In";
+                document.getElementById('login-btn').innerText = "Sign In ➔";
             }
         });
     </script>
