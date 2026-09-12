@@ -75,6 +75,7 @@
                 <ul class="nav-links">
                     <li id="tab-admin-overview" class="active" onclick="switchAdminTab('admin-overview')">Overview</li>
                     <li id="tab-admin-deployments" onclick="switchAdminTab('admin-deployments')">Deployments</li>
+                    <li id="tab-admin-customers" onclick="switchAdminTab('admin-customers'); renderCustomersList();">Customers</li>
                     <li id="tab-admin-complaints" onclick="switchAdminTab('admin-complaints')">Complaints</li>
                 </ul>
                 <div class="sidebar-footer">
@@ -153,6 +154,19 @@
                     
                     <div class="units-list" id="all-units-list">
                         <!-- All locations and units will load here -->
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB: CUSTOMERS -->
+                <div id="admin-customers" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Customer Management</h2>
+                            <p class="text-muted" style="font-size: 14px;">View customer details, their assigned locations, units, and manage accounts.</p>
+                        </div>
+                    </div>
+                    <div id="customers-list-container" style="display: grid; gap: 20px;">
+                        <!-- Customers list will be loaded here by JS -->
                     </div>
                 </div>
 
