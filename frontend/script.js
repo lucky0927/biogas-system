@@ -410,7 +410,6 @@ function updateDeploymentsUI(searchQuery = '') {
              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                  <h4>${displayTitle} <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span></h4>
                  
-                 <!-- ACCESS TOGGLE SWITCH -->
                  <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleCustomerAccess('${loc.customerId}', ${isAccessOn})">
                      <span style="font-size: 11px; font-weight: 700; color: ${isAccessOn ? '#10B981' : '#9CA3AF'};">${isAccessOn ? 'ACCESS ON' : 'ACCESS OFF'}</span>
                      <div style="width: 36px; height: 20px; background: ${toggleBg}; border-radius: 20px; position: relative; transition: 0.3s;">
@@ -431,7 +430,8 @@ function updateDeploymentsUI(searchQuery = '') {
 
              <div style="display: flex; gap: 10px; margin-top: 16px;">
                  <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="flex: 1; background: #F8FAFC; color: #0F172A; border: 1px solid #E5E7EB;">📊 Dashboard</button>
-                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1; background: #0F172A; color: #FFF;">📲 Share to WhatsApp</button>
+                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1; background: #0F172A; color: #FFF;">📲 Share</button>
+                 <button class="btn-primary-small" onclick="deleteUnit('${unitId}', '${displayTitle}')" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; padding: 0 16px;" title="Delete Unit">🗑️</button>
              </div>
          </div>
      `;
@@ -583,75 +583,51 @@ function handleLocationSelection() {
 }
 
 async function saveNewDeployment() {
-    const customerSelect = document.getElementById('customer-select').value;
-    const locationSelect = document.getElementById('location-select').value;
-    
-    const btn = document.querySelector('#add-deployment-modal .btn-primary');
     const msgDiv = document.getElementById('deployment-msg');
+    if(msgDiv) msgDiv.innerHTML = "Saving deployment...";
 
-    const unitName = document.getElementById('unit-name').value.trim() || 'Unit 1';
-    const unitToken = document.getElementById('unit-token').value;
-
-    if (!unitToken) {
-    msgDiv.innerHTML = "<span style='color: #ef4444;'>System Link generation failed!</span>";
-    return;
-    }
-
-    btn.innerText = "Saving to Database...";
-    msgDiv.innerHTML = "";
-    btn.disabled = true;
+    let customerId = document.getElementById('customer-select').value;
+    let locationId = document.getElementById('location-select').value;
+    let generatedCredentials = null;
 
     try {
-        let generatedCredentials = null;
-
         if (customerId === 'new') {
             const custName = document.getElementById('cust-name').value.trim();
             const custPhone = document.getElementById('cust-phone').value.trim();
-            const custGender = document.getElementById('cust-gender').value;
 
             if (!custName || !custPhone) {
-                msgDiv.innerHTML = "<span style='color: #ef4444;'>Please fill Customer Name and Phone!</span>";
-                btn.innerText = "Save Deployment";
-                btn.disabled = false;
+                if(msgDiv) msgDiv.innerHTML = "<span style='color: #ef4444;'>Please fill Customer Name and Phone!</span>";
                 return;
             }
 
-            // --- AUTO GENERATE USERNAME & PASSWORD ---
             const uniqueClientId = 'CUST-' + Math.random().toString(36).substr(2, 5).toUpperCase();
             const autoEmail = uniqueClientId.toLowerCase() + '@biogas.com';
-            const autoPass = Math.random().toString(36).slice(-8); // 8-char random password
+            const autoPass = Math.random().toString(36).slice(-8);
             const loginLink = `https://biogas-system-gay5.vercel.app/?client=${uniqueClientId}`;
 
-            // 1. Firebase Authentication හි ගිණුම සෑදීම
             customerId = await window.createCustomerAuthAccount(autoEmail, autoPass);
             
-            // 2. Database හි සටහන් කිරීම
             await window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}`), {
                 role: 'customer',
                 name: custName,
                 phone: custPhone,
                 email: autoEmail,
-                rawPass: autoPass, // Storing for admin visibility (Only accessible by admin)
+                rawPass: autoPass,
                 clientId: uniqueClientId,
                 loginLink: loginLink,
-                gender: custGender,
-                accessGranted: true, // Default ON
+                accessGranted: true,
                 createdAt: new Date().toISOString()
             });
 
             generatedCredentials = { user: autoEmail, pass: autoPass, login: loginLink };
         }
 
-        let locationId = locationSelect;
-
         if (locationId === 'new') {
             const locName = document.getElementById('loc-name').value.trim();
             const locAddress = document.getElementById('loc-address').value.trim();
 
-            if (!locName || !locAddress) {
-                msgDiv.innerHTML = "<span style='color: #ef4444;'>Please fill new location details!</span>";
-                btn.innerText = "Save Deployment";
-                btn.disabled = false;
+            if (!locName) {
+                if(msgDiv) msgDiv.innerHTML = "<span style='color: #ef4444;'>Please fill Location Name!</span>";
                 return;
             }
 
@@ -666,6 +642,14 @@ async function saveNewDeployment() {
             });
         }
 
+        const unitName = document.getElementById('unit-name').value.trim() || 'Unit 1';
+        const unitToken = document.getElementById('unit-token').value;
+
+        if (!unitToken) {
+            if(msgDiv) msgDiv.innerHTML = "<span style='color: #ef4444;'>System Link generation failed!</span>";
+            return;
+        }
+
         const newUnitRef = window.dbPush(window.dbRef(window.firebaseDB, 'units'));
         const unitId = newUnitRef.key;
         
@@ -677,12 +661,6 @@ async function saveNewDeployment() {
             createdAt: new Date().toISOString()
         });
 
-        msgDiv.innerHTML = "<span style='color: #22c55e;'>Deployment successfully saved!</span>";
-        
-        document.querySelectorAll('.input-field').forEach(input => input.value = "");
-        document.getElementById('customer-select').value = "new";
-        handleCustomerSelection();
-
         closeAddDeploymentModal();
         
         if (generatedCredentials) {
@@ -691,14 +669,15 @@ async function saveNewDeployment() {
             document.getElementById('succ-login').innerText = generatedCredentials.login;
             document.getElementById('succ-device').innerText = unitToken;
             document.getElementById('success-deployment-modal').classList.add('active');
+        } else {
+            alert("New Unit Added Successfully!");
         }
+        
+        if(msgDiv) msgDiv.innerHTML = "";
 
     } catch (error) {
-        console.error("Firebase Error: ", error);
-        msgDiv.innerHTML = `<span style='color: #ef4444;'>Error: ${error.message}</span>`;
-    } finally {
-        btn.innerText = "Save Deployment";
-        btn.disabled = false;
+        console.error(error);
+        if(msgDiv) msgDiv.innerHTML = `<span style='color: #ef4444;'>Error: ${error.message}</span>`;
     }
 }
 
@@ -2536,7 +2515,21 @@ function toggleCustomerAccess(customerId, currentStatus) {
     if(confirm(`Are you sure you want to ${action} login access for this customer?`)) {
         window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}/accessGranted`), newStatus)
         .then(() => {
-            triggerNotification('Access Updated', `Customer login access has been ${newStatus ? 'Granted' : 'Revoked'}.`, newStatus ? 'info' : 'critical');
+            alert(`Customer login access has been ${newStatus ? 'Granted' : 'Revoked'}.`);
         }).catch(err => alert("Error updating access: " + err.message));
+    }
+}
+
+// --- DELETE UNIT FUNCTION ---
+async function deleteUnit(unitId, unitName) {
+    if(confirm(`Are you absolutely sure you want to DELETE "${unitName}" and all its data? This action cannot be undone.`)) {
+        try {
+            // Set data to null to remove it from Firebase
+            await window.dbSet(window.dbRef(window.firebaseDB, `units/${unitId}`), null);
+            await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
+            alert("Unit and all its related logs deleted successfully!");
+        } catch(error) {
+            alert("Error deleting unit: " + error.message);
+        }
     }
 }
