@@ -394,7 +394,7 @@ function updateDeploymentsUI(searchQuery = '') {
             displayTitle = `${loc.locationName} - ${unit.unitName}`;
         }
 
-        const searchString = `${displayTitle} ${cust.name} ${loc.locationName} ${unit.hardwareMac} ${unitId}`.toLowerCase();
+        const searchString = `${displayTitle} ${cust.name} ${loc.locationName} ${unit.unitToken} ${unitId}`.toLowerCase();
         if (searchQuery && !searchString.includes(searchQuery.toLowerCase())) {
             continue; 
         }
@@ -406,8 +406,7 @@ function updateDeploymentsUI(searchQuery = '') {
              <h4>${displayTitle} <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span></h4>
              <p><strong>Customer:</strong> ${cust.name || 'Unknown'} | 📞 ${cust.phone || 'N/A'}</p>
              <p><strong>Location:</strong> ${loc.locationName || 'Unknown'} - ${loc.address || 'No address'}</p>
-             <p><strong>Device Link:</strong> <a href="${unit.unitToken || '#'}" target="_blank" style="color: #0284C7; font-weight: 600; text-decoration: underline; word-break: break-all;">${unit.unitToken || 'No Link Assigned'}</a></p>
-             <!-- 🔴 අලුත් Dashboard බොත්තම -->
+             <p><strong>Device Link:</strong> <span onclick="navigator.clipboard.writeText('${unit.unitToken}'); alert('Device Link Copied: ' + '${unit.unitToken}');" style="color: #0284C7; font-weight: 600; cursor: pointer; padding: 4px 8px; background: #E0F2FE; border-radius: 6px; border: 1px dashed #7DD3FC;" title="Click to Copy">📋 ${unit.unitToken || 'No Link Assigned'}</span></p>             <!-- 🔴 අලුත් Dashboard බොත්තම -->
              <button class="btn-view-live" onclick="viewUnitAsAdmin('${unitId}')">View Live Dashboard</button>
          </div>
      `;
@@ -458,7 +457,7 @@ searchInput?.addEventListener('input', (e) => {
             div.className = 'suggestion-item';
             div.innerHTML = `
                 <h5>${displayTitle}</h5>
-                <p>${cust.name || 'Unknown'} | MAC: <span class="mac-text">${unit.hardwareMac || 'N/A'}</span></p>
+                <p>${cust.name || 'Unknown'} | Token: <span class="mac-text">${unit.unitToken || 'N/A'}</span></p>
             `;
             
             // Handle clicking on a suggestion
