@@ -409,6 +409,13 @@ function updateDeploymentsUI(searchQuery = '') {
         const unreadChat = cust.unreadMessages || 0; 
         const activeAlerts = unit.activeAlerts || 0; 
 
+        // 🔴 අලුත්: දත්ත නැතිනම් 'undefined' වෙනුවට 'N/A' ලබා දීම
+        const safeEmail = cust.email || 'N/A';
+        const safePass = cust.rawPass || 'N/A';
+        const safeLoginLink = cust.loginLink || 'N/A';
+        const safeName = cust.name || 'Unknown';
+        const safePhone = cust.phone || 'N/A';
+
         card.innerHTML = `
             <div class="dep-info" style="padding: 24px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                  
@@ -433,34 +440,34 @@ function updateDeploymentsUI(searchQuery = '') {
                      </div>
                  </div>
 
-                 <!-- Customer Details (Subtle layout) -->
+                 <!-- Customer Details -->
                  <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: #64748B; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #F1F5F9;">
-                     <span><strong style="color: #475569;">Customer:</strong> ${cust.name || 'Unknown'}</span>
+                     <span><strong style="color: #475569;">Customer:</strong> ${safeName}</span>
                      <span style="color: #CBD5E1;">|</span>
-                     <span><strong style="color: #475569;">Phone:</strong> ${cust.phone || 'N/A'}</span>
+                     <span><strong style="color: #475569;">Phone:</strong> ${safePhone}</span>
                      <span style="color: #CBD5E1;">|</span>
                      <span><strong style="color: #475569;">Unit ID:</strong> <span style="font-family: monospace; color: #0F172A;">${unitId}</span></span>
                  </div>
                  
-                 <!-- Credentials Section (Clean 2x2 Grid with Standard Buttons) -->
+                 <!-- Credentials Section -->
                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
                      
                      <!-- Box 1: Username -->
                      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
                          <div>
                              <div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Username</div>
-                             <div style="font-size: 14px; font-weight: 600; color: #0F172A;">${cust.email || 'N/A'}</div>
+                             <div style="font-size: 14px; font-weight: 600; color: #0F172A;">${safeEmail}</div>
                          </div>
-                         <button onclick="copyText('${cust.email}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy</button>
+                         <button onclick="copyText('${safeEmail}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy</button>
                      </div>
 
                      <!-- Box 2: Password -->
                      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
                          <div>
                              <div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Password</div>
-                             <div style="font-size: 14px; font-weight: 600; color: #0F172A;">${cust.rawPass || 'N/A'}</div>
+                             <div style="font-size: 14px; font-weight: 600; color: #0F172A;">${safePass}</div>
                          </div>
-                         <button onclick="copyText('${cust.rawPass}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy</button>
+                         <button onclick="copyText('${safePass}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy</button>
                      </div>
 
                      <!-- Box 3: Login Link -->
@@ -469,7 +476,7 @@ function updateDeploymentsUI(searchQuery = '') {
                              <div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Login Link</div>
                              <div style="font-size: 14px; color: #64748B;">Secure URL</div>
                          </div>
-                         <button onclick="copyText('${cust.loginLink}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy Link</button>
+                         <button onclick="copyText('${safeLoginLink}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy Link</button>
                      </div>
 
                      <!-- Box 4: Device Endpoint -->
@@ -482,18 +489,16 @@ function updateDeploymentsUI(searchQuery = '') {
                      </div>
                  </div>
 
-                 <!-- Action Buttons Row (Resized and neatly arranged) -->
+                 <!-- Action Buttons Row -->
                  <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
-                     <!-- Dashboard Button (Left Aligned) -->
                      <button onclick="viewUnitAsAdmin('${unitId}')" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; margin-right: auto; transition: 0.2s;">View Dashboard</button>
                      
-                     <!-- 🔴 අලුත්: Onclick එකතු කළ Customer Chat බොත්තම -->
-                     <button onclick="switchAdminTab('admin-complaints'); setTimeout(() => openAdminChat('${unitId}', {name:'${cust.name || 'Unknown'}', phone:'${cust.phone || ''}'}, '${displayTitle}'), 100);" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; position: relative; transition: 0.2s;">
+                     <button onclick="switchAdminTab('admin-complaints'); setTimeout(() => openAdminChat('${unitId}', {name:'${safeName}', phone:'${safePhone}'}, '${displayTitle}'), 100);" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; position: relative; transition: 0.2s;">
                          Customer Chat
                          ${unreadChat > 0 ? `<span style="position: absolute; top: -6px; right: -6px; background: #EF4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #FFF; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">${unreadChat}</span>` : ''}
                      </button>
 
-                     <button onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="padding: 8px 16px; font-size: 13px; background: #0F172A; color: #FFFFFF; border: 1px solid #0F172A; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Share Details</button>
+                     <button onclick="shareCustomerDetails('${safeName}', '${safeEmail}', '${safePass}', '${safeLoginLink}', '${unit.unitToken}')" style="padding: 8px 16px; font-size: 13px; background: #0F172A; color: #FFFFFF; border: 1px solid #0F172A; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Share Details</button>
                      
                      <button onclick="deleteUnit('${unitId}', '${displayTitle}')" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #DC2626; border: 1px solid #FECACA; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Delete</button>
                  </div>
