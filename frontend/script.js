@@ -1019,27 +1019,44 @@ function initAdminChat() {
 
         sortedUnitIds.forEach(unitId => {
             const unitInfo = globalUnits[unitId];
-            if (!unitInfo) return; // Unit එක මකා ඇත්නම් මඟහරියි
+            if (!unitInfo) return; 
             
             const loc = globalLocations[unitInfo.locationId] || {};
             const cust = globalCustomers[loc.customerId] || { name: 'Unknown Customer', phone: '' };
             
             const unitName = unitInfo.unitName || unitInfo.name || "Unit";
             const locName = loc.locationName || loc.name || "Location";
-            const displayTitle = `${locName} - ${unitName}`; // 🔴 Admin ට පෙන්වන්නේ Location සහ Unit එකයි
+            const displayTitle = `${locName} - ${unitName}`; 
             
             const msgs = allChats[unitId].messages || {};
             const msgKeys = Object.keys(msgs);
-            const lastMsg = msgKeys.length > 0 ? msgs[msgKeys[msgKeys.length-1]].text : 'No messages';
+            
+            // 🔴 අලුත්: Unread Messages ගණනය කිරීම (WhatsApp Style)
+            let unreadCount = 0;
+            msgKeys.forEach(key => {
+                if(msgs[key].sender === 'customer' && !msgs[key].read) {
+                    unreadCount++;
+                }
+            });
+
+            let lastMsg = 'No messages';
+            if (msgKeys.length > 0) {
+                const lastM = msgs[msgKeys[msgKeys.length-1]];
+                lastMsg = lastM.imageUrl ? '📷 Image' : (lastM.audioUrl ? '🎤 Voice message' : lastM.text);
+            }
             
             const div = document.createElement('div');
             div.className = `chat-list-item ${unitId === activeChatUnitId ? 'active' : ''}`;
             div.onclick = () => openAdminChat(unitId, cust, displayTitle);
             
+            // 🔴 අලුත් UI: කොළ පාට Notification Badge එක සහ Bold Text
             div.innerHTML = `
-                <h4 style="margin: 0; font-size: 14px; color: #111827;">${displayTitle}</h4>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0; font-size: 14px; color: #111827;">${displayTitle}</h4>
+                    ${unreadCount > 0 ? `<span style="background: #10B981; color: white; border-radius: 50px; min-width: 20px; height: 20px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">${unreadCount}</span>` : ''}
+                </div>
                 <p style="margin: 2px 0 4px 0; font-size: 11px; color: #4B5563; font-weight: 600;">👤 ${cust.name}</p>
-                <p style="margin: 0; font-size: 12px; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lastMsg}</p>
+                <p style="margin: 0; font-size: 12px; color: ${unreadCount > 0 ? '#0F172A' : '#6B7280'}; font-weight: ${unreadCount > 0 ? '700' : 'normal'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lastMsg}</p>
             `;
             chatList.appendChild(div);
         });
@@ -1083,7 +1100,22 @@ function openAdminChat(unitId, cust, displayTitle) {
             resolveBtn.style.display = 'block'; 
         }
         
-        renderAdminMessages(chatData.messages || {});
+        const messages = chatData.messages || {};
+        renderAdminMessages(messages);
+
+        // 🔴 අලුත්: Admin චැට් එක ඕපන් කළාම, ඒකේ තියෙන Customer ගේ අලුත් පණිවිඩ ඔක්කොම "read" කරනවා
+        const updates = {};
+        let hasUnread = false;
+        for(const [msgId, msg] of Object.entries(messages)) {
+            if(msg.sender === 'customer' && !msg.read) {
+                updates[`chats/${unitId}/messages/${msgId}/read`] = true;
+                hasUnread = true;
+            }
+        }
+        
+        if(hasUnread && typeof window.dbUpdate === 'function') {
+            window.dbUpdate(window.dbRef(window.firebaseDB), updates);
+        }
     });
 }
 
