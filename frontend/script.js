@@ -486,8 +486,8 @@ function updateDeploymentsUI(searchQuery = '') {
                      <!-- Dashboard Button (Left Aligned) -->
                      <button onclick="viewUnitAsAdmin('${unitId}')" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; margin-right: auto; transition: 0.2s;">View Dashboard</button>
                      
-                     <!-- Secondary Actions (Right Aligned) -->
-                     <button style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; position: relative; transition: 0.2s;">
+                     <!-- 🔴 අලුත්: Onclick එකතු කළ Customer Chat බොත්තම -->
+                     <button onclick="switchAdminTab('admin-complaints'); setTimeout(() => openAdminChat('${unitId}', {name:'${cust.name || 'Unknown'}', phone:'${cust.phone || ''}'}, '${displayTitle}'), 100);" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; position: relative; transition: 0.2s;">
                          Customer Chat
                          ${unreadChat > 0 ? `<span style="position: absolute; top: -6px; right: -6px; background: #EF4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid #FFF; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">${unreadChat}</span>` : ''}
                      </button>
@@ -2622,6 +2622,13 @@ async function deleteUnit(unitId, unitName) {
             // Set data to null to remove it from Firebase
             await window.dbSet(window.dbRef(window.firebaseDB, `units/${unitId}`), null);
             await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
+            
+            // 🔴 අලුත්: Refresh නොකර ඒ වෙලාවෙම UI එකෙන් කාඩ් එක මකා දැමීම 🔴
+            if (globalUnits[unitId]) {
+                delete globalUnits[unitId];
+            }
+            updateDeploymentsUI();
+            
             alert("Unit and all its related logs deleted successfully!");
         } catch(error) {
             alert("Error deleting unit: " + error.message);
