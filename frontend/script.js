@@ -2595,3 +2595,82 @@ async function deleteUnit(unitId, unitName) {
         }
     }
 }
+
+// --- PRO OVERVIEW DASHBOARD LOGIC ---
+function updateDashboardStats(unitsData, complaintsData, locationsData) {
+    let total = 0, online = 0, warning = 0, critical = 0, offline = 0;
+    const attentionList = document.getElementById('attention-list-container');
+    let attentionHTML = '';
+
+    // Calculate Unit Stats
+    if (unitsData) {
+        Object.entries(unitsData).forEach(([unitId, unit]) => {
+            total++;
+            // Basic logic: if activeAlerts > 0 it's critical, else online
+            if (unit.activeAlerts > 0) {
+                critical++;
+                
+                // Build Professional Alert Card (No Emojis, Clean UI)
+                const locName = locationsData && locationsData[unit.locationId] ? locationsData[unit.locationId].locationName : 'Unknown Location';
+                
+                attentionHTML += `
+                    <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-left: 4px solid #EF4444; border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                        <div>
+                            <div style="font-weight: 700; color: #0F172A; font-size: 15px; margin-bottom: 4px;">${locName} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px;">ID: ${unitId}</span></div>
+                            <div style="font-size: 13px; color: #475569; font-weight: 500;">Critical System Alerts Detected (${unit.activeAlerts} Issues)</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="switchScreen('complaints-screen')" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer;">View Alert</button>
+                            <button onclick="alert('Navigating to chat for unit: ${unitId}')" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer;">Customer Chat</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                online++;
+            }
+        });
+    }
+
+    // Calculate Complaints Count
+    const totalComplaints = complaintsData ? Object.keys(complaintsData).length : 0;
+
+    // Update DOM
+    if(document.getElementById('dash-total')) {
+        document.getElementById('dash-total').innerText = total;
+        document.getElementById('dash-online').innerText = online;
+        document.getElementById('dash-warning').innerText = warning;
+        document.getElementById('dash-critical').innerText = critical;
+        document.getElementById('dash-offline').innerText = offline;
+        document.getElementById('dash-complaints').innerText = totalComplaints; // Fixes the complaint count issue
+
+        document.getElementById('stat-norm').innerText = online;
+        document.getElementById('stat-warn').innerText = warning;
+        document.getElementById('stat-crit').innerText = critical;
+        document.getElementById('stat-off').innerText = offline;
+
+        if (attentionHTML !== '') {
+            attentionList.innerHTML = attentionHTML;
+        }
+    }
+}
+
+// Function to Clear All Alerts
+async function clearAllAlerts() {
+    if(confirm("Are you sure you want to clear all active alerts from the system?")) {
+        try {
+            // Get all units and set activeAlerts to 0
+            const snapshot = await window.dbGet(window.dbRef(window.firebaseDB, 'units'));
+            if(snapshot.exists()) {
+                const updates = {};
+                Object.keys(snapshot.val()).forEach(unitId => {
+                    updates[`units/${unitId}/activeAlerts`] = 0;
+                });
+                await window.dbUpdate(window.dbRef(window.firebaseDB), updates);
+                alert("All alerts have been cleared successfully.");
+            }
+        } catch(e) {
+            console.error(e);
+            alert("Failed to clear alerts.");
+        }
+    }
+}
