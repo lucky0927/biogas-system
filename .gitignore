@@ -1,2 +1,4 @@
 node_modules/
 firebase-key.jsonserviceAccountKey.json
+firebase-key.json
+serviceAccountKey.json
