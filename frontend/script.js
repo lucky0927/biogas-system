@@ -418,20 +418,36 @@ function updateDeploymentsUI(searchQuery = '') {
                  </div>
              </div>
 
-             <p><strong>Customer:</strong> ${cust.name || 'Unknown'} | 📞 ${cust.phone || 'N/A'}</p>
+             <p><strong>Customer:</strong> ${cust.name || 'Unknown'} <span style="color: #CBD5E1; margin: 0 8px;">|</span> Phone: ${cust.phone || 'N/A'}</p>
              <p><strong>Location:</strong> ${loc.locationName || 'Unknown'} - ${loc.address || 'No address'}</p>
              
-             <div style="background: #F8FAFC; padding: 12px; border-radius: 8px; margin: 12px 0; border: 1px solid #E2E8F0;">
-                 <p style="margin-bottom: 6px; font-size: 12px;"><strong>Username:</strong> <span style="color: #0284C7; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.email}')" title="Click to copy">📋 ${cust.email || 'N/A'}</span></p>
-                 <p style="margin-bottom: 6px; font-size: 12px;"><strong>Password:</strong> <span style="color: #0284C7; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.rawPass}')" title="Click to copy">📋 ${cust.rawPass || 'N/A'}</span></p>
-                 <p style="margin-bottom: 6px; font-size: 12px;"><strong>Login Link:</strong> <span style="color: #059669; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.loginLink}')" title="Click to copy">🔗 Copy Link</span></p>
-                 <p style="margin-bottom: 0; font-size: 12px;"><strong>Device Endpoint:</strong> <span style="color: #D97706; font-weight: 600; cursor: pointer;" onclick="copyText('${unit.unitToken}')" title="Click to copy">📡 Copy Endpoint</span></p>
+             <!-- Credentials Section (Clean & Professional) -->
+             <div style="background: #F8FAFC; padding: 16px; border-radius: 12px; margin: 16px 0; border: 1px solid #E2E8F0;">
+                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
+                     <span><strong>Username:</strong> ${cust.email || 'N/A'}</span>
+                     <span style="color: #0284C7; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.email}')" title="Click to copy">Copy</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
+                     <span><strong>Password:</strong> ${cust.rawPass || 'N/A'}</span>
+                     <span style="color: #0284C7; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.rawPass}')" title="Click to copy">Copy</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px;">
+                     <span><strong>Login Link:</strong> <span style="color: #64748B;">Secure URL</span></span>
+                     <span style="color: #059669; font-weight: 600; cursor: pointer;" onclick="copyText('${cust.loginLink}')" title="Click to copy">Copy Link</span>
+                 </div>
+                 <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                     <span><strong>Device Endpoint:</strong> <span style="color: #64748B;">API Token</span></span>
+                     <span style="color: #D97706; font-weight: 600; cursor: pointer;" onclick="copyText('${unit.unitToken}')" title="Click to copy">Copy Endpoint</span>
+                 </div>
              </div>
 
-             <div style="display: flex; gap: 10px; margin-top: 16px;">
-                 <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="flex: 1; background: #F8FAFC; color: #0F172A; border: 1px solid #E5E7EB;">📊 Dashboard</button>
-                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1; background: #0F172A; color: #FFF;">📲 Share</button>
-                 <button class="btn-primary-small" onclick="deleteUnit('${unitId}', '${displayTitle}')" style="background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5; padding: 0 16px;" title="Delete Unit">🗑️</button>
+             <!-- Action Buttons (Large & Text Only) -->
+             <div style="display: flex; gap: 12px; margin-top: 20px;">
+                 <button class="btn-primary-small" onclick="viewUnitAsAdmin('${unitId}')" style="flex: 1; padding: 12px; font-size: 14px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: 0.2s;">View Dashboard</button>
+                 
+                 <button class="btn-primary-small" onclick="shareCustomerDetails('${cust.name}', '${cust.email}', '${cust.rawPass}', '${cust.loginLink}', '${unit.unitToken}')" style="flex: 1; padding: 12px; font-size: 14px; background: #0F172A; color: #FFFFFF; border: 1px solid #0F172A; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: 0.2s;">Share Details</button>
+                 
+                 <button class="btn-primary-small" onclick="deleteUnit('${unitId}', '${displayTitle}')" style="padding: 12px 24px; font-size: 14px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; transition: 0.2s;" title="Delete Unit">Delete</button>
              </div>
          </div>
      `;
