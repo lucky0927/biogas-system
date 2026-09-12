@@ -83,7 +83,7 @@ client.on('message', async (topic, message) => {
             
             console.log(`Data saved to database for unit: ${firebaseUnitId}`);
         } else {
-            console.log(`Unregistered MAC Address received: ${macAddress}`);
+            console.log(`Unregistered Token received: ${incomingToken}`);
         }
         
     } catch (error) {
