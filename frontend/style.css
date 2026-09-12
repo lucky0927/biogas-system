@@ -232,12 +232,11 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     margin-bottom: 32px;
     position: sticky;
-    top: 0;
-    background-color: var(--bg-primary); /* පල්ලෙහාට යද්දී යට තියෙන ඒවා පේන්නේ නැති වෙන්න */
-    padding: 20px 0;
-    margin-top: -20px;
+    top: -40px; /* පිටුවේ උඩම කෙළවරටම යවයි */
+    background-color: var(--bg-primary); 
+    padding: 40px 0 20px 0; /* උඩින් ලස්සනට ඉඩ හදලා කාඩ්ස් වැහෙන්න දෙයි */
     z-index: 100;
-    box-shadow: 0 10px 15px -10px rgba(0,0,0,0.05); /* ලස්සන Shadow එකක් */
+    box-shadow: 0 15px 15px -15px rgba(0,0,0,0.08);
 }
 
 .text-muted {
