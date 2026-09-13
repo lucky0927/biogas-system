@@ -201,18 +201,22 @@ function updateLiveUI(data) {
         pStatus.classList.remove('on');
     }
 
-    // Update 3D Tank Level
-    // Assuming maximum tank distance to sensor is 300cm (Empty) and 0cm is Full
+    // Update 3D Tank Level (Gas Volume එක අනුව වෙනස් වීමට හැදීම)
+    const maxTankVolume = 150; // 🔴 මෙතනට ඔයාගේ ටැංකියේ උපරිම ධාරිතාව (ලීටර් ගාණ) දෙන්න (උදා: 150L)
+    
+    let fillPercent = (volumeValue / maxTankVolume) * 100;
+    
+    if (fillPercent > 100) fillPercent = 100;
+    if (fillPercent < 0) fillPercent = 0;
+    
+    const tankFillElement = document.getElementById('tank-level-fill');
+    if (tankFillElement) {
+        tankFillElement.style.height = `${fillPercent}%`;
+    }
+
+    // Distance අගය යටින් දිගටම පෙන්වීමට
     if (data.distance != null) {
         document.getElementById('val-distance').innerText = data.distance.toFixed(1);
-        
-        const maxDepth = 300; 
-        let fillPercent = ((maxDepth - data.distance) / maxDepth) * 100;
-        
-        if (fillPercent > 100) fillPercent = 100;
-        if (fillPercent < 0) fillPercent = 0;
-        
-        document.getElementById('tank-level-fill').style.height = `${fillPercent}%`;
     }
 
     // Update Chart with Real-time Data
