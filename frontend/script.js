@@ -170,6 +170,49 @@ socket.on('liveData', (data) => {
             checkSystemAlerts();
         }
     }
+
+    // 🔴 3. අලුත්: History ටැබ් එකේ ඉන්නකොට සජීවීව අලුත් දත්ත වගුවට එකතු කිරීම 🔴
+    const historyTab = document.getElementById('cust-history');
+    if (historyTab && historyTab.classList.contains('active')) {
+        if (globalSelectedUnitId === data.unitId) {
+            
+            const dateVal = document.getElementById('history-date-select').value;
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            // Date filter එක හිස් නම් හෝ අද දවස තෝරලා තියෙනවා නම් පමණක් සජීවීව පෙන්වන්න
+            if (!dateVal || dateVal === todayStr) {
+                const tbody = document.getElementById('history-tbody');
+                const time = new Date().toLocaleTimeString();
+                const newRow = document.createElement('tr');
+                
+                // අලුත් දත්තයක් ආපු ගමන් ලා කොළ පාටින් Highlight වී මැකී යාමට හැදීම
+                newRow.style.transition = "background-color 2s ease";
+                newRow.style.backgroundColor = "#DCFCE7"; 
+                setTimeout(() => { newRow.style.backgroundColor = "transparent"; }, 2000);
+                
+                const gasVol = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
+
+                newRow.innerHTML = `
+                    <td style="font-weight: 500; color: var(--text-dark);">${time}</td>
+                    <td>${data.ch4 != null ? data.ch4.toFixed(2) : '-'}</td>
+                    <td>${data.co2 != null ? data.co2.toFixed(2) : '-'}</td>
+                    <td>${data.h2s != null ? data.h2s.toFixed(2) : '-'}</td>
+                    <td>${data.temperature != null ? data.temperature.toFixed(1) : '-'}</td>
+                    <td>${data.ph != null ? data.ph.toFixed(2) : '-'}</td>
+                    <td>${gasVol.toFixed(2)}</td>
+                `;
+                
+                // "No records" මැසේජ් එක තියෙනවා නම් ඒක අයින් කිරීම
+                if (tbody.innerHTML.includes('No historical records') || tbody.innerHTML.includes('Loading') || tbody.innerHTML.includes('Please select')) {
+                    tbody.innerHTML = '';
+                }
+                
+                // වගුවේ මුලටම (උඩටම) අලුත් Row එක එකතු කිරීම
+                tbody.prepend(newRow);
+            }
+        }
+    }
+
 });
 
 function updateLiveUI(data) {
