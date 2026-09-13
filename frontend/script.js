@@ -773,7 +773,7 @@ document.getElementById('admin-logout-btn')?.addEventListener('click', () => {
 // ==========================================
 
 function fetchHistoryData() {
-    const unitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
+    const unitId = globalSelectedUnitId; 
     const dateVal = document.getElementById('history-date-select').value; 
     const tbody = document.getElementById('history-tbody');
 
@@ -794,7 +794,10 @@ function fetchHistoryData() {
         let rowsHtml = '';
         let hasData = false;
         
-        for (const [logId, data] of Object.entries(logs)) {
+        // 🔴 අලුත්: අලුත්ම දත්ත මුලින් පෙන්වීමට Array එක Reverse කිරීම
+        const logEntries = Object.entries(logs).reverse();
+        
+        for (const [logId, data] of logEntries) {
             const logDate = data.timestamp ? data.timestamp.split('T')[0] : '';
             if (dateVal && logDate !== dateVal) continue; 
             
@@ -823,6 +826,29 @@ function fetchHistoryData() {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">Error loading data. Check console.</td></tr>';
     });
 }
+
+window.clearUnitHistory = async function() {
+    const unitId = globalSelectedUnitId; 
+    
+    if (!unitId || unitId === 'new') {
+        return alert("Please select a valid unit first!");
+    }
+
+    if(confirm("⚠️ WARNING: Are you sure you want to clear ALL history for this unit?\n\nThis will permanently delete all logged sensor data. This cannot be undone.")) {
+        try {
+            await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
+            
+            alert("History cleared successfully!");
+            
+            // UI එකේ Table එක හිස් කිරීම
+            const tbody = document.getElementById('history-tbody'); 
+            if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
+            
+        } catch(error) {
+            alert("Error clearing history: " + error.message);
+        }
+    }
+};
 
 // ==========================================
 // --- EXPORT TO CSV & PDF ---

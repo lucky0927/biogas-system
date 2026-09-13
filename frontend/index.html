@@ -413,16 +413,21 @@
                         </div>
                     </div>
 
-                    <div class="history-controls">
-                        <div class="input-group" style="margin-bottom: 0; flex: 1;">
+                    <div class="history-controls" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+                        <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
                             <label>Select Biogas Unit</label>
                             <select id="history-unit-select" class="input-field" onchange="handleUnitSwitch(this.value)">                                <option value="">-- Choose a Unit --</option>
                             </select>
                         </div>
-                        <div class="input-group" style="margin-bottom: 0; flex: 1;">
+                        <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
                             <label>Filter by Date</label>
                             <input type="date" id="history-date-select" class="input-field" onchange="fetchHistoryData()">
                         </div>
+                        
+                        <!-- 🔴 Clear History Button -->
+                        <button onclick="clearUnitHistory()" style="padding: 14px 20px; margin-bottom: 12px; font-size: 14px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                            🗑️ Clear History
+                        </button>
                     </div>
 
                     <div class="table-container">
