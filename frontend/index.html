@@ -75,29 +75,6 @@
                     <li id="tab-admin-complaints" onclick="switchAdminTab('admin-complaints')">Complaints</li>
                     <li id="tab-admin-settings" onclick="switchAdminTab('admin-settings')">Settings</li>
                 </ul>
-                <!-- SIDEBAR FOOTER (Support & Sign Out) -->
-                <div class="sidebar-footer" style="margin-top: auto; padding-bottom: 20px;">
-                    <ul class="nav-links" style="margin-bottom: 12px; padding: 0;">
-                        <li id="tab-cust-support" onclick="switchCustomerTab('cust-support'); loadCustomerChatForUnit();" style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 18px;">💬</span> Support Center
-                        </li>
-                    </ul>
-                    
-                    <!-- 🔴 අලුත්: Sidebar එකට ආපු Profile Badge එක -->
-                    <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin: 0 10px 16px 10px; transition: 0.2s; cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-                        <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(16,185,129,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #10B981;">
-                            👤
-                        </div>
-                        <div style="text-align: left; overflow: hidden; flex: 1;">
-                            <h4 id="top-user-name" style="margin: 0; font-size: 13px; color: #FFFFFF; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Loading...</h4>
-                            <p id="top-user-email" style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Please wait</p>
-                        </div>
-                    </div>
-
-                    <button id="customer-logout-btn" class="btn-logout">
-                        Sign Out
-                    </button>
-                </div>
                 <div class="sidebar-footer">
                     <button class="btn-logout" id="admin-logout-btn">Sign Out</button>
                 </div>
@@ -377,6 +354,15 @@
                             <span style="font-size: 18px;">💬</span> Support Center
                         </li>
                     </ul>
+                    <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin: 0 10px 16px 10px; transition: 0.2s; cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(16,185,129,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #10B981;">
+                            👤
+                        </div>
+                        <div style="text-align: left; overflow: hidden; flex: 1;">
+                            <h4 id="top-user-name" style="margin: 0; font-size: 13px; color: #FFFFFF; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Loading...</h4>
+                            <p id="top-user-email" style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Please wait</p>
+                        </div>
+                    </div>
                     <button id="customer-logout-btn" class="btn-logout">
                         Sign Out
                     </button>
