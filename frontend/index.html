@@ -10,19 +10,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Modern Typography for Softly Theme -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Reenie+Beanie&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-<!-- SVG Noise Grain Overlay (35% Opacity) -->
-<!-- SVG Noise Grain Overlay (35% Opacity) -->
-<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; opacity: 0.35; mix-blend-mode: overlay; background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
 
    <!-- ========================================== -->
     <!-- MODERN ANIMATED LOGIN SCREEN               -->
@@ -36,8 +29,8 @@
         <div class="login-container" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); padding: 48px 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.5); width: 100%; max-width: 420px; z-index: 2; animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
             
             <div class="login-header" style="text-align: center; margin-bottom: 32px;">
-                <div style="font-size: 48px; margin-bottom: 12px; animation: floatIcon 3s ease-in-out infinite;">🌱</div>
-                <h2 style="font-family: var(--font-main); font-weight: 700; color: var(--text-dark); font-size: 28px; margin: 0 0 8px 0; letter-spacing: -0.5px;">BioMonitor</h2>
+                <img src="assets/logo.png" alt="BioMonitor" style="height: 72px; width: 72px; object-fit: contain; margin-bottom: 12px; animation: floatIcon 3s ease-in-out infinite;">
+                <h2 style="font-family: var(--font-main); font-weight: 700; color: var(--text-dark); font-size: 26px; margin: 0 0 8px 0; letter-spacing: -0.01em;">BioMonitor</h2>
                 <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Authorized Personnel Access</p>
             </div>
 
@@ -71,12 +64,13 @@
             
             <!-- SIDEBAR -->
             <div class="sidebar">
-                <div class="brand">BioMonitor<span class="coral-dot">.</span></div>
+                <div class="brand"><img src="assets/logo.png" alt="BioMonitor" class="brand-logo">BioMonitor<span class="coral-dot">.</span></div>
                 <ul class="nav-links">
                     <li id="tab-admin-overview" class="active" onclick="switchAdminTab('admin-overview')">Overview</li>
                     <li id="tab-admin-deployments" onclick="switchAdminTab('admin-deployments')">Deployments</li>
                     <li id="tab-admin-customers" onclick="switchAdminTab('admin-customers'); renderCustomersList();">Customers</li>
                     <li id="tab-admin-complaints" onclick="switchAdminTab('admin-complaints')">Complaints</li>
+                    <li id="tab-admin-settings" onclick="switchAdminTab('admin-settings')">Settings</li>
                 </ul>
                 <div class="sidebar-footer">
                     <button class="btn-logout" id="admin-logout-btn">Sign Out</button>
@@ -217,11 +211,48 @@
                     </div>
                 </div>
 
+                <!-- ADMIN TAB: SETTINGS -->
+                <div id="admin-settings" class="admin-tab" style="padding: 24px;">
+                    <div class="flex-header" style="margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Settings</h2>
+                            <p class="text-muted" style="font-size: 14px;">Customize your application interface and preferences.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; gap: 20px; max-width: 600px;">
+                        <!-- Theme Settings -->
+                        <div class="param-card" style="border: 1px solid var(--border-color); padding: 24px; border-radius: 12px;">
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🎨 Theme Preferences</h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="theme-select" value="light" onchange="changeTheme(this.value)" checked> Light Mode
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="theme-select" value="dark" onchange="changeTheme(this.value)"> Dark Mode
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="radio" name="theme-select" value="system" onchange="changeTheme(this.value)"> System Default
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Language Settings -->
+                        <div class="param-card" style="border: 1px solid var(--border-color); padding: 24px; border-radius: 12px;">
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🌐 Language / භාෂාව / மொழி</h3>
+                            <select id="language-select-admin" onchange="changeLanguage(this.value)" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; background: var(--surface-2); color: var(--text-dark);">
+                                <option value="en" selected>English</option>
+                                <option value="si">සිංහල (Sinhala)</option>
+                                <option value="ta">தமிழ் (Tamil)</option>
+                            </select>
+                            <p style="margin: 10px 0 0 0; font-size: 12px; color: var(--text-muted);">Note: Language changes will be applied to the main UI components.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-
-  <!-- MODAL: ADD NEW DEPLOYMENT -->
     <div id="add-deployment-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -296,7 +327,7 @@
             
             <!-- SIDEBAR -->
             <div class="sidebar">
-                <div class="brand">BioMonitor<span class="coral-dot">.</span></div>
+                <div class="brand"><img src="assets/logo.png" alt="BioMonitor" class="brand-logo">BioMonitor<span class="coral-dot">.</span></div>
                 <ul class="nav-links">
                     <li id="tab-back-admin" onclick="returnToAdmin()" style="display: none; background: #0F172A; color: #FFFFFF; font-weight: 700; margin-bottom: 24px; text-align: center; border-radius: 100px;">
                         ⬅ Return to Admin Panel

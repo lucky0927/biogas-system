@@ -2076,6 +2076,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if(savedLang) {
         const select = document.getElementById('language-select');
         if(select) select.value = savedLang;
+        const selectAdmin = document.getElementById('language-select-admin');
+        if(selectAdmin) selectAdmin.value = savedLang;
     }
 });
 
