@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=5">
+    <link rel="stylesheet" href="style.css?v=6">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -397,36 +397,126 @@
                             </div>
                         </div>
 
-                        <div class="params-grid">
-                            <div class="param-card"><h5>Methane (CH4)</h5><div class="val-box"><span id="val-ch4">0.00</span> <small>ppm</small></div></div>
-                            <div class="param-card"><h5>Carbon Dioxide (CO2)</h5><div class="val-box"><span id="val-co2">0.00</span> <small>ppm</small></div></div>
-                            <div class="param-card"><h5>Hydrogen Sulfide (H2S)</h5><div class="val-box"><span id="val-h2s">0.00</span> <small>ppm</small></div></div>
-                            <div class="param-card"><h5>pH Level</h5><div class="val-box"><span id="val-ph">0.0</span></div></div>
-                            <div class="param-card"><h5>Pressure</h5><div class="val-box"><span id="val-pressure">0.0</span> <small>bar</small></div></div>
-                            <div class="param-card"><h5>Temperature</h5><div class="val-box"><span id="val-temp">0.0</span> <small>°C</small></div></div>
-                            <div class="param-card"><h5>Humidity</h5><div class="val-box"><span id="val-hum">0.0</span> <small>%</small></div></div>
-                            <div class="param-card"><h5>Gas Volume</h5><div class="val-box"><span id="val-vol">0.0</span> <small>L</small></div></div>
-                        </div>
+                        <!-- ═══ PREMIUM MONITOR LAYOUT ═══ -->
+                        <div class="monitor-main-layout">
 
-                        <div class="visualization-grid">
-                            <div class="viz-card">
-                                <h4>Real-time Streams</h4>
-                                <div id="chart-container" class="chart-placeholder">
-                                    <span class="text-muted">Graph will render here...</span>
+                            <!-- TOP: Left Sensors | Tank Center | Right Sensors -->
+                            <div class="monitor-top-row">
+
+                                <!-- LEFT SENSORS 2×2 -->
+                                <div class="monitor-sensor-col">
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">CH4 Concentration</p>
+                                        <div class="sensor-mini-val"><span id="val-ch4">0.00</span><small>ppm</small></div>
+                                        <span class="sensor-mini-tag good">Optimal</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-ch4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 28 C15 22 25 25 35 18 S55 12 70 15 S90 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 28 C15 22 25 25 35 18 S55 12 70 15 S90 10 120 8 L120 36 L0 36Z" fill="url(#spk-ch4)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">CO2 Level</p>
+                                        <div class="sensor-mini-val"><span id="val-co2">0.00</span><small>ppm</small></div>
+                                        <span class="sensor-mini-tag warn">Monitor</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-co2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.25"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/></linearGradient></defs><path d="M0 18 C10 15 20 22 35 20 S55 25 70 18 S90 22 120 26" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M0 18 C10 15 20 22 35 20 S55 25 70 18 S90 22 120 26 L120 36 L0 36Z" fill="url(#spk-co2)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">H2S Concentration</p>
+                                        <div class="sensor-mini-val"><span id="val-h2s">0.00</span><small>ppm</small></div>
+                                        <span class="sensor-mini-tag warn">Warning</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-h2s" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.25"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/></linearGradient></defs><path d="M0 22 C10 18 20 28 35 15 S55 20 65 12 S85 18 100 14 S115 8 120 10" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M0 22 C10 18 20 28 35 15 S55 20 65 12 S85 18 100 14 S115 8 120 10 L120 36 L0 36Z" fill="url(#spk-h2s)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">pH Level</p>
+                                        <div class="sensor-mini-val"><span id="val-ph">0.0</span></div>
+                                        <span class="sensor-mini-tag good">Optimal</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19 L120 36 L0 36Z" fill="url(#spk-ph)"/></svg></div>
+                                    </div>
+                                </div>
+
+                                <!-- CENTER: Biogas Reactor Tank -->
+                                <div class="monitor-tank-center">
+                                    <h4 class="tank-center-title">Biogas Reactor Tank</h4>
+                                    <div class="tank-flow-row">
+                                        <span class="tank-flow-label">Inlet</span>
+                                        <span class="tank-flow-arrow">→</span>
+                                    </div>
+                                    <div class="tank-wrapper" style="height: 220px; justify-content: center;">
+                                        <div class="tank-container" style="width: 110px; height: 185px;">
+                                            <div class="tank-level" id="tank-level-fill" style="height: 0%;"></div>
+                                        </div>
+                                        <div class="tank-text">Distance: <span id="val-distance">0</span> cm</div>
+                                    </div>
+                                    <div class="tank-flow-row" style="justify-content: flex-end;">
+                                        <span class="tank-flow-arrow">→</span>
+                                        <span class="tank-flow-label">Outlet</span>
+                                    </div>
+                                </div>
+
+                                <!-- RIGHT SENSORS 2×2 -->
+                                <div class="monitor-sensor-col">
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">Temperature</p>
+                                        <div class="sensor-mini-val"><span id="val-temp">0.0</span><small>°C</small></div>
+                                        <span class="sensor-mini-tag good">Active</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-temp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12 L120 36 L0 36Z" fill="url(#spk-temp)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">Pressure</p>
+                                        <div class="sensor-mini-val"><span id="val-pressure">0.0</span><small>bar</small></div>
+                                        <span class="sensor-mini-tag good">Normal</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-pres" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 20 C15 20 25 18 40 21 S60 16 70 10 S90 18 110 20 S118 21 120 20" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 20 C15 20 25 18 40 21 S60 16 70 10 S90 18 110 20 S118 21 120 20 L120 36 L0 36Z" fill="url(#spk-pres)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">Humidity</p>
+                                        <div class="sensor-mini-val"><span id="val-hum">0.0</span><small>%</small></div>
+                                        <span class="sensor-mini-tag good">Normal</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-hum" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/></linearGradient></defs><path d="M0 14 C15 16 25 18 40 20 S60 22 75 24 S95 26 120 28" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/><path d="M0 14 C15 16 25 18 40 20 S60 22 75 24 S95 26 120 28 L120 36 L0 36Z" fill="url(#spk-hum)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">Gas Volume</p>
+                                        <div class="sensor-mini-val"><span id="val-vol">0.0</span><small>L</small></div>
+                                        <span class="sensor-mini-tag good">Normal</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-vol" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8 L120 36 L0 36Z" fill="url(#spk-vol)"/></svg></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="viz-card tank-card">
-                                <h4 style="text-align: center;">Tank Volume</h4>
-                                <div class="tank-wrapper">
-                                    <div class="tank-container"><div class="tank-level" id="tank-level-fill" style="height: 0%;"></div></div>
-                                    <div class="tank-text">Distance: <span id="val-distance">0</span> cm</div>
+
+                            <!-- BOTTOM: Real-time Chart | Status & Actuators -->
+                            <div class="monitor-bottom-row">
+
+                                <!-- Chart Card -->
+                                <div class="monitor-chart-card">
+                                    <div class="monitor-chart-header">
+                                        <h4 class="monitor-chart-title">Real-time Performance</h4>
+                                        <div class="chart-legend-row">
+                                            <span class="legend-dot" style="background:#10B981;"></span><span class="legend-lbl">CH4</span>
+                                            <span class="legend-dot" style="background:#3B82F6; margin-left:10px;"></span><span class="legend-lbl">CO2</span>
+                                        </div>
+                                    </div>
+                                    <div id="chart-container" style="height: 190px; position: relative;">
+                                        <span class="text-muted" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;">Waiting for live data…</span>
+                                    </div>
+                                </div>
+
+                                <!-- Status & Actuators Column -->
+                                <div class="monitor-status-col">
+                                    <div class="status-info-card">
+                                        <p class="status-info-label">System Status</p>
+                                        <div class="badge active" style="padding: 9px 22px; font-size: 13px; letter-spacing: 0.08em; margin-top: 10px;">● ACTIVE</div>
+                                    </div>
+                                    <div class="status-info-card" style="flex: 1;">
+                                        <p class="status-info-label" style="margin-bottom: 14px;">Actuator Status</p>
+                                        <div class="actuator-row-mini">
+                                            <div class="actuator-mini-item">
+                                                <span class="actuator-mini-label">Valve 3</span>
+                                                <div class="status-indicator" id="status-valve">OFF</div>
+                                            </div>
+                                            <div class="actuator-mini-item">
+                                                <span class="actuator-mini-label">Pump</span>
+                                                <div class="status-indicator" id="status-pump">OFF</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="actuators-grid">
-                            <div class="actuator-card"><h4>Valve 3 Status</h4><div class="status-indicator" id="status-valve">OFF</div></div>
-                            <div class="actuator-card"><h4>Pump Status</h4><div class="status-indicator" id="status-pump">OFF</div></div>
                         </div>
                     </div>
                 </div>

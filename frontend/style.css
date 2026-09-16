@@ -1520,3 +1520,247 @@ body.dark-theme .text-muted { color: var(--text-muted); }
 body.dark-theme ::-webkit-scrollbar { width: 6px; height: 6px; }
 body.dark-theme ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
 body.dark-theme ::-webkit-scrollbar-thumb:hover { background: #505A65; }
+
+/* ════════════════════════════════════════════
+   PREMIUM MONITOR DASHBOARD LAYOUT
+   Matches mockup: sensors | tank | sensors
+                   chart   |      | status
+   ════════════════════════════════════════════ */
+
+#cust-monitor { padding: 20px; }
+
+.monitor-main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ── Top 3-column row ── */
+.monitor-top-row {
+    display: grid;
+    grid-template-columns: 1fr 220px 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.monitor-sensor-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ── Sensor mini card ── */
+.sensor-mini-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 14px 12px 14px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--dur-base), border-color var(--dur-base), transform var(--dur-fast);
+    cursor: default;
+}
+.sensor-mini-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+}
+
+.sensor-mini-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    margin-bottom: 8px;
+}
+
+.sensor-mini-val {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 5px;
+}
+.sensor-mini-val small {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 2px;
+    letter-spacing: 0;
+}
+
+.sensor-mini-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+}
+.sensor-mini-tag.good { color: var(--green-500); }
+.sensor-mini-tag.warn { color: var(--amber-500); }
+.sensor-mini-tag.crit { color: var(--red-500); }
+
+/* ── SVG Sparkline ── */
+.mini-spark {
+    height: 36px;
+    margin-top: 4px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.mini-spark svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* dark theme sparklines */
+body.dark-theme .sensor-mini-card {
+    background: var(--surface-1);
+    border-color: var(--border);
+}
+
+/* ── Tank Center ── */
+.monitor-tank-center {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 14px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.tank-center-title {
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.tank-flow-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+.tank-flow-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.tank-flow-arrow {
+    font-size: 14px;
+    color: var(--green-500);
+    font-weight: 700;
+}
+
+/* ── Bottom 2-column row ── */
+.monitor-bottom-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 14px;
+}
+
+/* ── Chart card ── */
+.monitor-chart-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.monitor-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.monitor-chart-title {
+    font-family: var(--font-main);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.chart-legend-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.legend-lbl {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0;
+}
+
+/* ── Status column ── */
+.monitor-status-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status-info-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+}
+
+.status-info-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.actuator-row-mini {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.actuator-mini-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.actuator-mini-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* dark theme overrides for monitor */
+body.dark-theme .monitor-tank-center,
+body.dark-theme .monitor-chart-card,
+body.dark-theme .status-info-card {
+    background: var(--surface-1) !important;
+    border-color: var(--border) !important;
+}
