@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,8 +29,8 @@
         <div class="login-container" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); padding: 48px 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.5); width: 100%; max-width: 420px; z-index: 2; animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
             
             <div class="login-header" style="text-align: center; margin-bottom: 32px;">
-                <img src="assets/logo.png" alt="BioMonitor" style="height: 72px; width: 72px; object-fit: contain; margin-bottom: 12px; animation: floatIcon 3s ease-in-out infinite;">
-                <h2 style="font-family: var(--font-main); font-weight: 700; color: var(--text-dark); font-size: 26px; margin: 0 0 8px 0; letter-spacing: -0.01em;">BioMonitor</h2>
+                <img src="assets/logo.png?v=2" alt="BioMonitor" class="brand-logo">
+                <h2 class="login-wordmark"><span class="brand-bio">Bio</span>Monitor</h2>
                 <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Authorized Personnel Access</p>
             </div>
 
@@ -64,7 +64,7 @@
             
             <!-- SIDEBAR -->
             <div class="sidebar">
-                <div class="brand"><img src="assets/logo.png" alt="BioMonitor" class="brand-logo-sidebar">BioMonitor<span class="coral-dot">.</span></div>
+                <div class="brand"><img src="assets/logo.png?v=2" alt="BioMonitor" class="brand-logo-sidebar"><span class="brand-wordmark"><span class="brand-bio">Bio</span>Monitor<span class="coral-dot">.</span></span></div>
                 <ul class="nav-links">
                     <li id="tab-admin-overview" class="active" onclick="switchAdminTab('admin-overview')">Overview</li>
                     <li id="tab-admin-deployments" onclick="switchAdminTab('admin-deployments')">Deployments</li>
@@ -327,7 +327,7 @@
             
             <!-- SIDEBAR -->
             <div class="sidebar">
-                <div class="brand"><img src="assets/logo.png" alt="BioMonitor" class="brand-logo-sidebar">BioMonitor<span class="coral-dot">.</span></div>
+                <div class="brand"><img src="assets/logo.png?v=2" alt="BioMonitor" class="brand-logo-sidebar"><span class="brand-wordmark"><span class="brand-bio">Bio</span>Monitor<span class="coral-dot">.</span></span></div>
                 <ul class="nav-links">
                     <li id="tab-back-admin" onclick="returnToAdmin()" style="display: none; background: #0F172A; color: #FFFFFF; font-weight: 700; margin-bottom: 24px; text-align: center; border-radius: 100px;">
                         ⬅ Return to Admin Panel

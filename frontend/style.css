@@ -200,13 +200,24 @@ body:has(#login-screen.active) { overflow: hidden !important; }
 .login-header p { color: rgba(255,255,255,0.55); font-size: 14px; }
 
 .brand-logo {
-    height: 60px;
-    width: 60px;
+    height: 84px;
+    width: 84px;
     object-fit: contain;
-    border-radius: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     animation: float-logo 4s ease-in-out infinite;
-    filter: drop-shadow(0 0 16px rgba(16,185,129,0.4));
+    filter: drop-shadow(0 8px 18px rgba(16,185,129,0.28));
+}
+.login-wordmark {
+    font-family: var(--font-main);
+    font-weight: 700;
+    color: var(--text-dark);
+    font-size: 28px;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.03em;
+}
+.brand-bio {
+    color: var(--green-500);
+    font-weight: 800;
 }
 @keyframes float-logo {
     0%, 100% { transform: translateY(0px); }
@@ -329,22 +340,31 @@ body:has(#login-screen.active) { overflow: hidden !important; }
 
 .brand {
     font-family: var(--font-main);
-    font-size: 19px;
+    font-size: 20px;
     font-weight: 700;
     color: #FFFFFF;
     margin-bottom: 36px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     padding: 28px 20px 0 20px;
     letter-spacing: -0.02em;
 }
 .brand-logo-sidebar {
-    height: 30px;
-    width: 30px;
+    height: 42px;
+    width: 42px;
     object-fit: contain;
-    border-radius: 8px;
-    filter: drop-shadow(0 0 8px rgba(16,185,129,0.5));
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px rgba(16,185,129,0.45));
+}
+.brand-wordmark {
+    line-height: 1;
+    white-space: nowrap;
+}
+.brand .brand-bio {
+    color: #34D399;
+    font-weight: 800;
+    text-shadow: 0 0 16px rgba(52, 211, 153, 0.35);
 }
 .coral-dot { color: var(--green-500); }
 
