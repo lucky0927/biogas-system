@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="style.css?v=9">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -361,11 +361,11 @@
             </div>
 
             <!-- MAIN CONTENT -->
-            <div class="main-content" style="background-color: #F8FAFC;">
+            <div class="main-content">
                 
                 <div style="display: flex; justify-content: flex-end; padding: 0 24px 10px 24px;">
-                    <div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; padding: 6px 20px 6px 6px; border-radius: 100px; box-shadow: var(--shadow-soft); border: 1px solid #E5E7EB; cursor: default; transition: 0.2s;" onmouseover="this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='var(--shadow-soft)'">
-                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #DCFCE7; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                    <div class="user-chip" onmouseover="this.style.boxShadow='0 10px 25px rgba(0,0,0,0.08)'" onmouseout="this.style.boxShadow='var(--shadow-soft)'">
+                        <div class="user-chip-avatar">
                             👤
                         </div>
                         <div style="text-align: left;">
@@ -395,7 +395,7 @@
                                 <p class="text-muted" id="live-unit-location">Location details</p>
                             </div>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <select id="monitor-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                                <select id="monitor-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
                                     <option value="" disabled>-- Switch Unit --</option>
                                 </select>
                                 <button class="btn-secondary-small" onclick="triggerIssueReport()" style="background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5;">⚠️ Report Issue</button>
@@ -578,7 +578,7 @@
                         </div>
                     </div>
 
-                    <div class="param-card" style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; background: #FFFFFF; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-soft);">
+                    <div class="param-card" style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-soft);">
                         <div style="flex: 1; min-width: 180px;">
                             <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">SELECT UNIT</label>
                             <select id="report-unit-switcher" style="width: 100%; padding: 10px; border: 1px solid #E5E7EB; border-radius: 8px; font-family: inherit; color: var(--text-dark);" onchange="handleUnitSwitch(this.value)">
@@ -615,7 +615,7 @@
                         </div>
                     </div>
 
-                    <div id="report-preview-container" style="background: #FFFFFF; padding: 30px; border-radius: 16px; box-shadow: var(--shadow-soft); border: 1px solid #E5E7EB; min-height: 400px;">
+                    <div id="report-preview-container" class="report-preview-panel">
                         <div id="report-loading" style="text-align: center; padding: 40px; color: var(--text-muted);">
                             <span style="font-size: 40px; display: block; margin-bottom: 10px;">📊</span>
                             <p style="font-size: 16px; margin: 0;">Select your filters above and click <strong>"Generate Report"</strong> to analyze historical data.</p>
@@ -637,7 +637,7 @@
                             <p class="text-muted" style="font-size: 14px;">Monitor individual hardware sensors, their connection states, and safe operating ranges.</p>
                         </div>
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <select id="sensor-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                            <select id="sensor-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
                                 <option value="" disabled>-- Switch Unit --</option>
                             </select>
                             <button class="btn-secondary-small" onclick="loadSensorStatus()">🔄 Refresh Status</button>
@@ -656,7 +656,7 @@
                             <p class="text-muted" style="font-size: 14px;">Review out-of-range sensor readings and critical warnings.</p>
                         </div>
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <select id="alerts-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                            <select id="alerts-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
                                 <option value="" disabled>-- Switch Unit --</option>
                             </select>
                             <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh Alerts</button>
@@ -680,7 +680,7 @@
                                     <p style="margin: 0; font-size: 12px; color: var(--accent-coral);">Select a unit to view its chat history</p>
                                 </div>
                                 <div style="display: flex; gap: 10px; align-items: center;">
-                                    <select id="support-unit-switcher" class="input-field" style="padding: 8px 16px; margin-bottom: 0; width: auto; font-weight: 600; cursor: pointer; border-radius: 100px; background: #F8FAFC; border: 1px solid #E5E7EB;" onchange="handleUnitSwitch(this.value)">
+                                    <select id="support-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
                                         <option value="" disabled>-- Switch Unit --</option>
                                     </select>
                                 </div>
