@@ -13,6 +13,9 @@ let currentMonitorUnitId = null;
 
 function loadCustomerDashboard(userData) {
     currentUser = userData;
+    globalSelectedUnitId = null;
+    currentMonitorUnitId = null;
+    window.hasAutoRouted = false;
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('customer-screen').classList.add('active');
     
@@ -146,6 +149,8 @@ document.getElementById('customer-logout-btn')?.addEventListener('click', () => 
             document.getElementById('login-screen').classList.add('active');
             currentUser = null;
             currentMonitorUnitId = null;
+            globalSelectedUnitId = null;
+            window.hasAutoRouted = false;
         }).catch(err => console.error(err));
     }
 });
@@ -450,7 +455,7 @@ function updateDeploymentsUI(searchQuery = '') {
         
         const card = document.createElement('div');
         card.className = 'deployment-card';
-        const isAccessOn = cust.accessGranted !== false; 
+        const isAccessOn = unit.accessGranted !== false; // දැන් Unit level access control
         const toggleBg = isAccessOn ? '#10B981' : '#E5E7EB';
         const toggleDot = isAccessOn ? 'calc(100% - 18px)' : '2px';
         const unreadChat = cust.unreadMessages || 0; 
@@ -479,8 +484,8 @@ function updateDeploymentsUI(searchQuery = '') {
                          }
                      </div>
                      
-                     <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleCustomerAccess('${loc.customerId}', ${isAccessOn})">
-                         <span style="font-size: 12px; font-weight: 700; color: ${isAccessOn ? '#10B981' : '#9CA3AF'};">${isAccessOn ? 'ACCESS ON' : 'ACCESS OFF'}</span>
+                     <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="toggleUnitAccess('${unitId}', ${isAccessOn})">
+                         <span style="font-size: 12px; font-weight: 700; color: ${isAccessOn ? '#10B981' : '#9CA3AF'};">${isAccessOn ? 'UNIT ACCESS ON' : 'UNIT ACCESS OFF'}</span>
                          <div style="width: 36px; height: 20px; background: ${toggleBg}; border-radius: 20px; position: relative; transition: 0.3s;">
                              <div style="width: 16px; height: 16px; background: #FFF; border-radius: 50%; position: absolute; top: 2px; left: ${toggleDot}; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div>
                          </div>
@@ -774,6 +779,7 @@ async function saveNewDeployment() {
             unitToken: unitToken,
             unitName: unitName,
             status: 'active',
+            accessGranted: true,
             createdAt: new Date().toISOString()
         });
 
@@ -819,6 +825,11 @@ function fetchHistoryData() {
     const unitId = globalSelectedUnitId; 
     const dateVal = document.getElementById('history-date-select').value; 
     const tbody = document.getElementById('history-tbody');
+
+    if (currentUser && currentUser.role === 'customer' && unitId && !isUnitAccessibleToCurrentUser(unitId)) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #991B1B;">Access to this unit has been disabled by the admin.</td></tr>';
+        return;
+    }
 
     if (!unitId) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit from the top dropdown to view data logs.</td></tr>';
@@ -996,6 +1007,12 @@ function loadCustomerChatForUnit() {
         return;
     }
 
+    if (currentUser && currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(globalSelectedUnitId)) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: #991B1B;">Access to this unit has been disabled by the admin.</div>';
+        if (badge) badge.style.display = 'none';
+        return;
+    }
+
     if (badge) badge.style.display = 'inline-block';
 
     // කලින් තිබුණු Listener එකක් ඇත්නම් එය නවත්වන්න
@@ -1055,6 +1072,10 @@ async function sendCustMessage() {
     const input = document.getElementById('cust-chat-input');
     const text = input.value.trim();
     if(!text || !globalSelectedUnitId) return;
+    if (currentUser && currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(globalSelectedUnitId)) {
+        alert("Access to this unit has been disabled by the admin.");
+        return;
+    }
     
     input.value = '';
     const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${globalSelectedUnitId}/messages`));
@@ -1294,6 +1315,10 @@ async function handleImageUpload(event, senderRole) {
 
     const uid = senderRole === 'customer' ? globalSelectedUnitId : activeChatUnitId;
     if(!uid) return;
+    if (senderRole === 'customer' && currentUser && currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(uid)) {
+        alert("Access to this unit has been disabled by the admin.");
+        return;
+    }
 
     const chatInput = senderRole === 'customer' ? document.getElementById('cust-chat-input') : document.getElementById('admin-chat-input');
     const originalPlaceholder = chatInput.placeholder;
@@ -1458,6 +1483,11 @@ async function generateReport() {
     }
 
     let targetUnitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
+
+    if (currentUser && currentUser.role === 'customer' && targetUnitId && !isUnitAccessibleToCurrentUser(targetUnitId)) {
+        loading.innerHTML = "<p style='color:#991B1B'>Access to this unit has been disabled by the admin.</p>";
+        return;
+    }
 
     if (!targetUnitId) {
         loading.innerHTML = "<p style='color:#991B1B'>No assigned biogas unit found. Please select a unit from the dropdown.</p>";
@@ -2091,6 +2121,11 @@ async function loadSensorStatus() {
 
     let targetUnitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
 
+    if (currentUser && currentUser.role === 'customer' && targetUnitId && !isUnitAccessibleToCurrentUser(targetUnitId)) {
+        container.innerHTML = "<p style='color:red;'>Access to this unit has been disabled by the admin.</p>";
+        return;
+    }
+
     if (!targetUnitId) {
         container.innerHTML = "<p style='color:red;'>Please select a Biogas Unit from the dropdown.</p>";
         return;
@@ -2431,6 +2466,34 @@ function initRealtimeListeners() {
 // ==========================================
 
 let globalSelectedUnitId = null;
+window.hasAutoRouted = false;
+let customerOverviewListenersBound = false;
+const UNIT_SWITCHER_IDS = ['monitor-unit-switcher', 'sensor-unit-switcher', 'history-unit-select', 'report-unit-switcher', 'alerts-unit-switcher', 'support-unit-switcher'];
+
+function isUnitAccessibleToCurrentUser(unitId) {
+    if (!unitId || !globalUnits[unitId] || !currentUser) return false;
+    const unit = globalUnits[unitId];
+    if (currentUser.role === 'admin') return true;
+    const locId = unit.locationId || unit.location_id;
+    const loc = globalLocations[locId] || {};
+    const actualCustomerId = loc.customerId || unit.customerId;
+    if (actualCustomerId !== currentUser.uid) return false;
+    return unit.accessGranted !== false;
+}
+
+function syncUnitSwitchers(switcherHtml) {
+    UNIT_SWITCHER_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const currentVal = el.value;
+        if (typeof switcherHtml === 'string') el.innerHTML = switcherHtml;
+        if (globalSelectedUnitId) {
+            el.value = globalSelectedUnitId;
+        } else if (currentVal) {
+            el.value = currentVal;
+        }
+    });
+}
 
 function renderCustomerOverview() {
     const container = document.getElementById('customer-overview-container');
@@ -2441,125 +2504,204 @@ function renderCustomerOverview() {
     const locRef = window.dbRef(window.firebaseDB, 'locations');
     const unitsRef = window.dbRef(window.firebaseDB, 'units');
 
-    window.dbOnValue(locRef, (locSnapshot) => {
-        globalLocations = locSnapshot.exists() ? locSnapshot.val() : {};
-        
+    if (!customerOverviewListenersBound) {
+        customerOverviewListenersBound = true;
+        window.dbOnValue(locRef, (locSnapshot) => {
+            globalLocations = locSnapshot.exists() ? locSnapshot.val() : {};
+            paintCustomerOverview();
+        });
         window.dbOnValue(unitsRef, (unitSnapshot) => {
             globalUnits = unitSnapshot.exists() ? unitSnapshot.val() : {};
-            
-            const locationGroups = {};
-            let hasUnits = false;
+            paintCustomerOverview();
+        });
+    } else {
+        paintCustomerOverview();
+    }
+}
 
-            Object.keys(globalUnits).forEach(uid => {
-                const unit = globalUnits[uid];
-                const locId = unit.locationId || unit.location_id;
-                const loc = globalLocations[locId] || {};
-                const actualCustomerId = loc.customerId || unit.customerId;
+function paintCustomerOverview() {
+    const container = document.getElementById('customer-overview-container');
+    if (!container || !currentUser) return;
 
-                if (currentUser.role === 'admin' || actualCustomerId === currentUser.uid) {
-                    const locName = loc.name || loc.locationName || loc.location || "University of Kelaniya";
-                    const unitName = unit.name || unit.unitName || "Base canteen - Unit 1";
-                    const mac = unit.hardwareMac || unit.macAddress || unit.mac || "N/A";
+    const locationGroups = {};
+    let hasUnits = false;
+    let accessibleUnits = [];
+    let usageMap = {};
+    try {
+        usageMap = JSON.parse(localStorage.getItem(`usage_${currentUser.uid}`) || '{}');
+    } catch (e) {
+        usageMap = {};
+    }
 
-                    if (!locationGroups[locName]) locationGroups[locName] = [];
-                    
-                    locationGroups[locName].push({ id: uid, safeUnitName: unitName, safeMac: mac, ...unit });
-                    hasUnits = true;
-                }
-            });
+    Object.keys(globalUnits || {}).forEach(uid => {
+        const unit = globalUnits[uid];
+        const locId = unit.locationId || unit.location_id;
+        const loc = globalLocations[locId] || {};
+        const actualCustomerId = loc.customerId || unit.customerId;
 
-            if (!hasUnits) {
-                container.innerHTML = "<p style='color: #78716C; font-weight: 500;'>No Biogas Units deployed for your account yet.</p>";
-                return;
+        if (currentUser.role === 'admin' || actualCustomerId === currentUser.uid) {
+            const locName = loc.name || loc.locationName || loc.location || "University of Kelaniya";
+            const unitName = unit.name || unit.unitName || "Base canteen - Unit 1";
+            const mac = unit.hardwareMac || unit.macAddress || unit.mac || "N/A";
+            const isUnitAccessOn = unit.accessGranted !== false;
+
+            if (!locationGroups[locName]) locationGroups[locName] = [];
+
+            const unitObj = { id: uid, safeUnitName: unitName, safeMac: mac, locName: locName, ...unit };
+            locationGroups[locName].push(unitObj);
+
+            if (isUnitAccessOn) {
+                accessibleUnits.push(unitObj);
             }
 
-            let html = '';
-            let switcherHtml = '<option value="" disabled>-- Switch Unit --</option>';
+            hasUnits = true;
+        }
+    });
 
-            for (const [locName, locUnits] of Object.entries(locationGroups)) {
-                switcherHtml += `<optgroup label="📍 ${locName}">`;
-                html += `
-                    <div class="location-group">
-                        <h4 class="location-group-title">📍 Location: ${locName}</h4>
-                        <div class="overview-grid">
-                `;
-                
-                locUnits.forEach(u => {
-                    switcherHtml += `<option value="${u.id}">${u.safeUnitName}</option>`;
-                    const isSelected = globalSelectedUnitId === u.id ? 'selected' : '';
-                    html += `
-                        <div id="card-${u.id}" class="unit-card ${isSelected}" onclick="selectGlobalUnit('${u.id}', '${u.safeUnitName}', '${locName}')">                            
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                                <h3 style="margin: 0; font-size: 16px; color: var(--text-dark);">${u.safeUnitName}</h3>
-                                <span style="font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #DCFCE7; color: #166534;">ONLINE</span>
-                            </div>
-                            <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">MAC: <strong style="color: var(--text-dark);">${u.safeMac}</strong></p>
-                            <p style="margin: 0; font-size: 13px; color: var(--accent-coral); font-weight: 600;">Click to monitor live data &rarr;</p>
-                        </div>
-                    `;
+    if (!hasUnits) {
+        container.innerHTML = "<p style='color: #78716C; font-weight: 500;'>No Biogas Units deployed for your account yet.</p>";
+        return;
+    }
+
+    if (currentUser.role === 'customer') {
+        if (globalSelectedUnitId && !isUnitAccessibleToCurrentUser(globalSelectedUnitId)) {
+            alert("Access to your currently active unit was revoked by the Admin.");
+            globalSelectedUnitId = null;
+        }
+
+        if (!globalSelectedUnitId) {
+            if (accessibleUnits.length > 0) {
+                accessibleUnits.sort((a, b) => (usageMap[b.id] || 0) - (usageMap[a.id] || 0));
+                const bestUnit = accessibleUnits[0];
+                const stayOnOverview = !window.hasAutoRouted && accessibleUnits.length > 1;
+                selectGlobalUnit(bestUnit.id, bestUnit.safeUnitName, bestUnit.locName, {
+                    recordUsage: false,
+                    stayOnTab: stayOnOverview
                 });
-                
-                switcherHtml += `</optgroup>`;
-                html += `</div></div>`;
-            }
-            container.innerHTML = html;
 
-            // 🔴 FIX: Missing line restored here!
-            const dropdownIds = ['monitor-unit-switcher', 'sensor-unit-switcher', 'history-unit-select', 'report-unit-switcher', 'alerts-unit-switcher', 'support-unit-switcher'];
-            dropdownIds.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    const currentVal = el.value;
-                    el.innerHTML = switcherHtml;
-                    if (globalSelectedUnitId) {
-                        el.value = globalSelectedUnitId;
-                    } else if (currentVal) {
-                        el.value = currentVal;
+                if (!window.hasAutoRouted) {
+                    window.hasAutoRouted = true;
+                    if (accessibleUnits.length === 1) {
+                        switchCustomerTab('cust-monitor');
+                        if (typeof loadMonitorData === 'function') loadMonitorData();
+                    } else {
+                        switchCustomerTab('cust-overview');
                     }
                 }
-            });
+            } else if (window.hasAutoRouted) {
+                alert("You no longer have access to any units. Logging out.");
+                const logoutBtn = document.getElementById('customer-logout-btn');
+                if (logoutBtn) logoutBtn.click();
+                return;
+            }
+        }
+    }
+
+    let html = '';
+    let switcherHtml = '<option value="" disabled>-- Switch Unit --</option>';
+
+    for (const [locName, locUnits] of Object.entries(locationGroups)) {
+        switcherHtml += `<optgroup label="📍 ${locName}">`;
+        html += `
+            <div class="location-group">
+                <h4 class="location-group-title">📍 Location: ${locName}</h4>
+                <div class="overview-grid">
+        `;
+
+        locUnits.forEach(u => {
+            const isUnitAccessOn = u.accessGranted !== false;
+
+            if (isUnitAccessOn || currentUser.role === 'admin') {
+                switcherHtml += `<option value="${u.id}" ${!isUnitAccessOn ? 'disabled' : ''}>${u.safeUnitName} ${!isUnitAccessOn ? '(Access Off)' : ''}</option>`;
+            }
+
+            const isSelected = globalSelectedUnitId === u.id ? 'selected' : '';
+            const cardStyle = isUnitAccessOn ? "cursor: pointer;" : "opacity: 0.6; filter: grayscale(1); pointer-events: none;";
+            const statusBadge = isUnitAccessOn
+                ? `<span style="font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #DCFCE7; color: #166534;">ONLINE</span>`
+                : `<span style="font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 6px; background: #FEE2E2; color: #991B1B;">ACCESS OFF</span>`;
+
+            html += `
+                <div id="card-${u.id}" class="unit-card ${isSelected}" style="${cardStyle}" ${isUnitAccessOn ? `onclick="selectGlobalUnit('${u.id}', '${u.safeUnitName}', '${locName}')"` : ''}>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <h3 style="margin: 0; font-size: 16px; color: var(--text-dark);">${u.safeUnitName}</h3>
+                        ${statusBadge}
+                    </div>
+                    <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">MAC: <strong style="color: var(--text-dark);">${u.safeMac}</strong></p>
+                    <p style="margin: 0; font-size: 13px; color: ${isUnitAccessOn ? 'var(--accent-coral)' : '#9CA3AF'}; font-weight: 600;">${isUnitAccessOn ? 'Click to monitor live data &rarr;' : 'Access disabled by admin'}</p>
+                </div>
+            `;
         });
-    });
+
+        switcherHtml += `</optgroup>`;
+        html += `</div></div>`;
+    }
+    container.innerHTML = html;
+    syncUnitSwitchers(switcherHtml);
 }
 
 function handleUnitSwitch(unitId) {
     if (!unitId || !globalUnits[unitId]) return;
     const unit = globalUnits[unitId];
+
+    if (currentUser && currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(unitId)) {
+        alert("Access to this unit has been disabled.");
+        syncUnitSwitchers();
+        return;
+    }
+
     const locId = unit.locationId || unit.location_id;
     const loc = globalLocations[locId] || {};
-    
     const locName = loc.name || loc.locationName || loc.location || "Unknown Location";
     const unitName = unit.name || unit.unitName || "Unknown Unit";
-    
+
     selectGlobalUnit(unitId, unitName, locName);
 }
 
-function selectGlobalUnit(unitId, unitName, locationName) {
+function selectGlobalUnit(unitId, unitName, locationName, options = {}) {
+    const recordUsage = options.recordUsage !== false;
+    const stayOnTab = options.stayOnTab === true;
+
+    if (currentUser && currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(unitId)) {
+        alert("Access to this unit has been disabled.");
+        return;
+    }
+
     globalSelectedUnitId = unitId;
-    currentMonitorUnitId = unitId; 
-    
+    currentMonitorUnitId = unitId;
+
+    if (recordUsage && currentUser && currentUser.uid && currentUser.role === 'customer') {
+        let usageMap = {};
+        try {
+            usageMap = JSON.parse(localStorage.getItem(`usage_${currentUser.uid}`) || '{}');
+        } catch (e) {
+            usageMap = {};
+        }
+        usageMap[unitId] = (usageMap[unitId] || 0) + 1;
+        localStorage.setItem(`usage_${currentUser.uid}`, JSON.stringify(usageMap));
+    }
+
     document.querySelectorAll('.unit-card').forEach(card => card.classList.remove('selected'));
     const selectedCard = document.getElementById('card-' + unitId);
     if (selectedCard) selectedCard.classList.add('selected');
-    
-    const dropdownIds = ['monitor-unit-switcher', 'sensor-unit-switcher', 'history-unit-select', 'report-unit-switcher', 'alerts-unit-switcher', 'support-unit-switcher'];    
-    dropdownIds.forEach(id => {
+
+    UNIT_SWITCHER_IDS.forEach(id => {
         const el = document.getElementById(id);
         if (el && el.value !== unitId) el.value = unitId;
     });
-    
+
     const nameEl = document.getElementById('live-unit-name');
     if (nameEl) nameEl.innerText = unitName;
     const locEl = document.getElementById('live-unit-location');
     if (locEl) locEl.innerText = locationName;
 
-    let activeTabId = 'cust-monitor'; 
+    let activeTabId = 'cust-monitor';
     const activeTab = document.querySelector('#customer-screen .admin-tab.active');
     if (activeTab) {
         activeTabId = activeTab.id;
     }
 
-    if (activeTabId === 'cust-overview') {
+    if (!stayOnTab && activeTabId === 'cust-overview') {
         switchCustomerTab('cust-monitor');
         activeTabId = 'cust-monitor';
     }
@@ -2574,14 +2716,16 @@ function selectGlobalUnit(unitId, unitName, locationName) {
         const content = document.getElementById('report-content');
         if (content && content.style.display === 'block') generateReport();
     } else if (activeTabId === 'cust-alerts' && typeof loadCustomerAlerts === 'function') {
-        loadCustomerAlerts(); 
+        loadCustomerAlerts();
     } else if (activeTabId === 'cust-support' && typeof loadCustomerChatForUnit === 'function') {
-        loadCustomerChatForUnit(); 
+        loadCustomerChatForUnit();
     }
 }
 
+
 function loadMonitorData() {
     if (!globalSelectedUnitId) return;
+    if (currentUser && currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(globalSelectedUnitId)) return;
 
     if (typeof initLiveChart === 'function') {
         initLiveChart();
@@ -2682,17 +2826,19 @@ function copySuccessDetails() {
     shareCustomerDetails('New Customer', user, pass, login, device);
 }
 
-// --- ACCESS CONTROL FUNCTION ---
-function toggleCustomerAccess(customerId, currentStatus) {
-    if (!customerId || customerId === 'undefined') return;
+// --- ACCESS CONTROL FUNCTION (UNIT LEVEL) ---
+function toggleUnitAccess(unitId, currentStatus) {
+    if (!unitId || unitId === 'undefined') return;
     const newStatus = !currentStatus;
     const action = newStatus ? "GRANT" : "REVOKE";
-    
-    if(confirm(`Are you sure you want to ${action} login access for this customer?`)) {
-        window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}/accessGranted`), newStatus)
-        .then(() => {
-            alert(`Customer login access has been ${newStatus ? 'Granted' : 'Revoked'}.`);
-        }).catch(err => alert("Error updating access: " + err.message));
+
+    if (confirm(`Are you sure you want to ${action} login access for THIS SPECIFIC UNIT?`)) {
+        window.dbSet(window.dbRef(window.firebaseDB, `units/${unitId}/accessGranted`), newStatus)
+            .then(() => {
+                if (globalUnits[unitId]) globalUnits[unitId].accessGranted = newStatus;
+                updateDeploymentsUI();
+                alert(`Unit access has been ${newStatus ? 'Granted' : 'Revoked'}.`);
+            }).catch(err => alert("Error updating access: " + err.message));
     }
 }
 
