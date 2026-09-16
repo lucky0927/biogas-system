@@ -710,6 +710,7 @@ async function saveNewDeployment() {
     let customerId = document.getElementById('customer-select').value;
     let locationId = document.getElementById('location-select').value;
     let generatedCredentials = null;
+    let custNameForShare = "Customer";
 
     try {
         if (customerId === 'new') {
@@ -741,6 +742,18 @@ async function saveNewDeployment() {
             });
 
             generatedCredentials = { user: autoEmail, pass: autoPass, login: loginLink };
+            custNameForShare = custName;
+        } else {
+            // 🔴 පවතින Customer කෙනෙක් තේරුවොත් එයාගේ පරණ Login විස්තරම ගන්නවා
+            const existingCust = globalCustomers[customerId];
+            if (existingCust) {
+                generatedCredentials = { 
+                    user: existingCust.email, 
+                    pass: existingCust.rawPass, 
+                    login: existingCust.loginLink 
+                };
+                custNameForShare = existingCust.name;
+            }
         }
 
         if (locationId === 'new') {
@@ -785,14 +798,17 @@ async function saveNewDeployment() {
 
         closeAddDeploymentModal();
         
+        // 🔴 අලුත් Customer කෙනෙක් වුණත්, පරණ කෙනෙක් වුණත් අදාළ විස්තර Modal එකේ පෙන්වීම
         if (generatedCredentials) {
             document.getElementById('succ-user').innerText = generatedCredentials.user;
             document.getElementById('succ-pass').innerText = generatedCredentials.pass;
             document.getElementById('succ-login').innerText = generatedCredentials.login;
             document.getElementById('succ-device').innerText = unitToken;
+            
+            // Share කරද්දී නියම නම යන්න Modal එකේ Data attribute එකකට නම Save කරගන්නවා
+            document.getElementById('success-deployment-modal').setAttribute('data-custname', custNameForShare);
+            
             document.getElementById('success-deployment-modal').classList.add('active');
-        } else {
-            alert("New Unit Added Successfully!");
         }
         
         if(msgDiv) msgDiv.innerHTML = "";
@@ -802,7 +818,6 @@ async function saveNewDeployment() {
         if(msgDiv) msgDiv.innerHTML = `<span style='color: #ef4444;'>Error: ${error.message}</span>`;
     }
 }
-
 document.getElementById('admin-logout-btn')?.addEventListener('click', () => {
     if (window.firebaseAuth) {
         window.firebaseAuth.signOut().then(() => {
@@ -2627,7 +2642,8 @@ function paintCustomerOverview() {
                         <h3 style="margin: 0; font-size: 16px; color: var(--text-dark);">${u.safeUnitName}</h3>
                         ${statusBadge}
                     </div>
-                    <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">MAC: <strong style="color: var(--text-dark);">${u.safeMac}</strong></p>
+                    <!-- 🔴 MAC වෙනුවට Device ID එක (Firebase u.id) පෙන්වීම -->
+                    <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">Device ID: <strong style="color: var(--text-dark); font-family: monospace;">${u.id}</strong></p>
                     <p style="margin: 0; font-size: 13px; color: ${isUnitAccessOn ? 'var(--accent-coral)' : '#9CA3AF'}; font-weight: 600;">${isUnitAccessOn ? 'Click to monitor live data &rarr;' : 'Access disabled by admin'}</p>
                 </div>
             `;
@@ -2819,11 +2835,13 @@ function shareCustomerDetails(name, user, pass, loginLink, deviceLink) {
 }
 
 function copySuccessDetails() {
+    const modal = document.getElementById('success-deployment-modal');
+    const custName = modal.getAttribute('data-custname') || 'Customer'; // 🔴 නියම නම ගන්නවා
     const user = document.getElementById('succ-user').innerText;
     const pass = document.getElementById('succ-pass').innerText;
     const login = document.getElementById('succ-login').innerText;
     const device = document.getElementById('succ-device').innerText;
-    shareCustomerDetails('New Customer', user, pass, login, device);
+    shareCustomerDetails(custName, user, pass, login, device);
 }
 
 // --- ACCESS CONTROL FUNCTION (UNIT LEVEL) ---
