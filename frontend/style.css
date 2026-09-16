@@ -460,7 +460,7 @@ body:has(#login-screen.active) { overflow: hidden !important; }
 .main-content {
     flex: 1;
     overflow-y: auto;
-    padding: 32px 40px;
+    padding: 24px 32px; /* 🔴 Padding එක අඩු කළා (Industrial look) */
     background: var(--surface-app);
     position: relative;
 }
