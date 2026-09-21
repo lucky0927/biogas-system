@@ -1937,3 +1937,75 @@ body.dark-theme .status-info-card {
     background: var(--surface-1) !important;
     border-color: var(--border) !important;
 }
+
+/* ════════════════════════════════════════════
+   SIDEBAR PROFILE CARD (Light/Dark Support)
+   ════════════════════════════════════════════ */
+.sidebar-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-2);
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    margin: 0 10px 16px 10px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: default;
+}
+.sidebar-profile-card:hover {
+    background: var(--surface-3);
+    border-color: var(--green-500);
+}
+.profile-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--green-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--green-600);
+}
+.profile-info {
+    text-align: left;
+    overflow: hidden;
+    flex: 1;
+}
+.profile-info h4 {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.profile-info p {
+    margin: 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Dark Theme Overrides for Profile Card */
+body.dark-theme .sidebar-profile-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.dark-theme .sidebar-profile-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+body.dark-theme .profile-avatar {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+body.dark-theme .profile-info h4 {
+    color: #FFFFFF;
+}
+body.dark-theme .profile-info p {
+    color: rgba(255, 255, 255, 0.5);
+}
