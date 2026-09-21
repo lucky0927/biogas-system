@@ -490,6 +490,7 @@ body:has(#login-screen.active) { overflow: hidden !important; }
 /* ════════════════════════════════════════════
    MODERN UNIT SWITCHER & REPORT BUTTON
    ════════════════════════════════════════════ */
+/* MODERN UNIT SWITCHER & REPORT BUTTON */
 .unit-switcher {
     appearance: none;
     -webkit-appearance: none;
@@ -498,7 +499,7 @@ body:has(#login-screen.active) { overflow: hidden !important; }
     border: 1px solid var(--border-strong);
     color: var(--text-primary);
     padding: 0 36px 0 16px;
-    height: 38px; /* 🔴 අනිත් ඒවගේ උසටම සමාන කිරීම */
+    height: 38px;
     font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
@@ -527,12 +528,12 @@ body:has(#login-screen.active) { overflow: hidden !important; }
     background: var(--surface-1);
 }
 
-/* 🔴 Report Issue Button - Modern Design */
+/* Report Issue Button */
 .btn-report-issue {
     background: #FEF2F2;
     color: #DC2626;
     border: 1px solid #FCA5A5;
-    height: 38px; /* 🔴 Dropdown එකේ උසටම සමාන කිරීම */
+    height: 38px; 
     padding: 0 16px;
     border-radius: 8px; 
     font-family: var(--font-body);
@@ -550,7 +551,8 @@ body:has(#login-screen.active) { overflow: hidden !important; }
     border-color: #F87171;
     transform: translateY(-1px);
 }
-/* Dark Theme Overrides for Button */
+
+/* Dark Theme Overrides */
 body.dark-theme .btn-report-issue {
     background: rgba(239, 68, 68, 0.1);
     border-color: rgba(239, 68, 68, 0.3);
