@@ -3103,7 +3103,7 @@ function renderCustomersList() {
 
     const customerKeys = Object.keys(globalCustomers);
     if(customerKeys.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 40px; background: #FFFFFF; border-radius: 12px; border: 1px solid #E2E8F0; color: #64748B;">No customers registered yet.</div>';
+        container.innerHTML = '<div style="text-align: center; padding: 40px; background: var(--surface-1); border-radius: 12px; border: 1px solid var(--border); color: var(--text-muted);">No customers registered yet.</div>';
         return;
     }
 
@@ -3114,52 +3114,54 @@ function renderCustomersList() {
         Object.entries(globalLocations).forEach(([locId, loc]) => {
             if (loc.customerId === custId) {
                 locHTML += `
-                    <div style="margin-top: 12px; padding: 16px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; position: relative;">
-                        <button onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; background: #FFFFFF; border: 1px solid #CBD5E1; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s;">✏️ Edit</button>
+                    <div style="margin-top: 12px; padding: 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; position: relative;">
+                        <button class="btn-secondary-small" onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; padding: 4px 10px; font-size: 11px;">✏️ Edit</button>
                         
-                        <strong style="color: #0F172A; font-size: 14px;">📍 ${loc.locationName || 'Location'}</strong><br>
-                        <span style="font-size: 12px; color: #64748B;">${loc.address || 'No address provided'}</span>
-                        <ul style="margin-top: 12px; padding-left: 20px; font-size: 13px; color: #475569; list-style-type: square;">`;
+                        <strong style="color: var(--text-dark); font-size: 14px;">📍 ${loc.locationName || 'Location'}</strong><br>
+                        <span style="font-size: 12px; color: var(--text-muted);">${loc.address || 'No address provided'}</span>
+                        <ul style="margin-top: 12px; padding-left: 20px; font-size: 13px; color: var(--text-secondary); list-style-type: square;">`;
                 
                 let hasUnits = false;
                 Object.entries(globalUnits).forEach(([unitId, unit]) => {
                     if (unit.locationId === locId) {
                         hasUnits = true;
-                        locHTML += `<li style="margin-bottom: 4px;"><strong style="color: #0F172A;">${unit.unitName || 'Unit'}</strong> - Token: <span style="font-family: monospace; color: #0284C7; background: #E0F2FE; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${unit.unitToken}</span></li>`;
+                        locHTML += `<li style="margin-bottom: 4px;"><strong style="color: var(--text-dark);">${unit.unitName || 'Unit'}</strong> - Token: <span style="font-family: monospace; color: #3B82F6; background: rgba(59,130,246,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">${unit.unitToken}</span></li>`;
                     }
                 });
                 
-                if (!hasUnits) locHTML += `<li style="color: #94A3B8; list-style: none; margin-left: -20px;">No units assigned yet</li>`;
+                if (!hasUnits) locHTML += `<li style="color: var(--text-muted); list-style: none; margin-left: -20px;">No units assigned yet</li>`;
                 locHTML += `</ul></div>`;
             }
         });
 
-        if (locHTML === '') locHTML = '<p style="font-size: 13px; color: #94A3B8; margin-top: 8px; padding: 12px; background: #F8FAFC; border-radius: 8px; border: 1px dashed #CBD5E1;">No locations or units assigned to this customer yet.</p>';
+        if (locHTML === '') locHTML = '<p style="font-size: 13px; color: var(--text-muted); margin-top: 8px; padding: 12px; background: var(--surface-2); border-radius: 8px; border: 1px dashed var(--border);">No locations or units assigned to this customer yet.</p>';
 
         const safeName = cust.name || 'Unknown Customer';
         const safeEmail = cust.email || 'N/A';
         const safePhone = cust.phone || 'N/A';
 
         const card = document.createElement('div');
-        card.style.cssText = "background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 20px;";
+        // 🔴 param-card class එක පාවිච්චි කිරීමෙන් Dark Mode එක ඉබේම වැඩ කරයි!
+        card.className = 'param-card'; 
+        card.style.cssText = "padding: 24px; margin-bottom: 20px;";
         
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; gap: 16px; align-items: center;">
-                    <div style="width: 48px; height: 48px; background: #EFF6FF; color: #1D4ED8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                    <div style="width: 48px; height: 48px; background: rgba(59,130,246,0.1); color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
                     <div>
-                        <h3 style="margin: 0 0 4px 0; font-size: 18px; color: #0F172A; font-weight: 700;">${safeName}</h3>
-                        <p style="margin: 0; font-size: 13px; color: #475569; font-weight: 500;">📧 ${safeEmail} <span style="color: #CBD5E1; margin: 0 8px;">|</span> 📞 ${safePhone}</p>
+                        <h3 style="margin: 0 0 4px 0; font-size: 18px; color: var(--text-dark); font-weight: 700;">${safeName}</h3>
+                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">📧 ${safeEmail} <span style="color: var(--border-strong); margin: 0 8px;">|</span> 📞 ${safePhone}</p>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <button onclick="openEditCustomerModal('${custId}')" style="padding: 8px 16px; font-size: 13px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">✏️ Edit Profile</button>
-                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">🗑️ Delete</button>
+                    <button class="btn-secondary-small" onclick="openEditCustomerModal('${custId}')">✏️ Edit Profile</button>
+                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: rgba(239,68,68,0.1); color: #DC2626; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">🗑️ Delete</button>
                 </div>
             </div>
             
-            <div style="border-top: 1px solid #F1F5F9; padding-top: 16px;">
-                <h4 style="font-size: 14px; color: #64748B; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Assigned Deployments</h4>
+            <div style="border-top: 1px solid var(--border); padding-top: 16px;">
+                <h4 style="font-size: 14px; color: var(--text-muted); margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Assigned Deployments</h4>
                 ${locHTML}
             </div>
         `;
