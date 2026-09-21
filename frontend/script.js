@@ -223,14 +223,21 @@ socket.on('liveData', (data) => {
 function updateLiveUI(data) {
     document.getElementById('val-ch4').innerText = data.ch4 != null ? data.ch4.toFixed(2) : '0.00';
     document.getElementById('val-co2').innerText = data.co2 != null ? data.co2.toFixed(2) : '0.00';
-    document.getElementById('val-h2s').innerText = data.h2s != null ? data.h2s.toFixed(2) : '0.00';
+    // H2S live mini-card eka ayin kalath, val-h2s span eka DOM eke nathi
+    // welawe .innerText set karanna hadala JS error ekak wenna epaa nisa
+    // guard karala thiyenne. (History/Reports/Alerts walata H2S value eka
+    // තවමත් backend එකෙන් use වෙනවා — ඒවට වෙනසක් නෑ.)
+    const h2sElement = document.getElementById('val-h2s');
+    if (h2sElement) {
+        h2sElement.innerText = data.h2s != null ? data.h2s.toFixed(2) : '0.00';
+    }
     document.getElementById('val-ph').innerText = data.ph != null ? data.ph.toFixed(2) : '0.0';
     document.getElementById('val-pressure').innerText = data.pressure != null ? data.pressure.toFixed(2) : '0.0';
     document.getElementById('val-temp').innerText = data.temperature != null ? data.temperature.toFixed(1) : '0.0';
     document.getElementById('val-hum').innerText = data.humidity != null ? data.humidity.toFixed(1) : '0.0';
 // 'gasVolume' සහ 'volume' යන නම් දෙකම හඳුනාගැනීම
     const volumeValue = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
-    // Update Valve & Pump Status
+    document.getElementById('val-vol').innerText = volumeValue.toFixed(2);    // Update Valve & Pump Status
     const vStatus = document.getElementById('status-valve');
     if (data.valve3 === 'ON') {
         vStatus.innerText = 'ON';
