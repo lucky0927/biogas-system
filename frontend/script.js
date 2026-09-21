@@ -361,77 +361,97 @@ function listenToAdminData() {
 function checkSystemAlerts() {
     const grid = document.getElementById('attention-units-grid');
     if (!grid) return;
-    
-    let alertCount = 0;
-    let alertsHtml = '';
-    
-    const unitKeys = Object.keys(globalUnits);
-    if (unitKeys.length === 0) {
-        grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">No units deployed yet.</p>';
-        return;
-    }
 
-    let processedCount = 0;
+    grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;">Checking alerts...</p>';
 
-    unitKeys.forEach(unitId => {
-        window.dbGet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`)).then(snapshot => {
-            processedCount++;
-            if (snapshot.exists()) {
-                const logs = snapshot.val();
-                const logIds = Object.keys(logs);
-                const latestData = logs[logIds[logIds.length - 1]]; 
-                
-                let issues = [];
-                
-                if (latestData.pressure > 1.3) issues.push(`High Pressure (${latestData.pressure} bar)`);
-                if (latestData.h2s > 1.8) issues.push(`High H2S (${latestData.h2s} ppm)`);
-                if (latestData.temperature > 40) issues.push(`High Temp (${latestData.temperature}°C)`);
-                if (latestData.ph < 6.0 || latestData.ph > 8.0) issues.push(`pH Imbalance (${latestData.ph})`);
+    window.dbGet(window.dbRef(window.firebaseDB, 'alerts')).then(snapshot => {
+        if (!snapshot.exists()) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:24px;">✅</span>
+                    <div>
+                        <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
+                        <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No active alerts across all biogas units.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
-                if (issues.length > 0) {
-                    alertCount++;
-                    const unit = globalUnits[unitId] || {};
-                    const loc = globalLocations[unit.locationId] || {};
-                    const cust = globalCustomers[loc.customerId] || {};
-                    
-                    const title = loc.locationName || 'Unknown Location';
-                    const address = loc.address || 'No address provided';
-                    const custName = cust.name || 'Unknown Customer';
-                    const custPhone = cust.phone || 'N/A';
-                    
-                    alertsHtml += `
-                        <div class="param-card" style="border: 1px solid #FCA5A5; background-color: #FEF2F2; text-align: left;">
-                            <h4 style="color: #991B1B; margin-bottom: 8px; font-size: 16px;">🚨 ${title}</h4>
-                            <p style="font-size: 13px; color: #7F1D1D; margin-bottom: 4px;"><strong>Customer:</strong> ${custName} | 📞 ${custPhone}</p>
-                            <p style="font-size: 13px; color: #7F1D1D; margin-bottom: 12px;"><strong>Address:</strong> ${address}</p>
-                            <p style="font-size: 13px; color: #991B1B; margin-bottom: 12px; background: #FEE2E2; padding: 6px; border-radius: 6px;"><strong>Issues:</strong> ${issues.join(', ')}</p>
-                            <p style="font-size: 12px; color: #9CA3AF; margin: 0;">Last check: ${new Date(latestData.timestamp).toLocaleTimeString()}</p>
+        const allAlerts = snapshot.val(); // { unitId: { alertId: alertObj } }
+        let alertsHtml = '';
+        let totalActive = 0;
+
+        for (const [unitId, unitAlerts] of Object.entries(allAlerts)) {
+            const unit = globalUnits[unitId] || {};
+            const loc = globalLocations[unit.locationId] || {};
+            const cust = globalCustomers[loc.customerId] || {};
+
+            const unitName = unit.unitName || unit.name || 'Unknown Unit';
+            const locName = loc.locationName || 'Unknown Location';
+            const custName = cust.name || 'Unknown Customer';
+            const custPhone = cust.phone || '';
+
+            // Collect active alerts for this unit only
+            const activeAlerts = Object.entries(unitAlerts)
+                .map(([id, a]) => ({ id, ...a }))
+                .filter(a => a.status === 'active' || a.status === 'acknowledged')
+                .sort((a, b) => (a.severity === 'critical' ? -1 : 1));
+
+            if (activeAlerts.length === 0) continue;
+            totalActive += activeAlerts.length;
+
+            const hasCritical = activeAlerts.some(a => a.severity === 'critical');
+            const borderColor = hasCritical ? '#FCA5A5' : '#FDE68A';
+            const leftBorder  = hasCritical ? '#EF4444' : '#F59E0B';
+            const titleColor  = hasCritical ? '#991B1B' : '#D97706';
+            const icon = hasCritical ? '🚨' : '⚠️';
+            const displayTitle = unit.unitName ? `${locName} — ${unitName}` : locName;
+
+            const issueChips = activeAlerts.map(a => {
+                const chipBg   = a.severity === 'critical' ? '#FEE2E2' : '#FEF3C7';
+                const chipText = a.severity === 'critical' ? '#991B1B' : '#D97706';
+                const chipBdr  = a.severity === 'critical' ? '#FCA5A5' : '#FDE68A';
+                const ackBadge = a.status === 'acknowledged' ? ' <span style="font-size:10px; opacity:0.7;">(Acknowledged)</span>' : '';
+                return `<div style="background:${chipBg}; color:${chipText}; padding:7px 12px; border-radius:6px; font-size:13px; font-weight:600; border:1px solid ${chipBdr}; display:inline-block; width:fit-content;">${a.severity === 'critical' ? '🚨' : '⚠️'} ${a.label}: ${a.value} ${a.sensorUnit || ''}${ackBadge}</div>`;
+            }).join('');
+
+            alertsHtml += `
+                <div style="background:#FFF; border:1px solid ${borderColor}; border-left:4px solid ${leftBorder}; border-radius:8px; padding:16px; margin-bottom:12px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:700; color:${titleColor}; font-size:16px; margin-bottom:4px;">${icon} ${displayTitle}</div>
+                            <div style="font-size:13px; color:#475569; font-weight:500;">👤 ${custName}${custPhone ? ' | 📞 ' + custPhone : ''}</div>
                         </div>
-                    `;
-                }
-            }
-            
-            if (processedCount === unitKeys.length) {
-                if (alertCount === 0) {
-                    grid.innerHTML = `
-                        <div style="grid-column: 1/-1; background: #DCFCE7; padding: 20px; border-radius: 12px; border: 1px solid #86EFAC; display: flex; align-items: center; gap: 12px;">
-                            <span style="font-size: 24px;">✅</span>
-                            <div>
-                                <h4 style="color: #166534; margin: 0; font-size: 16px;">All Systems Operational</h4>
-                                <p style="color: #15803D; margin: 4px 0 0 0; font-size: 14px;">No critical alerts detected across all biogas units.</p>
-                            </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding:7px 14px; font-size:12px; background:#FFF; color:#0F172A; border:1px solid #CBD5E1; border-radius:6px; font-weight:600; cursor:pointer;">View Unit</button>
+                            <button onclick="viewUnitAsAdmin('${unitId}')" style="padding:7px 14px; font-size:12px; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; border-radius:6px; font-weight:600; cursor:pointer;">Live Monitor</button>
                         </div>
-                    `;
-                } else {
-                    grid.innerHTML = alertsHtml;
-                }
-            }
-        }).catch(err => {
-            console.error("Alert Check Error:", err);
-            processedCount++;
-        });
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">${issueChips}</div>
+                </div>
+            `;
+        }
+
+        if (totalActive === 0) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:24px;">✅</span>
+                    <div>
+                        <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
+                        <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No critical alerts detected across all biogas units.</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            grid.innerHTML = alertsHtml;
+        }
+    }).catch(err => {
+        console.error('checkSystemAlerts error:', err);
+        grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;">Failed to load alerts.</p>';
     });
 }
+
 
 function updateDeploymentsUI(searchQuery = '') {
     const listContainer = document.getElementById('all-units-list');
@@ -2261,6 +2281,160 @@ function reportSpecificSensor(sensorName, currentValue, status) {
 }
 
 // ==========================================
+// --- CUSTOMER ALERTS TAB LOGIC ---
+// ==========================================
+
+// Keeps track of the current dbOnValue listener to avoid stacking listeners
+let _customerAlertsUnsubscribe = null;
+
+function loadCustomerAlerts() {
+    const container = document.getElementById('customer-alerts-container');
+    if (!container) return;
+
+    if (!currentUser || !globalSelectedUnitId) {
+        container.innerHTML = '<p style="color:var(--text-muted); padding: 20px 0;">Please select a Biogas Unit from the dropdown above to view its alerts.</p>';
+        return;
+    }
+
+    // Access check
+    if (currentUser.role === 'customer' && !isUnitAccessibleToCurrentUser(globalSelectedUnitId)) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Access to this unit has been disabled.</p>';
+        return;
+    }
+
+    container.innerHTML = '<p style="color:var(--text-muted);">Loading alerts…</p>';
+
+    // Get selected filter
+    const filterEl = document.getElementById('alert-filter-select');
+    const activeFilter = filterEl ? filterEl.value : 'all';
+
+    // Detach previous listener if any
+    if (_customerAlertsUnsubscribe) {
+        _customerAlertsUnsubscribe();
+        _customerAlertsUnsubscribe = null;
+    }
+
+    const alertsRef = window.dbRef(window.firebaseDB, `alerts/${globalSelectedUnitId}`);
+
+    _customerAlertsUnsubscribe = window.dbOnValue(alertsRef, (snapshot) => {
+        _renderCustomerAlerts(snapshot, activeFilter, container);
+    });
+}
+
+function filterCustomerAlerts() {
+    // Re-load with updated filter — reattaches listener
+    loadCustomerAlerts();
+}
+
+function _renderCustomerAlerts(snapshot, activeFilter, container) {
+    if (!snapshot.exists()) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:48px 24px; background:var(--surface-1); border-radius:14px; border:1px solid var(--border);">
+                <div style="font-size:48px; margin-bottom:12px;">✅</div>
+                <h4 style="color:var(--text-dark); margin:0 0 8px 0; font-size:18px;">No Alerts Recorded</h4>
+                <p style="color:var(--text-muted); margin:0; font-size:14px;">All sensors are operating within safe parameters for this unit.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const alertsRaw = snapshot.val();
+    let alertList = Object.entries(alertsRaw)
+        .map(([id, a]) => ({ id, ...a }))
+        .filter(a => {
+            if (activeFilter === 'active')   return a.status === 'active' || a.status === 'acknowledged';
+            if (activeFilter === 'resolved') return a.status === 'resolved';
+            return true; // 'all'
+        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    if (alertList.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted); padding: 24px 0;">No alerts match this filter.</p>`;
+        return;
+    }
+
+    // Clear the alert tab indicator dot if active alerts exist
+    const alertDot = document.getElementById('alert-tab-dot');
+
+    let html = '';
+    alertList.forEach(alert => {
+        const isCritical    = alert.severity === 'critical';
+        const isResolved    = alert.status === 'resolved';
+        const isAcknowledged = alert.status === 'acknowledged';
+        const isActive      = alert.status === 'active';
+
+        // Colors
+        const bgColor     = (isResolved || isAcknowledged) ? 'var(--surface-1)' : (isCritical ? '#FEF2F2' : '#FFFBEB');
+        const borderColor = (isResolved || isAcknowledged) ? 'var(--border)' : (isCritical ? '#FCA5A5' : '#FDE68A');
+        const leftAccent  = isResolved ? '#9CA3AF' : isAcknowledged ? '#60A5FA' : (isCritical ? '#EF4444' : '#F59E0B');
+        const valueColor  = isResolved ? 'var(--text-muted)' : leftAccent;
+        const opacity     = isResolved ? '0.72' : '1';
+
+        const icon = isResolved ? '✅' : isAcknowledged ? '👁️' : (isCritical ? '🚨' : '⚠️');
+
+        const statusBadge = isResolved
+            ? `<span style="background:#DCFCE7; color:#166534; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.04em;">✅ RESOLVED</span>`
+            : isAcknowledged
+            ? `<span style="background:#EFF6FF; color:#1D4ED8; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.04em;">👁️ ACKNOWLEDGED</span>`
+            : isCritical
+            ? `<span style="background:#FEE2E2; color:#991B1B; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.04em;">🚨 CRITICAL</span>`
+            : `<span style="background:#FEF3C7; color:#D97706; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.04em;">⚠️ WARNING</span>`;
+
+        const createdStr  = new Date(alert.createdAt).toLocaleString();
+        const resolvedStr = alert.resolvedAt ? new Date(alert.resolvedAt).toLocaleString() : null;
+        const ackStr      = alert.acknowledgedAt ? new Date(alert.acknowledgedAt).toLocaleString() : null;
+
+        const unitName = alert.unitName || (globalUnits[globalSelectedUnitId] && (globalUnits[globalSelectedUnitId].unitName || globalUnits[globalSelectedUnitId].name)) || 'Unknown Unit';
+        const locName  = alert.locationName || 'Unknown Location';
+
+        html += `
+            <div style="background:${bgColor}; border:1px solid ${borderColor}; border-left:4px solid ${leftAccent}; border-radius:12px; padding:20px; opacity:${opacity}; transition: opacity 0.3s;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <div style="font-size:17px; font-weight:700; color:var(--text-dark); margin-bottom:4px;">${icon} ${alert.label || alert.sensor}</div>
+                        <div style="font-size:13px; color:var(--text-muted);">📍 ${locName} — ${unitName}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                        ${statusBadge}
+                        <span style="font-family:var(--font-mono, monospace); font-size:22px; font-weight:700; color:${valueColor}; letter-spacing:-0.02em;">${alert.value} <small style="font-size:13px; font-weight:500;">${alert.sensorUnit || ''}</small></span>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:10px;">
+                    <div style="font-size:12px; color:var(--text-muted); line-height:1.7;">
+                        🕒 Triggered: ${createdStr}
+                        ${resolvedStr ? `<br>✅ Resolved: ${resolvedStr}` : ''}
+                        ${ackStr      ? `<br>👁️ Acknowledged: ${ackStr}` : ''}
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        ${isActive ? `<button onclick="acknowledgeAlert('${globalSelectedUnitId}', '${alert.id}')" style="padding:7px 14px; font-size:12px; font-weight:600; background:#EFF6FF; color:#1D4ED8; border:1px solid #BFDBFE; border-radius:6px; cursor:pointer; transition:0.2s;">👁️ Acknowledge</button>` : ''}
+                        <button onclick="switchCustomerTab('cust-monitor'); if(typeof loadMonitorData==='function') loadMonitorData();" style="padding:7px 14px; font-size:12px; font-weight:600; background:var(--navy-900,#0A1628); color:#FFF; border:none; border-radius:6px; cursor:pointer; transition:0.2s;">📊 View Monitor</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function acknowledgeAlert(unitId, alertId) {
+    if (!unitId || !alertId) return;
+    window.dbUpdate(window.dbRef(window.firebaseDB, `alerts/${unitId}/${alertId}`), {
+        status: 'acknowledged',
+        acknowledgedAt: new Date().toISOString()
+    }).then(() => {
+        triggerNotification('Alert Acknowledged', 'The alert has been marked as acknowledged.', 'info');
+        // Remove the red dot indicator if all alerts acknowledged
+        const alertDot = document.getElementById('alert-tab-dot');
+        if (alertDot) alertDot.remove();
+        const tabEl = document.getElementById('tab-cust-alerts');
+        if (tabEl) delete tabEl.dataset.hasAlert;
+    }).catch(err => {
+        console.error('Error acknowledging alert:', err);
+    });
+}
+
+// ==========================================
 // --- REAL-TIME ALERTS & NOTIFICATIONS ---
 // ==========================================
 
@@ -2288,10 +2462,10 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
 
     // B. In-App Beautiful Toast Notification (Softly Theme)
     const toast = document.createElement('div');
-    let bgColor = type === 'critical' ? '#FEE2E2' : (type === 'chat' ? '#E0F2FE' : '#F3F4F6');
-    let borderColor = type === 'critical' ? '#FCA5A5' : (type === 'chat' ? '#BAE6FD' : '#E5E7EB');
-    let textColor = type === 'critical' ? '#991B1B' : (type === 'chat' ? '#0369A1' : '#374151');
-    let icon = type === 'critical' ? '🚨' : (type === 'chat' ? '💬' : 'ℹ️');
+    let bgColor     = type === 'critical' ? '#FEE2E2' : type === 'warning' ? '#FEF3C7' : (type === 'chat' ? '#E0F2FE' : '#F3F4F6');
+    let borderColor = type === 'critical' ? '#FCA5A5' : type === 'warning' ? '#FDE68A' : (type === 'chat' ? '#BAE6FD' : '#E5E7EB');
+    let textColor   = type === 'critical' ? '#991B1B' : type === 'warning' ? '#D97706' : (type === 'chat' ? '#0369A1' : '#374151');
+    let icon        = type === 'critical' ? '🚨' : type === 'warning' ? '⚠️' : (type === 'chat' ? '💬' : 'ℹ️');
 
     toast.style.cssText = `
         background: ${bgColor}; color: ${textColor}; border: 1px solid ${borderColor}; 
@@ -2403,91 +2577,80 @@ function initRealtimeListeners() {
     }
 
     // ----------------------------------------------------
-    // 2. SMART SENSOR ALERTS (Live Notifications)
+    // 2. SMART SENSOR ALERTS (Live Notifications via /alerts)
+    // ----------------------------------------------------
+    // Uses the persistent /alerts node written by server.js.
+    // Fires toast only for NEW active alerts (< 30 seconds old).
+    // Prevents duplicate toasts via window.lastAlertedIds Set.
     // ----------------------------------------------------
     if (currentUser.role === 'customer' && typeof globalUnits !== 'undefined') {
-        
-        if (!window.lastAlertedTimes) window.lastAlertedTimes = {};
+
+        if (!window.lastAlertedIds) window.lastAlertedIds = new Set();
 
         Object.keys(globalUnits).forEach(unitId => {
             const unit = globalUnits[unitId];
             const locId = unit.locationId || unit.location_id;
             const loc = globalLocations[locId] || {};
-            
-            if (loc.customerId === currentUser.uid) {
-                
-                const unitName = unit.unitName || unit.name || "Unknown Unit";
-                const locName = loc.locationName || loc.name || "Unknown Location";
 
-                if (!window.lastAlertedTimes[unitId]) window.lastAlertedTimes[unitId] = 0;
+            // Only listen for units belonging to this customer that are accessible
+            if (loc.customerId !== currentUser.uid) return;
+            if (unit.accessGranted === false) return;
 
-                // 🔴 FIX: පරණ දත්ත නෙවෙයි, අලුතින්ම එන එක විතරක් ගන්න
-                const liveSensorQuery = window.query(
-                    window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`),
-                    window.orderByKey(),
-                    window.limitToLast(1) // අන්තිමට ආපු එක
-                );
-                
-                window.dbOnValue(liveSensorQuery, (snapshot) => {
-                    if(!snapshot.exists()) return;
-                    
-                    const data = snapshot.val();
-                    const key = Object.keys(data)[0];
-                    const log = data[key];
-                    
-                    const logTime = new Date(log.timestamp).getTime();
-                    const now = new Date().getTime();
-                    
-                    // 🔴 FIX: Timestamp එක අලුත් එකක් නම් විතරක් Check කරනවා
-                    if (logTime > window.lastAlertedTimes[unitId]) {
-                        
-                        // තත්පර 10කට වඩා අලුත් නම් (පරණ ඒවා පෙන්නන්නේ නැහැ)
-                        if ((now - logTime) < 10000 && window.lastAlertedTimes[unitId] !== 0) {
-                            
-                            let isCritical = false;
+            const unitName = unit.unitName || unit.name || 'Unknown Unit';
+            const locName  = loc.locationName || loc.name || 'Unknown Location';
 
-                            // Threshold Checks
-                            if (Number(log.h2s) > 1.8) {
-                                isCritical = true;
-                                triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
-                                    `Location: ${locName}<br><strong>H2S Level: ${log.h2s} ppm</strong>`, 
-                                    'critical', 
-                                    () => {
-                                        handleUnitSwitch(unitId); 
-                                        openGuideModal(`Hydrogen Sulfide (H2S) - ${unitName}`, `${log.h2s} ppm`);
-                                    }
-                                );
-                            }
-                            if (Number(log.pressure) > 1.3) {
-                                isCritical = true;
-                                triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
-                                    `Location: ${locName}<br><strong>Pressure: ${log.pressure} bar</strong>`, 
-                                    'critical', 
-                                    () => {
-                                        handleUnitSwitch(unitId); 
-                                        openGuideModal(`System Pressure - ${unitName}`, `${log.pressure} bar`);
-                                    }
-                                );
-                            }
+            // Listen to the last 10 alerts for this unit for real-time toasts
+            const recentAlertsQuery = window.query(
+                window.dbRef(window.firebaseDB, `alerts/${unitId}`),
+                window.orderByChild('createdAt'),
+                window.limitToLast(10)
+            );
 
-                            // Menu අයිකනය රතු කිරීම
-                            if (isCritical) {
-                                const alertTab = document.getElementById('tab-cust-alerts');
-                                if (alertTab && !alertTab.innerHTML.includes('🔴')) {
-                                    alertTab.innerHTML += ' <span style="font-size: 10px; animation: floatIcon 1s infinite;">🔴</span>';
-                                }
-                            }
+            window.dbOnValue(recentAlertsQuery, (snapshot) => {
+                if (!snapshot.exists()) return;
+                const alerts = snapshot.val();
+
+                Object.entries(alerts).forEach(([alertId, alert]) => {
+                    // Only fire for active alerts we haven't toasted yet
+                    if (alert.status !== 'active') return;
+                    if (window.lastAlertedIds.has(alertId)) return;
+
+                    // Mark immediately to prevent double-fire before async finishes
+                    window.lastAlertedIds.add(alertId);
+
+                    // Only show toast for alerts < 30 seconds old (ignore historical)
+                    const ageMs = Date.now() - new Date(alert.createdAt).getTime();
+                    if (ageMs > 30000) return;
+
+                    const isCritical = alert.severity === 'critical';
+                    const toastType = isCritical ? 'critical' : 'warning';
+
+                    triggerNotification(
+                        `${isCritical ? '🚨 Critical Alert' : '⚠️ Warning'}: ${unitName}`,
+                        `<strong>${alert.label}: ${alert.value} ${alert.sensorUnit || ''}</strong><br>📍 ${locName}`,
+                        toastType,
+                        () => {
+                            selectGlobalUnit(unitId, unitName, locName, { stayOnTab: false });
+                            switchCustomerTab('cust-alerts');
+                            loadCustomerAlerts();
                         }
-                        // අලුත් වෙලාව Save කරගන්නවා
-                        window.lastAlertedTimes[unitId] = logTime;
+                    );
+
+                    // Add a clean dot indicator to the Alerts tab (not string concat)
+                    const alertTab = document.getElementById('tab-cust-alerts');
+                    if (alertTab && !alertTab.dataset.hasAlert) {
+                        alertTab.dataset.hasAlert = '1';
+                        const dot = document.createElement('span');
+                        dot.id = 'alert-tab-dot';
+                        dot.style.cssText = 'display:inline-block; width:8px; height:8px; background:#EF4444; border-radius:50%; margin-left:6px; vertical-align:middle; animation: pulse-dot 1.5s infinite;';
+                        alertTab.appendChild(dot);
                     }
                 });
-            }
+            });
         });
     }
 }
+
 
 // ==========================================
 // --- GLOBAL OVERVIEW & MONITORING LOGIC ---

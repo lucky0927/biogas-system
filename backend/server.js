@@ -66,10 +66,10 @@ function estimateH2S(sensorData) {
     const _ch4 = Number.isFinite(ch4) && ch4 > 0 ? ch4 : 60;
     const _co2 = Number.isFinite(co2) && co2 >= 0 ? co2 : 35;
 
-    const BASE = 0.20;       // baseline H2S present in almost any digester
-    const K_PH = 0.35;       // ppm per pH-unit below 6.8
-    const K_RATIO = 0.50;    // ppm per unit CO2:CH4 ratio above 0.6
-    const K_TEMP = 0.03;     // ppm per °C away from the 37°C optimum
+    const BASE = 0.20;
+    const K_PH = 0.35;
+    const K_RATIO = 0.50;
+    const K_TEMP = 0.03;
 
     const phFactor = Math.max(0, 6.8 - _ph) * K_PH;
     const ratio = _co2 / _ch4;
@@ -82,6 +82,145 @@ function estimateH2S(sensorData) {
 
     return Number(h2s.toFixed(2));
 }
+
+// ══════════════════════════════════════════════════════════════════
+// SMART ALERT ENGINE — Persistent alert storage in Firebase
+// Runs server-side 24/7, independent of customer login state.
+// Path: /alerts/{unitId}/{alertId}
+// ══════════════════════════════════════════════════════════════════
+
+// Sensor threshold definitions (mirrors loadSensorStatus() in script.js)
+const ALERT_CHECKS = [
+    {
+        sensor: 'pressure',
+        label: 'System Pressure',
+        sensorUnit: 'bar',
+        getValue: (d) => Number(d.pressure),
+        getSeverity: (v) => v > 1.3 ? 'critical' : (v > 1.1 ? 'warning' : null),
+        isSafe: (v) => v <= 1.1
+    },
+    {
+        sensor: 'h2s',
+        label: 'H2S Concentration',
+        sensorUnit: 'ppm',
+        getValue: (d) => Number(d.h2s),
+        getSeverity: (v) => v > 1.8 ? 'critical' : (v > 1.5 ? 'warning' : null),
+        isSafe: (v) => v <= 1.5
+    },
+    {
+        sensor: 'temperature',
+        label: 'Temperature',
+        sensorUnit: '°C',
+        getValue: (d) => Number(d.temperature),
+        getSeverity: (v) => v > 40 ? 'critical' : null,
+        isSafe: (v) => v <= 40
+    },
+    {
+        sensor: 'ph',
+        label: 'pH Level',
+        sensorUnit: '',
+        getValue: (d) => Number(d.ph),
+        getSeverity: (v) => (v < 6.0 || v > 8.0) ? 'critical' : null,
+        isSafe: (v) => v >= 6.0 && v <= 8.0
+    },
+    {
+        sensor: 'ch4',
+        label: 'Methane (CH4)',
+        sensorUnit: '%',
+        getValue: (d) => Number(d.ch4),
+        getSeverity: (v) => (Number.isFinite(v) && v < 40) ? 'critical' : null,
+        isSafe: (v) => !Number.isFinite(v) || v >= 40
+    }
+];
+
+async function processAlerts(firebaseUnitId, sensorData) {
+    try {
+        // 1. Get unit + location context for full alert records
+        const unitSnap = await db.ref(`units/${firebaseUnitId}`).once('value');
+        if (!unitSnap.exists()) return;
+        const unit = unitSnap.val();
+
+        const locationId = unit.locationId || unit.location_id || null;
+        const unitName = unit.unitName || unit.name || 'Unknown Unit';
+
+        let locationName = 'Unknown Location';
+        let customerId = unit.customerId || null;
+
+        if (locationId) {
+            const locSnap = await db.ref(`locations/${locationId}`).once('value');
+            if (locSnap.exists()) {
+                const loc = locSnap.val();
+                locationName = loc.locationName || loc.name || 'Unknown Location';
+                customerId = loc.customerId || customerId;
+            }
+        }
+
+        // 2. Load all existing alerts for this unit (to check for duplicates)
+        const existingSnap = await db.ref(`alerts/${firebaseUnitId}`).once('value');
+        const existing = existingSnap.exists() ? existingSnap.val() : {};
+
+        // Build map: sensor → { id, alert } for active/acknowledged alerts
+        const activeAlertMap = {};
+        Object.entries(existing).forEach(([id, alert]) => {
+            if (alert.status === 'active' || alert.status === 'acknowledged') {
+                activeAlertMap[alert.sensor] = { id, ...alert };
+            }
+        });
+
+        const now = new Date().toISOString();
+
+        // 3. Evaluate each sensor threshold
+        for (const check of ALERT_CHECKS) {
+            const value = check.getValue(sensorData);
+            if (!Number.isFinite(value)) continue;
+
+            const severity = check.getSeverity(value);
+            const existing = activeAlertMap[check.sensor];
+
+            if (severity && !existing) {
+                // NEW ALERT — no active alert exists for this sensor
+                await db.ref(`alerts/${firebaseUnitId}`).push({
+                    unitId: firebaseUnitId,
+                    unitName,
+                    locationId,
+                    locationName,
+                    customerId,
+                    sensor: check.sensor,
+                    label: check.label,
+                    value,
+                    sensorUnit: check.sensorUnit,
+                    severity,
+                    status: 'active',
+                    createdAt: now,
+                    resolvedAt: null,
+                    acknowledgedAt: null
+                });
+                console.log(`[ALERT] NEW ${severity.toUpperCase()}: ${check.sensor}=${value} → unit ${firebaseUnitId}`);
+
+            } else if (!severity && existing && check.isSafe(value)) {
+                // RESOLVED — value returned to safe range
+                await db.ref(`alerts/${firebaseUnitId}/${existing.id}`).update({
+                    status: 'resolved',
+                    resolvedAt: now,
+                    resolvedValue: value
+                });
+                console.log(`[ALERT] RESOLVED: ${check.sensor} for unit ${firebaseUnitId}`);
+
+            } else if (severity && existing && existing.severity !== severity) {
+                // ESCALATION — e.g., warning → critical, update in place
+                await db.ref(`alerts/${firebaseUnitId}/${existing.id}`).update({
+                    severity,
+                    value,
+                    escalatedAt: now
+                });
+                console.log(`[ALERT] ESCALATED: ${check.sensor} ${existing.severity}→${severity} for unit ${firebaseUnitId}`);
+            }
+        }
+    } catch (err) {
+        console.error('[ALERT ENGINE ERROR]', err.message);
+    }
+}
+
 
 client.on('connect', () => {
     console.log('Connected to HiveMQ Cloud');
@@ -162,7 +301,11 @@ client.on('message', async (topic, message) => {
                 activeAlerts: activeAlertsCount,
                 status: newStatus
             });
-            
+
+            // 5. Persistent Alert Engine — store/resolve alerts in /alerts/{unitId}
+            // Runs independently of customer login state (fire-and-forget, non-blocking)
+            processAlerts(firebaseUnitId, sensorData);
+
             console.log(`Data saved to database for unit: ${firebaseUnitId}`);
         } else {
             console.log(`Unregistered Token received: ${incomingToken}`);

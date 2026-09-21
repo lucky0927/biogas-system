@@ -654,19 +654,25 @@
                     <div class="flex-header" style="margin-bottom: 24px;">
                         <div>
                             <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Alerts</h2>
-                            <p class="text-muted" style="font-size: 14px;">Review out-of-range sensor readings and critical warnings.</p>
+                            <p class="text-muted" style="font-size: 14px;">Sensor threshold breaches for your biogas unit. Select a unit to view its alert history.</p>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <select id="alerts-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
                                 <option value="" disabled>-- Switch Unit --</option>
                             </select>
-                            <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh Alerts</button>
+                            <select id="alert-filter-select" class="input-field" onchange="filterCustomerAlerts()" style="min-width: 160px;">
+                                <option value="all">All Alerts</option>
+                                <option value="active">Active / Acknowledged</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                            <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh</button>
                         </div>
                     </div>
                     <div id="customer-alerts-container" style="display: flex; flex-direction: column; gap: 16px;">
                         <p style="color: var(--text-muted);">Please select a unit to view alerts.</p>
                     </div>
                 </div>
+
 
                 <!-- CUSTOMER TAB: SUPPORT (CHAT) -->
                 <div id="cust-support" class="admin-tab" style="padding: 0; height: calc(100vh - 40px);">
