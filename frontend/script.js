@@ -63,92 +63,7 @@ function changeChartSensor(sensorKey, btnElement) {
 }
 
 function listenToCustomerData(uid) {
-    let locsLoaded = false;
-    let unitsLoaded = false;
-    let tempLocs = {};
-    let tempUnits = {};
-
-    function tryRender() {
-        if (locsLoaded && unitsLoaded) {
-            customerLocations = {};
-            for (const [locId, loc] of Object.entries(tempLocs)) {
-                if (loc.customerId === uid) {
-                    customerLocations[locId] = loc;
-                }
-            }
-            customerUnits = {};
-            for (const [unitId, unit] of Object.entries(tempUnits)) {
-                if (customerLocations[unit.locationId]) {
-                    customerUnits[unitId] = unit;
-                }
-            }
-            renderCustomerOverview();
-        }
-    }
-
-    window.dbOnValue(window.dbRef(window.firebaseDB, 'locations'), (snapshot) => {
-        tempLocs = snapshot.val() || {};
-        locsLoaded = true;
-        tryRender();
-    });
-
-    window.dbOnValue(window.dbRef(window.firebaseDB, 'units'), (snapshot) => {
-        tempUnits = snapshot.val() || {};
-        unitsLoaded = true;
-        tryRender();
-    });
-}
-
-function fetchCustomerUnits() {
-    // Deprecated. Handled securely by listenToCustomerData above.
-}
-
-function renderCustomerOverview() {
-    renderCustomerUnits();
-}
-
-function renderCustomerUnits() {
-    const container = document.getElementById('customer-overview-container');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    if (Object.keys(customerUnits).length === 0) {
-        container.innerHTML = '<p style="color: #64748B;">No units found for this account.</p>';
-        return;
-    }
-    
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;';
-    
-    for (const [unitId, unit] of Object.entries(customerUnits)) {
-        const loc = customerLocations[unit.locationId] || {};
-        const title = unit.unitName || 'Unnamed Unit';
-        const locName = loc.locationName || 'Unknown Location';
-        const address = loc.address || 'No Address';
-        
-        const card = document.createElement('div');
-        card.className = 'param-card';
-        card.style.cssText = 'cursor: pointer; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; background: white; transition: 0.2s;';
-        card.onclick = () => openLiveMonitor(unitId, title, `${locName} - ${address}`);
-        
-        card.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                <div>
-                    <h3 style="margin: 0 0 5px 0; color: #0F172A; font-size: 18px;">${title}</h3>
-                    <p style="margin: 0; color: #64748B; font-size: 13px;">üìç ${locName} - ${address}</p>
-                </div>
-                <span class="badge active">ONLINE</span>
-            </div>
-            <div style="color: #059669; font-size: 14px; font-weight: 600;">
-                Click to view live monitor ‚ûî
-            </div>
-        `;
-        
-        grid.appendChild(card);
-    }
-    
-    container.appendChild(grid);
+    // Deprecated: Handled by renderCustomerOverview lower down.
 }
 
 function switchCustomerTab(tabId) {
@@ -2774,13 +2689,19 @@ function renderCustomerOverview() {
 
     if (!customerOverviewListenersBound) {
         customerOverviewListenersBound = true;
+        let locsLoaded = false;
+        let unitsLoaded = false;
+        
         window.dbOnValue(locRef, (locSnapshot) => {
             globalLocations = locSnapshot.exists() ? locSnapshot.val() : {};
-            paintCustomerOverview();
+            locsLoaded = true;
+            if (unitsLoaded) paintCustomerOverview();
         });
+        
         window.dbOnValue(unitsRef, (unitSnapshot) => {
             globalUnits = unitSnapshot.exists() ? unitSnapshot.val() : {};
-            paintCustomerOverview();
+            unitsLoaded = true;
+            if (locsLoaded) paintCustomerOverview();
         });
     } else {
         paintCustomerOverview();
@@ -3556,3 +3477,86 @@ async function deleteCustomerRecord(custId, custName) {
         }
     }
 }
+ f u n c t i o n   l o a d C u s t o m e r A l e r t s ( )   { 
+         c o n s t   c o n t a i n e r   =   d o c u m e n t . g e t E l e m e n t B y I d ( " c u s t o m e r - a l e r t s - c o n t a i n e r " ) ; 
+         i f   ( ! c o n t a i n e r )   r e t u r n ; 
+         
+         i f   ( ! g l o b a l S e l e c t e d U n i t I d )   { 
+                 c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   v a r ( - - t e x t - m u t e d ) ; \ " > P l e a s e   s e l e c t   a   u n i t   t o   v i e w   a l e r t s . < / p > " ; 
+                 r e t u r n ; 
+         } 
+         
+         c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   v a r ( - - t e x t - m u t e d ) ; \ " > L o a d i n g   a l e r t s . . . < / p > " ; 
+         
+         / /   F e t c h   l a t e s t   5 0   l o g s   t o   c h e c k   f o r   a n o m a l i e s 
+         c o n s t   l i v e S e n s o r Q u e r y   =   w i n d o w . q u e r y ( 
+                 w i n d o w . d b R e f ( w i n d o w . f i r e b a s e D B ,   ` s e n s o r _ l o g s / $ { g l o b a l S e l e c t e d U n i t I d } ` ) , 
+                 w i n d o w . o r d e r B y K e y ( ) , 
+                 w i n d o w . l i m i t T o L a s t ( 5 0 ) 
+         ) ; 
+         
+         w i n d o w . d b G e t ( l i v e S e n s o r Q u e r y ) . t h e n ( ( s n a p s h o t )   = >   { 
+                 i f   ( ! s n a p s h o t . e x i s t s ( ) )   { 
+                         c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   # 6 4 7 4 8 B ; \ " > N o   a l e r t s   f o u n d   f o r   t h i s   u n i t . < / p > " ; 
+                         r e t u r n ; 
+                 } 
+                 
+                 l e t   a l e r t s H t m l   =   " " ; 
+                 c o n s t   d a t a   =   s n a p s h o t . v a l ( ) ; 
+                 
+                 / /   C o n v e r t   t o   a r r a y   a n d   r e v e r s e   t o   s h o w   n e w e s t   f i r s t 
+                 c o n s t   l o g s   =   O b j e c t . v a l u e s ( d a t a ) . r e v e r s e ( ) ; 
+                 
+                 l o g s . f o r E a c h ( l o g   = >   { 
+                         l e t   i s A l e r t   =   f a l s e ; 
+                         l e t   a l e r t M s g   =   " " ; 
+                         l e t   a l e r t T y p e   =   " " ; 
+                         
+                         i f   ( N u m b e r ( l o g . p r e s s u r e )   >   1 . 3 )   { 
+                                 i s A l e r t   =   t r u e ; 
+                                 a l e r t M s g   =   ` H i g h   P r e s s u r e   D e t e c t e d :   $ { l o g . p r e s s u r e }   b a r ` ; 
+                                 a l e r t T y p e   =   " c r i t i c a l " ; 
+                         }   e l s e   i f   ( N u m b e r ( l o g . t e m p e r a t u r e )   >   4 0 )   { 
+                                 i s A l e r t   =   t r u e ; 
+                                 a l e r t M s g   =   ` H i g h   T e m p e r a t u r e   D e t e c t e d :   $ { l o g . t e m p e r a t u r e }   ∞ C ` ; 
+                                 a l e r t T y p e   =   " c r i t i c a l " ; 
+                         } 
+                         
+                         i f   ( i s A l e r t )   { 
+                                 c o n s t   t i m e   =   l o g . t i m e s t a m p   ?   n e w   D a t e ( l o g . t i m e s t a m p ) . t o L o c a l e S t r i n g ( )   :   " U n k n o w n   T i m e " ; 
+                                 c o n s t   b g   =   a l e r t T y p e   = = =   " c r i t i c a l "   ?   " # F E E 2 E 2 "   :   " # F E F 3 C 7 " ; 
+                                 c o n s t   b o r d e r   =   a l e r t T y p e   = = =   " c r i t i c a l "   ?   " # F C A 5 A 5 "   :   " # F D E 6 8 A " ; 
+                                 c o n s t   c o l o r   =   a l e r t T y p e   = = =   " c r i t i c a l "   ?   " # 9 9 1 B 1 B "   :   " # D 9 7 7 0 6 " ; 
+                                 
+                                 a l e r t s H t m l   + =   ` 
+                                         < d i v   s t y l e = " b a c k g r o u n d :   $ { b g } ;   b o r d e r :   1 p x   s o l i d   $ { b o r d e r } ;   p a d d i n g :   1 6 p x ;   b o r d e r - r a d i u s :   8 p x ; " > 
+                                                 < d i v   s t y l e = " d i s p l a y :   f l e x ;   j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n ;   m a r g i n - b o t t o m :   8 p x ; " > 
+                                                         < s t r o n g   s t y l e = " c o l o r :   $ { c o l o r } ; " > =ÿ®ﬁ  $ { a l e r t T y p e . t o U p p e r C a s e ( ) }   A L E R T < / s t r o n g > 
+                                                         < s p a n   s t y l e = " f o n t - s i z e :   1 2 p x ;   c o l o r :   # 6 4 7 4 8 B ; " > $ { t i m e } < / s p a n > 
+                                                 < / d i v > 
+                                                 < d i v   s t y l e = " c o l o r :   # 4 7 5 5 6 9 ;   f o n t - s i z e :   1 4 p x ; " > $ { a l e r t M s g } < / d i v > 
+                                         < / d i v > 
+                                 ` ; 
+                         } 
+                 } ) ; 
+                 
+                 i f   ( a l e r t s H t m l   = = =   " " )   { 
+                         c o n t a i n e r . i n n e r H T M L   =   ` 
+                                 < d i v   s t y l e = " b a c k g r o u n d : # D C F C E 7 ;   p a d d i n g : 2 0 p x ;   b o r d e r - r a d i u s : 1 2 p x ;   b o r d e r : 1 p x   s o l i d   # 8 6 E F A C ;   d i s p l a y : f l e x ;   a l i g n - i t e m s : c e n t e r ;   g a p : 1 2 p x ; " > 
+                                         < s p a n   s t y l e = " f o n t - s i z e : 2 4 p x ; " > '< / s p a n > 
+                                         < d i v > 
+                                                 < h 4   s t y l e = " c o l o r : # 1 6 6 5 3 4 ;   m a r g i n : 0 ;   f o n t - s i z e : 1 6 p x ; " > S y s t e m   S t a b l e < / h 4 > 
+                                                 < p   s t y l e = " c o l o r : # 1 5 8 0 3 D ;   m a r g i n : 4 p x   0   0   0 ;   f o n t - s i z e : 1 4 p x ; " > N o   a n o m a l i e s   d e t e c t e d   i n   r e c e n t   l o g s . < / p > 
+                                         < / d i v > 
+                                 < / d i v > 
+                         ` ; 
+                 }   e l s e   { 
+                         c o n t a i n e r . i n n e r H T M L   =   a l e r t s H t m l ; 
+                 } 
+         } ) . c a t c h ( e r r   = >   { 
+                 c o n s o l e . e r r o r ( " E r r o r   l o a d i n g   a l e r t s : " ,   e r r ) ; 
+                 c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   # D C 2 6 2 6 ; \ " > F a i l e d   t o   l o a d   a l e r t s . < / p > " ; 
+         } ) ; 
+ } 
+  
+ 
