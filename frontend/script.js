@@ -60,8 +60,51 @@ function fetchCustomerUnits() {
     });
 }
 
-function renderCustomerUnits() {
+function renderCustomerOverview() {
+    renderCustomerUnits();
+}
 
+function renderCustomerUnits() {
+    const container = document.getElementById('customer-overview-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (Object.keys(customerUnits).length === 0) {
+        container.innerHTML = '<p style="color: #64748B;">No units found for this account.</p>';
+        return;
+    }
+    
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;';
+    
+    for (const [unitId, unit] of Object.entries(customerUnits)) {
+        const loc = customerLocations[unit.locationId] || {};
+        const title = unit.unitName || 'Unnamed Unit';
+        const address = loc.address || 'No Address';
+        
+        const card = document.createElement('div');
+        card.className = 'param-card';
+        card.style.cssText = 'cursor: pointer; border: 1px solid #E2E8F0; border-radius: 12px; padding: 20px; background: white; transition: 0.2s;';
+        card.onclick = () => openLiveMonitor(unitId, title, address);
+        
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div>
+                    <h3 style="margin: 0 0 5px 0; color: #0F172A; font-size: 18px;">${title}</h3>
+                    <p style="margin: 0; color: #64748B; font-size: 13px;">📍 ${loc.locationName || 'Location'} - ${address}</p>
+                </div>
+                <span class="badge active">ONLINE</span>
+            </div>
+            <div style="color: #059669; font-size: 14px; font-weight: 600;">
+                Click to view live monitor ➔
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    }
+    
+    container.appendChild(grid);
 }
 
 function switchCustomerTab(tabId) {

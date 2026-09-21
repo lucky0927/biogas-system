@@ -65,23 +65,32 @@ client.on('message', async (topic, message) => {
             const units = snapshot.val();
             const firebaseUnitId = Object.keys(units)[0]; // නියම Firebase ID එක (උදා: -P19Cf...)
 
+            // Normalize sensorData from ESP32 payload
+            const normalizedData = {
+                ...sensorData,
+                temperature: sensorData.temperature !== undefined ? sensorData.temperature : (sensorData.temp || 0),
+                humidity: sensorData.humidity !== undefined ? sensorData.humidity : (sensorData.hum || 0),
+                gasVolume: sensorData.gasVolume !== undefined ? sensorData.gasVolume : (sensorData.volume || 0),
+                valve3: sensorData.valve3 !== undefined ? sensorData.valve3 : (sensorData.v3 == 1 ? 'ON' : 'OFF'),
+                pump: (sensorData.pump === 1 || sensorData.pump === 'ON') ? 'ON' : 'OFF',
+            };
+
             // 2. Socket.io හරහා Frontend එකේ Live Monitor එකට යැවීම
-            io.emit('liveData', { unitId: firebaseUnitId, ...sensorData });
+            io.emit('liveData', { unitId: firebaseUnitId, ...normalizedData });
             
             // 3. Frontend එකේ History Tab එකට පෙන්වීම සඳහා sensor_logs යටතේ Save කිරීම
             const logRef = db.ref(`sensor_logs/${firebaseUnitId}`).push();
             await logRef.set({
-                ch4: sensorData.ch4 || 0,
-                co2: sensorData.co2 || 0,
-                ph: sensorData.ph || 0,
-                pressure: sensorData.pressure || 0,
-                distance: sensorData.distance || 0,
-                // 🔴 FIX: ESP32 එකෙන් 'volume' හෝ 'gasVolume' මොකෙන් එව්වත් හඳුනාගැනීම
-                gasVolume: sensorData.gasVolume !== undefined ? sensorData.gasVolume : (sensorData.volume || 0),
-                temperature: sensorData.temperature || 0,
-                humidity: sensorData.humidity || 0,
-                valve3: sensorData.valve3 || 'OFF',
-                pump: sensorData.pump || 'OFF',
+                ch4: normalizedData.ch4 || 0,
+                co2: normalizedData.co2 || 0,
+                ph: normalizedData.ph || 0,
+                pressure: normalizedData.pressure || 0,
+                distance: normalizedData.distance || 0,
+                gasVolume: normalizedData.gasVolume,
+                temperature: normalizedData.temperature,
+                humidity: normalizedData.humidity,
+                valve3: normalizedData.valve3,
+                pump: normalizedData.pump,
                 timestamp: new Date().toISOString()
             });
 
@@ -90,9 +99,9 @@ client.on('message', async (topic, message) => {
             let newStatus = 'active';
 
             // Safety Thresholds පරීක්ෂාව
-            if (sensorData.pressure > 1.3) activeAlertsCount++;
-            if (sensorData.temperature > 40) activeAlertsCount++;
-            if (sensorData.ph < 6.0 || sensorData.ph > 8.0) activeAlertsCount++;
+            if (normalizedData.pressure > 1.3) activeAlertsCount++;
+            if (normalizedData.temperature > 40) activeAlertsCount++;
+            if (normalizedData.ph < 6.0 || normalizedData.ph > 8.0) activeAlertsCount++;
 
             // Warning හෝ Critical බව තීරණය කිරීම
             if (activeAlertsCount > 0) {
