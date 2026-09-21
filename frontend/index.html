@@ -265,18 +265,48 @@
             
             <div id="wizard-step-1">
                 <div class="form-section">
-                    <h4>1. Client Details</h4>
-                    <label style="font-size: 12px; color: #64748B;">Client Logo</label>
-                    <input type="file" id="client-logo" class="input-field" accept="image/*">
-                    <input type="text" id="client-name" class="input-field" placeholder="Client Name (e.g. ABC Company)">
-                    <input type="text" id="client-phone" class="input-field" placeholder="Phone Number">
-                    <input type="text" id="client-address" class="input-field" placeholder="Main Address">
+                    <h4>1. Client Selection</h4>
+                    
+                    <!-- Customer Selector -->
+                    <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 6px;">Select Customer</label>
+                    <select id="client-mode-select" class="input-field" onchange="handleClientModeChange(this.value)" style="margin-bottom: 12px;">
+                        <option value="new">+ Create New Customer</option>
+                        <!-- Existing customers will be injected here -->
+                    </select>
+
+                    <!-- New Customer Fields (shown only when creating new) -->
+                    <div id="new-client-fields">
+                        <label style="font-size: 12px; color: #64748B;">Client Logo</label>
+                        <input type="file" id="client-logo" class="input-field" accept="image/*">
+                        <input type="text" id="client-name" class="input-field" placeholder="Client Name (e.g. ABC Company)">
+                        <input type="text" id="client-phone" class="input-field" placeholder="Phone Number">
+                        <input type="text" id="client-address" class="input-field" placeholder="Main Address">
+                    </div>
+
+                    <!-- Existing Customer Info (shown when existing customer selected) -->
+                    <div id="existing-client-info" style="display: none; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px; margin-top: 4px;">
+                        <p style="margin: 0; font-size: 13px; color: #166534;">
+                            <strong>📋 Adding to existing client.</strong> New location/unit will be linked to the selected customer.
+                        </p>
+                        <p id="existing-client-summary" style="margin: 8px 0 0 0; font-size: 13px; color: #15803D; font-weight: 600;"></p>
+                    </div>
                 </div>
 
                 <div class="form-section">
+                    <h4>2. Location</h4>
+
+                    <!-- Location Selector (shown only when existing customer selected) -->
+                    <div id="location-mode-row" style="display: none; margin-bottom: 12px;">
+                        <label style="font-size: 12px; font-weight: 600; color: #64748B; display: block; margin-bottom: 6px;">Select Location</label>
+                        <select id="location-mode-select" class="input-field" onchange="handleLocationModeChange(this.value)">
+                            <option value="new">+ Add New Location</option>
+                            <!-- Existing locations injected by JS -->
+                        </select>
+                    </div>
+
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h4>2. Locations & Units</h4>
-                        <button class="btn-secondary-small" onclick="addLocationBlock()">+ Add Location</button>
+                        <span id="new-location-label" style="font-size: 13px; font-weight: 600; color: #475569;">New Location Details</span>
+                        <button class="btn-secondary-small" id="btn-add-location" onclick="addLocationBlock()">+ Add Location</button>
                     </div>
                     <div id="locations-container" style="display: flex; flex-direction: column; gap: 15px;">
                         <!-- JS injected locations -->
@@ -286,6 +316,7 @@
                 <div id="client-msg" style="text-align: center; margin-bottom: 10px; font-weight: bold;"></div>
                 <button class="btn-primary" onclick="saveNewClientFlow()">Deploy System</button>
             </div>
+
 
             <div id="wizard-step-2" style="display: none;">
                 <div style="background: #ECFDF5; padding: 20px; border-radius: 12px; border: 1px dashed #10B981; text-align: center; margin-bottom: 20px;">

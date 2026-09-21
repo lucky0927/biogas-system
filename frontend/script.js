@@ -124,23 +124,19 @@ function initLiveChart() {
 
 function openLiveMonitor(unitId, title, address) {
     currentMonitorUnitId = unitId;
-    document.getElementById('customer-units-container').style.display = 'none';
-    document.getElementById('live-monitor-container').style.display = 'block';
+    globalSelectedUnitId = unitId;
+    // Use the proper tab switching instead of non-existent element references
+    switchCustomerTab('cust-monitor');
     
-    document.getElementById('live-unit-name').innerText = title;
-    document.getElementById('live-unit-location').innerText = address;
-    document.getElementById('btn-back-units').style.display = 'block';
+    const nameEl = document.getElementById('live-unit-name');
+    if (nameEl) nameEl.innerText = title;
+    const locEl = document.getElementById('live-unit-location');
+    if (locEl) locEl.innerText = address;
 
-    // තිරය විවෘත වන විටම ප්‍රස්ථාරය ආරම්භ කරන්න
+    // Initialise chart and load latest data
     initLiveChart();
+    loadMonitorData();
 }
-
-document.getElementById('btn-back-units')?.addEventListener('click', () => {
-    currentMonitorUnitId = null;
-    document.getElementById('live-monitor-container').style.display = 'none';
-    document.getElementById('customer-units-container').style.display = 'block';
-    document.getElementById('btn-back-units').style.display = 'none';
-});
 
 document.getElementById('customer-logout-btn')?.addEventListener('click', () => {
     if (window.firebaseAuth) {
@@ -305,6 +301,18 @@ function loadAdminDashboard(userData) {
 }
 
 function listenToAdminData() {
+    // Track how many of the 3 critical datasets have loaded at least once.
+    // updateDeploymentsUI() only runs after all 3 are ready to avoid N/A credentials.
+    let loadedCount = 0;
+    const REQUIRED_DATASETS = 3;
+    let customersLoaded = false, locationsLoaded = false, unitsLoaded = false;
+
+    function tryUpdateDeployments() {
+        if (customersLoaded && locationsLoaded && unitsLoaded) {
+            updateDeploymentsUI();
+        }
+    }
+
     window.dbOnValue(window.dbRef(window.firebaseDB, 'users'), (snapshot) => {
         globalCustomers = {};
         const users = snapshot.val() || {};
@@ -326,103 +334,127 @@ function listenToAdminData() {
                 customerSelect.value = currentValue;
             }
         }
-        updateDeploymentsUI();
+        customersLoaded = true;
+        tryUpdateDeployments();
     });
 
     window.dbOnValue(window.dbRef(window.firebaseDB, 'locations'), (snapshot) => {
         globalLocations = snapshot.val() || {};
-        handleCustomerSelection();
-        updateDeploymentsUI();
+        locationsLoaded = true;
+        if (customersLoaded) {
+            handleCustomerSelection();
+            tryUpdateDeployments();
+        }
     });
 
     window.dbOnValue(window.dbRef(window.firebaseDB, 'units'), (snapshot) => {
         globalUnits = snapshot.val() || {};
         
-        // 🔴 FIX: පරණ ID එක තියෙනවද කියලා බලලා විතරක් Update කිරීම (Crash වීම වළක්වයි)
         const totalUnitsEl = document.getElementById('admin-total-units');
         if (totalUnitsEl) {
             totalUnitsEl.innerText = Object.keys(globalUnits).length;
         }
         
-        updateDeploymentsUI(); // දැන් මේක කිසිම Error එකක් නැතුව වැඩ කරනවා
-        
+        unitsLoaded = true;
+        tryUpdateDeployments();
         checkSystemAlerts(); 
     });
 }
 
+
 function checkSystemAlerts() {
-    const grid = document.getElementById('attention-units-grid');
+    const grid = document.getElementById('attention-list-container');
     if (!grid) return;
-    
-    let alertCount = 0;
-    let alertsHtml = '';
-    
-    const unitKeys = Object.keys(globalUnits);
-    if (unitKeys.length === 0) {
-        grid.innerHTML = '<p class="text-muted" style="grid-column: 1/-1;">No units deployed yet.</p>';
-        return;
-    }
 
-    let processedCount = 0;
+    grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;">Checking alerts...</p>';
 
-    unitKeys.forEach(unitId => {
-        window.dbGet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`)).then(snapshot => {
-            processedCount++;
-            if (snapshot.exists()) {
-                const logs = snapshot.val();
-                const logIds = Object.keys(logs);
-                const latestData = logs[logIds[logIds.length - 1]]; 
-                
-                let issues = [];
-                
-                if (latestData.pressure > 1.3) issues.push(`High Pressure (${latestData.pressure} bar)`);
-                if (latestData.temperature > 40) issues.push(`High Temp (${latestData.temperature}°C)`);
-                if (latestData.ph < 6.0 || latestData.ph > 8.0) issues.push(`pH Imbalance (${latestData.ph})`);
+    window.dbGet(window.dbRef(window.firebaseDB, 'alerts')).then(snapshot => {
+        if (!snapshot.exists()) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:24px;">✅</span>
+                    <div>
+                        <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
+                        <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No active alerts across all biogas units.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
-                if (issues.length > 0) {
-                    alertCount++;
-                    const unit = globalUnits[unitId] || {};
-                    const loc = globalLocations[unit.locationId] || {};
-                    const cust = globalCustomers[loc.customerId] || {};
-                    
-                    const title = loc.locationName || 'Unknown Location';
-                    const address = loc.address || 'No address provided';
-                    const custName = cust.name || 'Unknown Customer';
-                    const custPhone = cust.phone || 'N/A';
-                    
-                    alertsHtml += `
-                        <div class="param-card" style="border: 1px solid #FCA5A5; background-color: #FEF2F2; text-align: left;">
-                            <h4 style="color: #991B1B; margin-bottom: 8px; font-size: 16px;">🚨 ${title}</h4>
-                            <p style="font-size: 13px; color: #7F1D1D; margin-bottom: 4px;"><strong>Customer:</strong> ${custName} | 📞 ${custPhone}</p>
-                            <p style="font-size: 13px; color: #7F1D1D; margin-bottom: 12px;"><strong>Address:</strong> ${address}</p>
-                            <p style="font-size: 13px; color: #991B1B; margin-bottom: 12px; background: #FEE2E2; padding: 6px; border-radius: 6px;"><strong>Issues:</strong> ${issues.join(', ')}</p>
-                            <p style="font-size: 12px; color: #9CA3AF; margin: 0;">Last check: ${new Date(latestData.timestamp).toLocaleTimeString()}</p>
+        const allAlerts = snapshot.val();
+        let alertsHtml = '';
+        let totalActive = 0;
+
+        for (const [unitId, unitAlerts] of Object.entries(allAlerts)) {
+            const unit = globalUnits[unitId] || {};
+            const loc = globalLocations[unit.locationId] || {};
+            const cust = globalCustomers[loc.customerId] || {};
+
+            const unitName = unit.unitName || unit.name || 'Unknown Unit';
+            const locName = loc.locationName || 'Unknown Location';
+            const custName = cust.name || 'Unknown Customer';
+            const custPhone = cust.phone || '';
+
+            const activeAlerts = Object.entries(unitAlerts)
+                .map(([id, a]) => ({ id, ...a }))
+                .filter(a => a.status === 'active' || a.status === 'acknowledged')
+                .sort((a, b) => (a.severity === 'critical' ? -1 : 1));
+
+            if (activeAlerts.length === 0) continue;
+            totalActive += activeAlerts.length;
+
+            const hasCritical = activeAlerts.some(a => a.severity === 'critical');
+            const borderColor = hasCritical ? '#FCA5A5' : '#FDE68A';
+            const leftBorder  = hasCritical ? '#EF4444' : '#F59E0B';
+            const titleColor  = hasCritical ? '#991B1B' : '#D97706';
+            const icon = hasCritical ? '🚨' : '⚠️';
+            const displayTitle = unit.unitName ? `${locName} — ${unitName}` : locName;
+
+            const issueChips = activeAlerts.map(a => {
+                const chipBg   = a.severity === 'critical' ? '#FEE2E2' : '#FEF3C7';
+                const chipText = a.severity === 'critical' ? '#991B1B' : '#D97706';
+                const chipBdr  = a.severity === 'critical' ? '#FCA5A5' : '#FDE68A';
+                const ackBadge = a.status === 'acknowledged' ? ' <span style="font-size:10px;opacity:0.7;">(Acknowledged)</span>' : '';
+                return `<div style="background:${chipBg};color:${chipText};padding:7px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid ${chipBdr};display:inline-block;width:fit-content;">${a.severity === 'critical' ? '🚨' : '⚠️'} ${a.label}: ${a.value} ${a.sensorUnit || ''}${ackBadge}</div>`;
+            }).join('');
+
+            alertsHtml += `
+                <div style="background:#FFF;border:1px solid ${borderColor};border-left:4px solid ${leftBorder};border-radius:8px;padding:16px;margin-bottom:12px;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+                        <div>
+                            <div style="font-weight:700;color:${titleColor};font-size:16px;margin-bottom:4px;">${icon} ${displayTitle}</div>
+                            <div style="font-size:13px;color:#475569;font-weight:500;">👤 ${custName}${custPhone ? ' | 📞 ' + custPhone : ''}</div>
                         </div>
-                    `;
-                }
-            }
-            
-            if (processedCount === unitKeys.length) {
-                if (alertCount === 0) {
-                    grid.innerHTML = `
-                        <div style="grid-column: 1/-1; background: #DCFCE7; padding: 20px; border-radius: 12px; border: 1px solid #86EFAC; display: flex; align-items: center; gap: 12px;">
-                            <span style="font-size: 24px;">✅</span>
-                            <div>
-                                <h4 style="color: #166534; margin: 0; font-size: 16px;">All Systems Operational</h4>
-                                <p style="color: #15803D; margin: 4px 0 0 0; font-size: 14px;">No critical alerts detected across all biogas units.</p>
-                            </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding:7px 14px;font-size:12px;background:#FFF;color:#0F172A;border:1px solid #CBD5E1;border-radius:6px;font-weight:600;cursor:pointer;">View Unit</button>
+                            <button onclick="viewUnitAsAdmin('${unitId}')" style="padding:7px 14px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE;border-radius:6px;font-weight:600;cursor:pointer;">Live Monitor</button>
                         </div>
-                    `;
-                } else {
-                    grid.innerHTML = alertsHtml;
-                }
-            }
-        }).catch(err => {
-            console.error("Alert Check Error:", err);
-            processedCount++;
-        });
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;">${issueChips}</div>
+                </div>
+            `;
+        }
+
+        if (totalActive === 0) {
+            grid.innerHTML = `
+                <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:24px;">✅</span>
+                    <div>
+                        <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
+                        <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No critical alerts detected across all biogas units.</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            grid.innerHTML = alertsHtml;
+        }
+    }).catch(err => {
+        console.error('checkSystemAlerts error:', err);
+        grid.innerHTML = '<p class="text-muted" style="grid-column:1/-1;">Failed to load alerts.</p>';
     });
 }
+
 
 function updateDeploymentsUI(searchQuery = '') {
     const listContainer = document.getElementById('all-units-list');
@@ -663,27 +695,114 @@ function openAddClientModal() {
     document.getElementById('add-client-modal').classList.add('active');
     document.getElementById('wizard-step-1').style.display = 'block';
     document.getElementById('wizard-step-2').style.display = 'none';
-    
-    // Clear inputs
+
+    // Reset the customer dropdown with existing customers
+    const clientModeSelect = document.getElementById('client-mode-select');
+    clientModeSelect.innerHTML = '<option value="new">+ Create New Customer</option>';
+    for (const [uid, cust] of Object.entries(globalCustomers)) {
+        const opt = document.createElement('option');
+        opt.value = uid;
+        opt.textContent = `${cust.name} (${cust.phone || 'N/A'})`;
+        clientModeSelect.appendChild(opt);
+    }
+    clientModeSelect.value = 'new';
+
+    // Reset to "new customer" UI state
+    handleClientModeChange('new');
+
+    // Clear new customer inputs
     document.getElementById('client-logo').value = '';
     document.getElementById('client-name').value = '';
     document.getElementById('client-phone').value = '';
     document.getElementById('client-address').value = '';
-    
-    // Clear and add one initial location
+    document.getElementById('client-msg').innerText = '';
+
+    // Clear and add one initial location block
     document.getElementById('locations-container').innerHTML = '';
     addLocationBlock();
 }
 
 function closeAddClientModal() {
     document.getElementById('add-client-modal').classList.remove('active');
-    document.getElementById('client-msg').innerText = "";
+    document.getElementById('client-msg').innerText = '';
+}
+
+// Called when the customer dropdown changes (new vs existing)
+function handleClientModeChange(selectedValue) {
+    const isNew = selectedValue === 'new';
+    document.getElementById('new-client-fields').style.display = isNew ? 'block' : 'none';
+    document.getElementById('existing-client-info').style.display = isNew ? 'none' : 'block';
+    document.getElementById('location-mode-row').style.display = isNew ? 'none' : 'block';
+    document.getElementById('btn-add-location').style.display = isNew ? 'block' : 'none';
+
+    if (!isNew) {
+        const cust = globalCustomers[selectedValue];
+        if (cust) {
+            document.getElementById('existing-client-summary').innerText =
+                `👤 ${cust.name} | 📞 ${cust.phone || 'N/A'} | 📧 ${cust.email || 'N/A'}`;
+        }
+        // Populate locations for this customer
+        const locationSelect = document.getElementById('location-mode-select');
+        locationSelect.innerHTML = '<option value="new">+ Add New Location</option>';
+        for (const [locId, loc] of Object.entries(globalLocations)) {
+            if (loc.customerId === selectedValue) {
+                const opt = document.createElement('option');
+                opt.value = locId;
+                opt.textContent = `📍 ${loc.locationName || 'Unnamed Location'}`;
+                locationSelect.appendChild(opt);
+            }
+        }
+        locationSelect.value = 'new';
+        handleLocationModeChange('new');
+    } else {
+        // Reset locations container to show a fresh block
+        document.getElementById('locations-container').innerHTML = '';
+        addLocationBlock();
+    }
+}
+
+// Called when the location dropdown changes (new vs existing)
+function handleLocationModeChange(selectedValue) {
+    const isNew = selectedValue === 'new';
+    const container = document.getElementById('locations-container');
+    const addBtn = document.getElementById('btn-add-location');
+    const label = document.getElementById('new-location-label');
+
+    if (isNew) {
+        // Show full location + unit form
+        container.innerHTML = '';
+        addLocationBlock();
+        if (addBtn) addBtn.style.display = 'block';
+        if (label) label.style.display = 'block';
+    } else {
+        // Show only unit name input (adding unit to existing location)
+        container.innerHTML = `
+            <div style="border: 1px solid #CBD5E1; padding: 15px; border-radius: 8px; background: #F8FAFC;">
+                <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: 600; color: #475569;">
+                    📦 Add New Unit to: <strong>${document.getElementById('location-mode-select').options[document.getElementById('location-mode-select').selectedIndex].text}</strong>
+                </p>
+                <div class="units-container" style="display: flex; flex-direction: column; gap: 8px;">
+                    <input type="text" class="input-field unit-name-input" placeholder="Unit Name (e.g. Unit 2)">
+                </div>
+                <button class="btn-secondary-small" style="margin-top: 8px;" onclick="addExistingLocationUnitInput(this)">+ Add Another Unit</button>
+            </div>
+        `;
+        if (addBtn) addBtn.style.display = 'none';
+        if (label) label.style.display = 'none';
+    }
+}
+
+function addExistingLocationUnitInput(btn) {
+    const unitsContainer = btn.previousElementSibling;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'input-field unit-name-input';
+    input.placeholder = 'Unit Name (e.g. Unit 3)';
+    unitsContainer.appendChild(input);
 }
 
 function addLocationBlock() {
     const container = document.getElementById('locations-container');
-    const locId = 'loc_' + Date.now() + Math.floor(Math.random() * 1000);
-    
     const div = document.createElement('div');
     div.className = 'location-block';
     div.style.cssText = 'border: 1px solid #CBD5E1; padding: 15px; border-radius: 8px; background: #F8FAFC; position: relative;';
@@ -724,82 +843,138 @@ function getBase64(file) {
 
 async function saveNewClientFlow() {
     const msgDiv = document.getElementById('client-msg');
-    msgDiv.innerHTML = "Deploying System... Please wait.";
-    msgDiv.style.color = "#2563EB";
+    msgDiv.innerHTML = 'Deploying System... Please wait.';
+    msgDiv.style.color = '#2563EB';
 
     try {
-        const logoFile = document.getElementById('client-logo').files[0];
-        const custName = document.getElementById('client-name').value.trim();
-        const custPhone = document.getElementById('client-phone').value.trim();
-        const custAddress = document.getElementById('client-address').value.trim();
+        const clientModeSelect = document.getElementById('client-mode-select');
+        const selectedCustomerMode = clientModeSelect.value; // 'new' or existing UID
+        const isNewCustomer = selectedCustomerMode === 'new';
 
-        if (!custName || !custPhone) {
-            msgDiv.innerHTML = "<span style='color: #EF4444;'>Please fill in Client Name and Phone.</span>";
-            return;
-        }
+        let customerId, autoEmail, autoPass, loginLink;
 
-        let logoBase64 = "";
-        if (logoFile) {
-            logoBase64 = await getBase64(logoFile);
-        }
+        if (isNewCustomer) {
+            // ── PATH A: Create brand new customer ──────────────────────────
+            const logoFile = document.getElementById('client-logo').files[0];
+            const custName = document.getElementById('client-name').value.trim();
+            const custPhone = document.getElementById('client-phone').value.trim();
+            const custAddress = document.getElementById('client-address').value.trim();
 
-        // 1. Generate Auth Credentials
-        const uniqueClientId = 'CUST-' + Math.random().toString(36).substr(2, 5).toUpperCase();
-        const autoEmail = uniqueClientId.toLowerCase() + '@biogas.com';
-        const autoPass = Math.random().toString(36).slice(-8);
-        const loginLink = `https://biogas-system-gay5.vercel.app/?client=${uniqueClientId}`; // Adjust domain as needed
+            if (!custName || !custPhone) {
+                msgDiv.innerHTML = "<span style='color: #EF4444;'>Please fill in Client Name and Phone.</span>";
+                return;
+            }
 
-        const customerId = await window.createCustomerAuthAccount(autoEmail, autoPass);
-        
-        // 2. Save Customer Info
-        await window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}`), {
-            role: 'customer',
-            name: custName,
-            phone: custPhone,
-            address: custAddress,
-            logo: logoBase64,
-            email: autoEmail,
-            rawPass: autoPass,
-            clientId: uniqueClientId,
-            loginLink: loginLink,
-            accessGranted: true, // This is the access control toggle
-            createdAt: new Date().toISOString()
-        });
+            let logoBase64 = '';
+            if (logoFile) logoBase64 = await getBase64(logoFile);
 
-        // 3. Process Locations and Units
-        const locationBlocks = document.querySelectorAll('.location-block');
-        if (locationBlocks.length === 0) {
-            msgDiv.innerHTML = "<span style='color: #EF4444;'>Please add at least one location.</span>";
-            return;
-        }
+            // Generate Auth Credentials
+            const uniqueClientId = 'CUST-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+            autoEmail = uniqueClientId.toLowerCase() + '@biogas.com';
+            autoPass = Math.random().toString(36).slice(-8);
+            loginLink = `https://biogas-system-gay5.vercel.app/?client=${uniqueClientId}`;
 
-        let deviceLinksHTML = "";
+            customerId = await window.createCustomerAuthAccount(autoEmail, autoPass);
 
-        for (const block of locationBlocks) {
-            const locName = block.querySelector('.loc-name-input').value.trim() || 'Main Site';
-            
-            // Save Location
-            const newLocRef = window.dbPush(window.dbRef(window.firebaseDB, 'locations'));
-            const locationId = newLocRef.key;
-            
-            await window.dbSet(newLocRef, {
-                customerId: customerId,
-                locationName: locName,
+            // Save Customer Info to DB
+            await window.dbSet(window.dbRef(window.firebaseDB, `users/${customerId}`), {
+                role: 'customer',
+                name: custName,
+                phone: custPhone,
                 address: custAddress,
+                logo: logoBase64,
+                email: autoEmail,
+                rawPass: autoPass,
+                clientId: uniqueClientId,
+                loginLink: loginLink,
+                accessGranted: true,
                 createdAt: new Date().toISOString()
             });
 
-            deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName}</h5>`;
-            deviceLinksHTML += `<ul style="margin: 0; padding-left: 20px;">`;
+        } else {
+            // ── PATH B: Use existing customer ──────────────────────────────
+            customerId = selectedCustomerMode;
+            const existingCust = globalCustomers[customerId];
+            if (!existingCust) {
+                msgDiv.innerHTML = "<span style='color: #EF4444;'>Selected customer not found.</span>";
+                return;
+            }
+            autoEmail = existingCust.email || 'N/A';
+            autoPass = existingCust.rawPass || '(unchanged)';
+            loginLink = existingCust.loginLink || 'N/A';
+        }
 
-            // Process Units inside this Location
-            const unitInputs = block.querySelectorAll('.unit-name-input');
+        // ── PROCESS LOCATIONS & UNITS ──────────────────────────────────────
+        const locationModeSelect = document.getElementById('location-mode-select');
+        const selectedLocationMode = !isNewCustomer ? locationModeSelect.value : 'new';
+        const isNewLocation = selectedLocationMode === 'new';
+
+        let deviceLinksHTML = '';
+        const custAddress = isNewCustomer ? document.getElementById('client-address').value.trim() : '';
+
+        if (isNewLocation) {
+            // ── New location(s) with unit(s) ────────────────────────────
+            const locationBlocks = document.querySelectorAll('.location-block');
+            if (locationBlocks.length === 0) {
+                msgDiv.innerHTML = "<span style='color: #EF4444;'>Please add at least one location.</span>";
+                return;
+            }
+
+            for (const block of locationBlocks) {
+                const locName = block.querySelector('.loc-name-input').value.trim() || 'Main Site';
+
+                const newLocRef = window.dbPush(window.dbRef(window.firebaseDB, 'locations'));
+                const locationId = newLocRef.key;
+                await window.dbSet(newLocRef, {
+                    customerId: customerId,
+                    locationName: locName,
+                    address: custAddress,
+                    createdAt: new Date().toISOString()
+                });
+
+                deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName}</h5><ul style="margin: 0; padding-left: 20px;">`;
+
+                const unitInputs = block.querySelectorAll('.unit-name-input');
+                let unitCount = 1;
+                for (const uInput of unitInputs) {
+                    const uName = uInput.value.trim() || `Unit ${unitCount}`;
+                    const randomUnitId = 'BIO-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+                    const unitToken = 'https://biogas-system-jh34.onrender.com/device/' + randomUnitId;
+
+                    const newUnitRef = window.dbPush(window.dbRef(window.firebaseDB, 'units'));
+                    await window.dbSet(newUnitRef, {
+                        locationId: locationId,
+                        unitToken: unitToken,
+                        unitName: uName,
+                        status: 'active',
+                        accessGranted: true,
+                        createdAt: new Date().toISOString()
+                    });
+
+                    deviceLinksHTML += `<li><strong>${uName}:</strong> <span style="font-family: monospace; color: #059669;">${unitToken}</span></li>`;
+                    unitCount++;
+                }
+                deviceLinksHTML += '</ul>';
+            }
+
+        } else {
+            // ── Existing location — add unit(s) only ────────────────────
+            const locationId = selectedLocationMode;
+            const locName = locationModeSelect.options[locationModeSelect.selectedIndex].text.replace('📍 ', '');
+
+            deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName} (Existing)</h5><ul style="margin: 0; padding-left: 20px;">`;
+
+            const unitInputs = document.querySelectorAll('.unit-name-input');
+            if (unitInputs.length === 0) {
+                msgDiv.innerHTML = "<span style='color: #EF4444;'>Please enter at least one unit name.</span>";
+                return;
+            }
+
             let unitCount = 1;
             for (const uInput of unitInputs) {
                 const uName = uInput.value.trim() || `Unit ${unitCount}`;
-                
                 const randomUnitId = 'BIO-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-                const unitToken = 'https://biogas-system-jh34.onrender.com/device/' + randomUnitId; // Example format
+                const unitToken = 'https://biogas-system-jh34.onrender.com/device/' + randomUnitId;
 
                 const newUnitRef = window.dbPush(window.dbRef(window.firebaseDB, 'units'));
                 await window.dbSet(newUnitRef, {
@@ -814,7 +989,7 @@ async function saveNewClientFlow() {
                 deviceLinksHTML += `<li><strong>${uName}:</strong> <span style="font-family: monospace; color: #059669;">${unitToken}</span></li>`;
                 unitCount++;
             }
-            deviceLinksHTML += `</ul>`;
+            deviceLinksHTML += '</ul>';
         }
 
         // Show Success Step
@@ -823,16 +998,15 @@ async function saveNewClientFlow() {
         document.getElementById('res-user').innerText = autoEmail;
         document.getElementById('res-pass').innerText = autoPass;
         document.getElementById('res-device-links').innerHTML = deviceLinksHTML;
-        
         document.getElementById('wizard-step-2').style.display = 'block';
-
-        msgDiv.innerHTML = "";
+        msgDiv.innerHTML = '';
 
     } catch (error) {
         console.error(error);
         msgDiv.innerHTML = `<span style='color: #EF4444;'>Error: ${error.message}</span>`;
     }
 }
+
 async function toggleCustomerAccess(customerId, currentStatus) {
     if (!confirm(`Are you sure you want to ${currentStatus ? 'DISABLE' : 'ENABLE'} this customer's account?`)) return;
     try {
