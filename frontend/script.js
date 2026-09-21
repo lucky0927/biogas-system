@@ -301,65 +301,56 @@ function loadAdminDashboard(userData) {
 }
 
 function listenToAdminData() {
-    // Track how many of the 3 critical datasets have loaded at least once.
-    // updateDeploymentsUI() only runs after all 3 are ready to avoid N/A credentials.
-    let loadedCount = 0;
-    const REQUIRED_DATASETS = 3;
+    // Guard: all three datasets must load before rendering to prevent N/A credentials
     let customersLoaded = false, locationsLoaded = false, unitsLoaded = false;
 
     function tryUpdateDeployments() {
         if (customersLoaded && locationsLoaded && unitsLoaded) {
             updateDeploymentsUI();
+            // Also refresh Customers tab if it's currently visible
+            const custTab = document.getElementById('admin-customers');
+            if (custTab && custTab.classList.contains('active')) {
+                renderCustomersList();
+            }
         }
     }
 
+    // --- Users (Customers) ---
     window.dbOnValue(window.dbRef(window.firebaseDB, 'users'), (snapshot) => {
         globalCustomers = {};
         const users = snapshot.val() || {};
-        const customerSelect = document.getElementById('customer-select');
-        
-        if(customerSelect) {
-            const currentValue = customerSelect.value;
-            customerSelect.innerHTML = '<option value="new">+ Create New Customer</option>';
-            for (const [uid, user] of Object.entries(users)) {
-                if (user.role === 'customer') {
-                    globalCustomers[uid] = user;
-                    const opt = document.createElement('option');
-                    opt.value = uid;
-                    opt.textContent = `${user.name} (${user.phone})`;
-                    customerSelect.appendChild(opt);
-                }
+        for (const [uid, user] of Object.entries(users)) {
+            if (user.role === 'customer') {
+                globalCustomers[uid] = user;
             }
-            if(globalCustomers[currentValue]) {
-                customerSelect.value = currentValue;
-            }
+        }
+        // Refresh Customers tab immediately if it is open
+        const custTab = document.getElementById('admin-customers');
+        if (custTab && custTab.classList.contains('active')) {
+            renderCustomersList();
         }
         customersLoaded = true;
         tryUpdateDeployments();
     });
 
+    // --- Locations ---
     window.dbOnValue(window.dbRef(window.firebaseDB, 'locations'), (snapshot) => {
         globalLocations = snapshot.val() || {};
         locationsLoaded = true;
-        if (customersLoaded) {
-            handleCustomerSelection();
-            tryUpdateDeployments();
-        }
+        tryUpdateDeployments();
     });
 
+    // --- Units ---
     window.dbOnValue(window.dbRef(window.firebaseDB, 'units'), (snapshot) => {
         globalUnits = snapshot.val() || {};
-        
         const totalUnitsEl = document.getElementById('admin-total-units');
-        if (totalUnitsEl) {
-            totalUnitsEl.innerText = Object.keys(globalUnits).length;
-        }
-        
+        if (totalUnitsEl) totalUnitsEl.innerText = Object.keys(globalUnits).length;
         unitsLoaded = true;
         tryUpdateDeployments();
-        checkSystemAlerts(); 
+        checkSystemAlerts();
     });
 }
+
 
 
 function checkSystemAlerts() {
@@ -566,20 +557,20 @@ function updateDeploymentsUI(searchQuery = '') {
 
                      <!-- Box 3: Login Link -->
                      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
-                         <div>
+                         <div style="overflow: hidden; flex: 1; margin-right: 12px;">
                              <div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Login Link</div>
-                             <div style="font-size: 14px; color: #64748B;">Secure URL</div>
+                             <div style="font-size: 13px; font-weight: 600; color: #2563EB; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${safeLoginLink}</div>
                          </div>
-                         <button onclick="copyText('${safeLoginLink}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy Link</button>
+                         <button onclick="copyText('${safeLoginLink}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s; flex-shrink: 0;">Copy Link</button>
                      </div>
 
                      <!-- Box 4: Device Endpoint -->
                      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border: 1px solid #E2E8F0; border-radius: 8px; background: #F8FAFC;">
-                         <div>
+                         <div style="overflow: hidden; flex: 1; margin-right: 12px;">
                              <div style="font-size: 11px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Device Endpoint</div>
-                             <div style="font-size: 14px; color: #64748B;">API Token</div>
+                             <div style="font-size: 13px; color: #64748B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${unit.unitToken || 'N/A'}</div>
                          </div>
-                         <button onclick="copyText('${unit.unitToken}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s;">Copy API</button>
+                         <button onclick="copyText('${unit.unitToken}')" style="padding: 6px 12px; font-size: 12px; font-weight: 600; color: #475569; background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 6px; cursor: pointer; transition: 0.2s; flex-shrink: 0;">Copy API</button>
                      </div>
                  </div>
 
@@ -3296,15 +3287,33 @@ function ensureEditModalsExist() {
 }
 
 function renderCustomersList() {
-    ensureEditModalsExist(); // අනිවාර්යයෙන්ම Modal එක තියෙනවද බලනවා
-    
+    ensureEditModalsExist();
+
     const container = document.getElementById('customers-list-container');
-    if(!container) return;
+    if (!container) return;
     container.innerHTML = '';
 
     const customerKeys = Object.keys(globalCustomers);
-    if(customerKeys.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 40px; background: var(--surface-1); border-radius: 12px; border: 1px solid var(--border); color: var(--text-muted);">No customers registered yet.</div>';
+    if (customerKeys.length === 0) {
+        // If globalCustomers is empty, data might still be loading — re-fetch directly
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Loading customers...</div>';
+        window.dbGet(window.dbRef(window.firebaseDB, 'users')).then(snapshot => {
+            if (snapshot.exists()) {
+                const users = snapshot.val();
+                for (const [uid, user] of Object.entries(users)) {
+                    if (user.role === 'customer') {
+                        globalCustomers[uid] = user;
+                    }
+                }
+            }
+            if (Object.keys(globalCustomers).length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:40px;background:var(--surface-1);border-radius:12px;border:1px solid var(--border);color:var(--text-muted);">No customers registered yet.</div>';
+            } else {
+                renderCustomersList(); // Re-render with populated data
+            }
+        }).catch(() => {
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:red;">Failed to load customers. Check connection.</div>';
+        });
         return;
     }
 
