@@ -230,7 +230,7 @@ function updateLiveUI(data) {
     document.getElementById('val-hum').innerText = data.humidity != null ? data.humidity.toFixed(1) : '0.0';
 // 'gasVolume' සහ 'volume' යන නම් දෙකම හඳුනාගැනීම
     const volumeValue = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
-    document.getElementById('val-vol').innerText = volumeValue.toFixed(2);    // Update Valve & Pump Status
+    // Update Valve & Pump Status
     const vStatus = document.getElementById('status-valve');
     if (data.valve3 === 'ON') {
         vStatus.innerText = 'ON';
@@ -260,6 +260,12 @@ function updateLiveUI(data) {
     const tankFillElement = document.getElementById('tank-level-fill');
     if (tankFillElement) {
         tankFillElement.style.height = `${fillPercent}%`;
+    }
+
+    // Gas Volume mini-card eka % widihata (H2S card eke thibba thanata gena awa)
+    const volPctElement = document.getElementById('val-vol-pct');
+    if (volPctElement) {
+        volPctElement.innerText = fillPercent.toFixed(1);
     }
 
     // Distance අගය යටින් දිගටම පෙන්වීමට
