@@ -354,15 +354,18 @@
                             <span style="font-size: 18px;">💬</span> Support Center
                         </li>
                     </ul>
-                    <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.06); padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin: 0 10px 16px 10px; transition: 0.2s; cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-                        <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(16,185,129,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #10B981;">
+                    
+<!-- 🔴 අලුත්: Light/Dark දෙකටම වැඩ කරන Profile Badge -->
+                    <div class="sidebar-profile-card">
+                        <div class="profile-avatar">
                             👤
                         </div>
-                        <div style="text-align: left; overflow: hidden; flex: 1;">
-                            <h4 id="top-user-name" style="margin: 0; font-size: 13px; color: #FFFFFF; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Loading...</h4>
-                            <p id="top-user-email" style="margin: 0; font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Please wait</p>
+                        <div class="profile-info">
+                            <h4 id="top-user-name">Loading...</h4>
+                            <p id="top-user-email">Please wait</p>
                         </div>
                     </div>
+
                     <button id="customer-logout-btn" class="btn-logout">
                         Sign Out
                     </button>
