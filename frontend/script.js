@@ -19,7 +19,7 @@ function loadCustomerDashboard(userData) {
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('customer-screen').classList.add('active');
     
-    // 🔴 අලුත්: දකුණු පැත්තේ උඩින් Customer ගේ නම සහ Email එක පෙන්වීම
+    // ðŸ”´ à¶…à¶½à·”à¶­à·Š: à¶¯à¶šà·”à¶«à·” à¶´à·à¶­à·Šà¶­à·š à¶‹à¶©à·’à¶±à·Š Customer à¶œà·š à¶±à¶¸ à·ƒà·„ Email à¶‘à¶š à¶´à·™à¶±à·Šà·€à·“à¶¸
     const topNameEl = document.getElementById('top-user-name');
     const topEmailEl = document.getElementById('top-user-email');
     if (topNameEl) topNameEl.innerText = userData.name || "Customer";
@@ -36,7 +36,7 @@ let currentChartSensor = 'ch4'; // Default chart sensor
 let chartLabelsMap = {
     'ch4': 'CH4 (ppm)',
     'co2': 'CO2 (ppm)',
-    'temp': 'Temperature (°C)',
+    'temp': 'Temperature (Â°C)',
     'hum': 'Humidity (%)',
     'ph': 'pH Level',
     'vol': 'Volume (L)'
@@ -352,7 +352,7 @@ function checkSystemAlerts() {
         if (!snapshot.exists()) {
             grid.innerHTML = `
                 <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">✅</span>
+                    <span style="font-size:24px;">âœ…</span>
                     <div>
                         <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
                         <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No active alerts across all biogas units.</p>
@@ -388,15 +388,15 @@ function checkSystemAlerts() {
             const borderColor = hasCritical ? '#FCA5A5' : '#FDE68A';
             const leftBorder  = hasCritical ? '#EF4444' : '#F59E0B';
             const titleColor  = hasCritical ? '#991B1B' : '#D97706';
-            const icon = hasCritical ? '🚨' : '⚠️';
-            const displayTitle = unit.unitName ? `${locName} — ${unitName}` : locName;
+            const icon = hasCritical ? 'ðŸš¨' : 'âš ï¸';
+            const displayTitle = unit.unitName ? `${locName} â€” ${unitName}` : locName;
 
             const issueChips = activeAlerts.map(a => {
                 const chipBg   = a.severity === 'critical' ? '#FEE2E2' : '#FEF3C7';
                 const chipText = a.severity === 'critical' ? '#991B1B' : '#D97706';
                 const chipBdr  = a.severity === 'critical' ? '#FCA5A5' : '#FDE68A';
                 const ackBadge = a.status === 'acknowledged' ? ' <span style="font-size:10px;opacity:0.7;">(Acknowledged)</span>' : '';
-                return `<div style="background:${chipBg};color:${chipText};padding:7px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid ${chipBdr};display:inline-block;width:fit-content;">${a.severity === 'critical' ? '🚨' : '⚠️'} ${a.label}: ${a.value} ${a.sensorUnit || ''}${ackBadge}</div>`;
+                return `<div style="background:${chipBg};color:${chipText};padding:7px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid ${chipBdr};display:inline-block;width:fit-content;">${a.severity === 'critical' ? 'ðŸš¨' : 'âš ï¸'} ${a.label}: ${a.value} ${a.sensorUnit || ''}${ackBadge}</div>`;
             }).join('');
 
             alertsHtml += `
@@ -404,7 +404,7 @@ function checkSystemAlerts() {
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
                         <div>
                             <div style="font-weight:700;color:${titleColor};font-size:16px;margin-bottom:4px;">${icon} ${displayTitle}</div>
-                            <div style="font-size:13px;color:#475569;font-weight:500;">👤 ${custName}${custPhone ? ' | 📞 ' + custPhone : ''}</div>
+                            <div style="font-size:13px;color:#475569;font-weight:500;">ðŸ‘¤ ${custName}${custPhone ? ' | ðŸ“ž ' + custPhone : ''}</div>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding:7px 14px;font-size:12px;background:#FFF;color:#0F172A;border:1px solid #CBD5E1;border-radius:6px;font-weight:600;cursor:pointer;">View Unit</button>
@@ -419,7 +419,7 @@ function checkSystemAlerts() {
         if (totalActive === 0) {
             grid.innerHTML = `
                 <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">✅</span>
+                    <span style="font-size:24px;">âœ…</span>
                     <div>
                         <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
                         <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No critical alerts detected across all biogas units.</p>
@@ -471,13 +471,13 @@ function updateDeploymentsUI(searchQuery = '') {
         
         const card = document.createElement('div');
         card.className = 'deployment-card';
-        const isAccessOn = unit.accessGranted !== false; // දැන් Unit level access control
+        const isAccessOn = unit.accessGranted !== false; // à¶¯à·à¶±à·Š Unit level access control
         const toggleBg = isAccessOn ? '#10B981' : '#E5E7EB';
         const toggleDot = isAccessOn ? 'calc(100% - 18px)' : '2px';
         const unreadChat = cust.unreadMessages || 0; 
         const activeAlerts = unit.activeAlerts || 0; 
 
-        // 🔴 අලුත්: දත්ත නැතිනම් 'undefined' වෙනුවට 'N/A' ලබා දීම
+        // ðŸ”´ à¶…à¶½à·”à¶­à·Š: à¶¯à¶­à·Šà¶­ à¶±à·à¶­à·’à¶±à¶¸à·Š 'undefined' à·€à·™à¶±à·”à·€à¶§ 'N/A' à¶½à¶¶à· à¶¯à·“à¶¸
         const safeEmail = cust.email || 'N/A';
         const safePass = cust.rawPass || 'N/A';
         const safeLoginLink = cust.loginLink || 'N/A';
@@ -494,9 +494,9 @@ function updateDeploymentsUI(searchQuery = '') {
                          <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span>
                          
                          ${activeAlerts > 0 ? 
-                            `<span style="background: #FEF2F2; color: #DC2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #FCA5A5; display: flex; align-items: center; gap: 6px;" onclick="switchScreen('complaints-screen')">⚠️ ${activeAlerts} Critical Alerts</span>` 
+                            `<span style="background: #FEF2F2; color: #DC2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #FCA5A5; display: flex; align-items: center; gap: 6px;" onclick="switchScreen('complaints-screen')">âš ï¸ ${activeAlerts} Critical Alerts</span>` 
                             : 
-                            `<span style="background: #F0FDF4; color: #16A34A; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #BBF7D0;">✅ System Stable</span>`
+                            `<span style="background: #F0FDF4; color: #16A34A; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #BBF7D0;">âœ… System Stable</span>`
                          }
                      </div>
                      
@@ -519,7 +519,7 @@ function updateDeploymentsUI(searchQuery = '') {
                      </div>
                      
                      <div style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: ${cust.accessGranted !== false ? '#ECFDF5' : '#FEF2F2'}; padding: 6px 12px; border-radius: 8px; border: 1px solid ${cust.accessGranted !== false ? '#A7F3D0' : '#FECACA'};" onclick="toggleCustomerAccess('${loc.customerId}', ${cust.accessGranted !== false})">
-                         <span style="font-size: 12px; font-weight: 700; color: ${cust.accessGranted !== false ? '#059669' : '#DC2626'};">${cust.accessGranted !== false ? '✅ CLIENT ACTIVE' : '❌ CLIENT SUSPENDED'}</span>
+                         <span style="font-size: 12px; font-weight: 700; color: ${cust.accessGranted !== false ? '#059669' : '#DC2626'};">${cust.accessGranted !== false ? 'âœ… CLIENT ACTIVE' : 'âŒ CLIENT SUSPENDED'}</span>
                      </div>
                  </div>
                  
@@ -719,7 +719,7 @@ function handleClientModeChange(selectedValue) {
         const cust = globalCustomers[selectedValue];
         if (cust) {
             document.getElementById('existing-client-summary').innerText =
-                `👤 ${cust.name} | 📞 ${cust.phone || 'N/A'} | 📧 ${cust.email || 'N/A'}`;
+                `ðŸ‘¤ ${cust.name} | ðŸ“ž ${cust.phone || 'N/A'} | ðŸ“§ ${cust.email || 'N/A'}`;
         }
         // Populate locations for this customer
         const locationSelect = document.getElementById('location-mode-select');
@@ -728,7 +728,7 @@ function handleClientModeChange(selectedValue) {
             if (loc.customerId === selectedValue) {
                 const opt = document.createElement('option');
                 opt.value = locId;
-                opt.textContent = `📍 ${loc.locationName || 'Unnamed Location'}`;
+                opt.textContent = `ðŸ“ ${loc.locationName || 'Unnamed Location'}`;
                 locationSelect.appendChild(opt);
             }
         }
@@ -759,7 +759,7 @@ function handleLocationModeChange(selectedValue) {
         container.innerHTML = `
             <div style="border: 1px solid #CBD5E1; padding: 15px; border-radius: 8px; background: #F8FAFC;">
                 <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: 600; color: #475569;">
-                    📦 Add New Unit to: <strong>${document.getElementById('location-mode-select').options[document.getElementById('location-mode-select').selectedIndex].text}</strong>
+                    ðŸ“¦ Add New Unit to: <strong>${document.getElementById('location-mode-select').options[document.getElementById('location-mode-select').selectedIndex].text}</strong>
                 </p>
                 <div class="units-container" style="display: flex; flex-direction: column; gap: 8px;">
                     <input type="text" class="input-field unit-name-input" placeholder="Unit Name (e.g. Unit 2)">
@@ -834,7 +834,7 @@ async function saveNewClientFlow() {
         let customerId, autoEmail, autoPass, loginLink;
 
         if (isNewCustomer) {
-            // ── PATH A: Create brand new customer ──────────────────────────
+            // â”€â”€ PATH A: Create brand new customer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             const logoFile = document.getElementById('client-logo').files[0];
             const custName = document.getElementById('client-name').value.trim();
             const custPhone = document.getElementById('client-phone').value.trim();
@@ -872,7 +872,7 @@ async function saveNewClientFlow() {
             });
 
         } else {
-            // ── PATH B: Use existing customer ──────────────────────────────
+            // â”€â”€ PATH B: Use existing customer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             customerId = selectedCustomerMode;
             const existingCust = globalCustomers[customerId];
             if (!existingCust) {
@@ -884,7 +884,7 @@ async function saveNewClientFlow() {
             loginLink = existingCust.loginLink || 'N/A';
         }
 
-        // ── PROCESS LOCATIONS & UNITS ──────────────────────────────────────
+        // â”€â”€ PROCESS LOCATIONS & UNITS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         const locationModeSelect = document.getElementById('location-mode-select');
         const selectedLocationMode = !isNewCustomer ? locationModeSelect.value : 'new';
         const isNewLocation = selectedLocationMode === 'new';
@@ -893,7 +893,7 @@ async function saveNewClientFlow() {
         const custAddress = isNewCustomer ? document.getElementById('client-address').value.trim() : '';
 
         if (isNewLocation) {
-            // ── New location(s) with unit(s) ────────────────────────────
+            // â”€â”€ New location(s) with unit(s) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             const locationBlocks = document.querySelectorAll('.location-block');
             if (locationBlocks.length === 0) {
                 msgDiv.innerHTML = "<span style='color: #EF4444;'>Please add at least one location.</span>";
@@ -912,7 +912,7 @@ async function saveNewClientFlow() {
                     createdAt: new Date().toISOString()
                 });
 
-                deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName}</h5><ul style="margin: 0; padding-left: 20px;">`;
+                deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">ðŸ“ ${locName}</h5><ul style="margin: 0; padding-left: 20px;">`;
 
                 const unitInputs = block.querySelectorAll('.unit-name-input');
                 let unitCount = 1;
@@ -938,11 +938,11 @@ async function saveNewClientFlow() {
             }
 
         } else {
-            // ── Existing location — add unit(s) only ────────────────────
+            // â”€â”€ Existing location â€” add unit(s) only â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             const locationId = selectedLocationMode;
-            const locName = locationModeSelect.options[locationModeSelect.selectedIndex].text.replace('📍 ', '');
+            const locName = locationModeSelect.options[locationModeSelect.selectedIndex].text.replace('ðŸ“ ', '');
 
-            deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName} (Existing)</h5><ul style="margin: 0; padding-left: 20px;">`;
+            deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">ðŸ“ ${locName} (Existing)</h5><ul style="margin: 0; padding-left: 20px;">`;
 
             const unitInputs = document.querySelectorAll('.unit-name-input');
             if (unitInputs.length === 0) {
@@ -1044,7 +1044,7 @@ function fetchHistoryData() {
         let rowsHtml = '';
         let hasData = false;
         
-        // 🔴 අලුත්: අලුත්ම දත්ත මුලින් පෙන්වීමට Array එක Reverse කිරීම
+        // ðŸ”´ à¶…à¶½à·”à¶­à·Š: à¶…à¶½à·”à¶­à·Šà¶¸ à¶¯à¶­à·Šà¶­ à¶¸à·”à¶½à·’à¶±à·Š à¶´à·™à¶±à·Šà·€à·“à¶¸à¶§ Array à¶‘à¶š Reverse à¶šà·’à¶»à·“à¶¸
         const logEntries = Object.entries(logs).reverse();
         
         for (const [logId, data] of logEntries) {
@@ -1084,13 +1084,13 @@ window.clearUnitHistory = async function() {
         return alert("Please select a valid unit first!");
     }
 
-    if(confirm("⚠️ WARNING: Are you sure you want to clear ALL history for this unit?\n\nThis will permanently delete all logged sensor data. This cannot be undone.")) {
+    if(confirm("âš ï¸ WARNING: Are you sure you want to clear ALL history for this unit?\n\nThis will permanently delete all logged sensor data. This cannot be undone.")) {
         try {
             await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
             
             alert("History cleared successfully!");
             
-            // UI එකේ Table එක හිස් කිරීම
+            // UI à¶‘à¶šà·š Table à¶‘à¶š à·„à·’à·ƒà·Š à¶šà·’à¶»à·“à¶¸
             const tbody = document.getElementById('history-tbody'); 
             if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
             
@@ -1110,16 +1110,16 @@ function exportToCSV() {
 
     let csvContent = "";
     
-    // මේසයේ ඇති සියලුම පේළි (Rows) කියවීම
+    // à¶¸à·šà·ƒà¶ºà·š à¶‡à¶­à·’ à·ƒà·’à¶ºà¶½à·”à¶¸ à¶´à·šà·…à·’ (Rows) à¶šà·’à¶ºà·€à·“à¶¸
     for (let i = 0; i < table.rows.length; i++) {
         let rowData = [];
         let cols = table.rows[i].querySelectorAll("td, th");
         
-        // දත්ත නොමැති විට එන පණිවිඩය Export වීම වැළැක්වීම
+        // à¶¯à¶­à·Šà¶­ à¶±à·œà¶¸à·à¶­à·’ à·€à·’à¶§ à¶‘à¶± à¶´à¶«à·’à·€à·’à¶©à¶º Export à·€à·“à¶¸ à·€à·à·…à·à¶šà·Šà·€à·“à¶¸
         if (cols.length === 1 && cols[0].colSpan === 7) continue;
 
         for (let j = 0; j < cols.length; j++) {
-            // කොමා (,) සහිත දත්ත තිබේ නම් ඒවා වෙන් නොවන සේ සැකසීම
+            // à¶šà·œà¶¸à· (,) à·ƒà·„à·’à¶­ à¶¯à¶­à·Šà¶­ à¶­à·’à¶¶à·š à¶±à¶¸à·Š à¶’à·€à· à·€à·™à¶±à·Š à¶±à·œà·€à¶± à·ƒà·š à·ƒà·à¶šà·ƒà·“à¶¸
             let data = cols[j].innerText.replace(/"/g, '""');
             rowData.push('"' + data + '"');
         }
@@ -1131,7 +1131,7 @@ function exportToCSV() {
         return;
     }
 
-    // CSV ගොනුව බාගත කිරීම
+    // CSV à¶œà·œà¶±à·”à·€ à¶¶à·à¶œà¶­ à¶šà·’à¶»à·“à¶¸
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -1147,7 +1147,7 @@ function exportToCSV() {
 
 function exportToPDF() {
     const table = document.getElementById('history-table');
-    // දත්ත නොමැති දැයි පරීක්ෂා කිරීම
+    // à¶¯à¶­à·Šà¶­ à¶±à·œà¶¸à·à¶­à·’ à¶¯à·à¶ºà·’ à¶´à¶»à·“à¶šà·Šà·‚à· à¶šà·’à¶»à·“à¶¸
     if (!table || table.rows.length < 2 || (table.rows.length === 2 && table.rows[1].cells.length === 1)) {
         alert("No data available to export.");
         return;
@@ -1156,7 +1156,7 @@ function exportToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
 
-    // PDF හි මාතෘකාව (Header) සැකසීම
+    // PDF à·„à·’ à¶¸à·à¶­à·˜à¶šà·à·€ (Header) à·ƒà·à¶šà·ƒà·“à¶¸
     doc.setFontSize(18);
     doc.setTextColor(34, 34, 34);
     doc.text("Biogas Plant - Historical Data Report", 14, 22);
@@ -1166,7 +1166,7 @@ function exportToPDF() {
     const dateVal = document.getElementById('history-date-select').value || 'All Available Data';
     doc.text(`Filtered Date: ${dateVal} | Generated on: ${new Date().toLocaleString()}`, 14, 30);
 
-    // AutoTable හරහා HTML Table එක PDF එකට ඇඳීම
+    // AutoTable à·„à¶»à·„à· HTML Table à¶‘à¶š PDF à¶‘à¶šà¶§ à¶‡à¶³à·“à¶¸
     doc.autoTable({
         html: '#history-table',
         startY: 38,
@@ -1183,8 +1183,8 @@ function exportToPDF() {
 // --- WHATSAPP STYLE CHAT LOGIC (UNIT-BASED) ---
 // ==========================================
 
-let activeChatUnitId = null; // Admin සඳහා තෝරාගත් Unit ID එක
-let customerChatUnsub = null; // පරණ Listeners අක්‍රිය කිරීමට
+let activeChatUnitId = null; // Admin à·ƒà¶³à·„à· à¶­à·à¶»à·à¶œà¶­à·Š Unit ID à¶‘à¶š
+let customerChatUnsub = null; // à¶´à¶»à¶« Listeners à¶…à¶šà·Šâ€à¶»à·’à¶º à¶šà·’à¶»à·“à¶¸à¶§
 
 // --- CUSTOMER SIDE ---
 function initCustomerChat() {
@@ -1211,12 +1211,12 @@ function loadCustomerChatForUnit() {
 
     if (badge) badge.style.display = 'inline-block';
 
-    // කලින් තිබුණු Listener එකක් ඇත්නම් එය නවත්වන්න
+    // à¶šà¶½à·’à¶±à·Š à¶­à·’à¶¶à·”à¶«à·” Listener à¶‘à¶šà¶šà·Š à¶‡à¶­à·Šà¶±à¶¸à·Š à¶‘à¶º à¶±à·€à¶­à·Šà·€à¶±à·Šà¶±
     if (customerChatUnsub) {
         customerChatUnsub();
     }
 
-    // 🔴 Customer ID එක වෙනුවට කෙළින්ම Unit ID එකෙන් Chat එක සෑදීම
+    // ðŸ”´ Customer ID à¶‘à¶š à·€à·™à¶±à·”à·€à¶§ à¶šà·™à·…à·’à¶±à·Šà¶¸ Unit ID à¶‘à¶šà·™à¶±à·Š Chat à¶‘à¶š à·ƒà·‘à¶¯à·“à¶¸
     const chatRef = window.dbRef(window.firebaseDB, `chats/${globalSelectedUnitId}`);
     
     customerChatUnsub = window.dbOnValue(chatRef, (snapshot) => {
@@ -1303,7 +1303,7 @@ function initAdminChat() {
         const allChats = snapshot.val() || {};
         chatList.innerHTML = '';
         
-        // අලුත්ම මැසේජ් උඩට එන ලෙස Sort කිරීම
+        // à¶…à¶½à·”à¶­à·Šà¶¸ à¶¸à·à·ƒà·šà¶¢à·Š à¶‹à¶©à¶§ à¶‘à¶± à¶½à·™à·ƒ Sort à¶šà·’à¶»à·“à¶¸
         const sortedUnitIds = Object.keys(allChats).sort((a, b) => {
             return new Date(allChats[b].lastUpdated || 0) - new Date(allChats[a].lastUpdated || 0);
         });
@@ -1327,7 +1327,7 @@ function initAdminChat() {
             const msgs = allChats[unitId].messages || {};
             const msgKeys = Object.keys(msgs);
             
-            // 🔴 අලුත්: Unread Messages ගණනය කිරීම (WhatsApp Style)
+            // ðŸ”´ à¶…à¶½à·”à¶­à·Š: Unread Messages à¶œà¶«à¶±à¶º à¶šà·’à¶»à·“à¶¸ (WhatsApp Style)
             let unreadCount = 0;
             msgKeys.forEach(key => {
                 if(msgs[key].sender === 'customer' && !msgs[key].read) {
@@ -1338,20 +1338,20 @@ function initAdminChat() {
             let lastMsg = 'No messages';
             if (msgKeys.length > 0) {
                 const lastM = msgs[msgKeys[msgKeys.length-1]];
-                lastMsg = lastM.imageUrl ? '📷 Image' : (lastM.audioUrl ? '🎤 Voice message' : lastM.text);
+                lastMsg = lastM.imageUrl ? 'ðŸ“· Image' : (lastM.audioUrl ? 'ðŸŽ¤ Voice message' : lastM.text);
             }
             
             const div = document.createElement('div');
             div.className = `chat-list-item ${unitId === activeChatUnitId ? 'active' : ''}`;
             div.onclick = () => openAdminChat(unitId, cust, displayTitle);
             
-            // 🔴 අලුත් UI: කොළ පාට Notification Badge එක සහ Bold Text
+            // ðŸ”´ à¶…à¶½à·”à¶­à·Š UI: à¶šà·œà·… à¶´à·à¶§ Notification Badge à¶‘à¶š à·ƒà·„ Bold Text
             div.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h4 style="margin: 0; font-size: 14px; color: #111827;">${displayTitle}</h4>
                     ${unreadCount > 0 ? `<span style="background: #10B981; color: white; border-radius: 50px; min-width: 20px; height: 20px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">${unreadCount}</span>` : ''}
                 </div>
-                <p style="margin: 2px 0 4px 0; font-size: 11px; color: #4B5563; font-weight: 600;">👤 ${cust.name}</p>
+                <p style="margin: 2px 0 4px 0; font-size: 11px; color: #4B5563; font-weight: 600;">ðŸ‘¤ ${cust.name}</p>
                 <p style="margin: 0; font-size: 12px; color: ${unreadCount > 0 ? '#0F172A' : '#6B7280'}; font-weight: ${unreadCount > 0 ? '700' : 'normal'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lastMsg}</p>
             `;
             chatList.appendChild(div);
@@ -1369,7 +1369,7 @@ function openAdminChat(unitId, cust, displayTitle) {
     document.getElementById('admin-chat-window').style.display = 'flex';
     
     document.getElementById('active-chat-name').innerHTML = `${displayTitle} <span id="admin-chat-status" class="badge" style="font-size: 10px; padding: 4px 8px;"></span>`;
-    document.getElementById('active-chat-phone').innerText = `Customer: ${cust.name} | 📞 ${cust.phone}`;
+    document.getElementById('active-chat-phone').innerText = `Customer: ${cust.name} | ðŸ“ž ${cust.phone}`;
     
     document.querySelectorAll('.chat-list-item').forEach(el => el.classList.remove('active'));
     if(event && event.currentTarget) event.currentTarget.classList.add('active');
@@ -1399,7 +1399,7 @@ function openAdminChat(unitId, cust, displayTitle) {
         const messages = chatData.messages || {};
         renderAdminMessages(messages);
 
-        // 🔴 අලුත්: Admin චැට් එක ඕපන් කළාම, ඒකේ තියෙන Customer ගේ අලුත් පණිවිඩ ඔක්කොම "read" කරනවා
+        // ðŸ”´ à¶…à¶½à·”à¶­à·Š: Admin à¶ à·à¶§à·Š à¶‘à¶š à¶•à¶´à¶±à·Š à¶šà·…à·à¶¸, à¶’à¶šà·š à¶­à·’à¶ºà·™à¶± Customer à¶œà·š à¶…à¶½à·”à¶­à·Š à¶´à¶«à·’à·€à·’à¶© à¶”à¶šà·Šà¶šà·œà¶¸ "read" à¶šà¶»à¶±à·€à·
         const updates = {};
         let hasUnread = false;
         for(const [msgId, msg] of Object.entries(messages)) {
@@ -1424,7 +1424,7 @@ function markAsResolved() {
         const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${activeChatUnitId}/messages`));
         window.dbSet(msgRef, {
             sender: 'admin',
-            text: "✅ This complaint has been marked as RESOLVED by the Admin. If you need further assistance regarding this unit, simply send a new message.",
+            text: "âœ… This complaint has been marked as RESOLVED by the Admin. If you need further assistance regarding this unit, simply send a new message.",
             timestamp: new Date().toISOString()
         });
         
@@ -1492,7 +1492,7 @@ function triggerIssueReport() {
     if (typeof loadCustomerChatForUnit === 'function') loadCustomerChatForUnit();
     
     const chatInput = document.getElementById('cust-chat-input');
-    const mentionTag = `[🚨 Issue Report - ${unitName}] `;
+    const mentionTag = `[ðŸš¨ Issue Report - ${unitName}] `;
     
     chatInput.value = mentionTag;
     chatInput.focus(); 
@@ -1537,7 +1537,7 @@ async function handleImageUpload(event, senderRole) {
             const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${uid}/messages`));
             await window.dbSet(msgRef, {
                 sender: senderRole,
-                text: "📷 Image Attachment",
+                text: "ðŸ“· Image Attachment",
                 imageUrl: data.data.url, 
                 timestamp: new Date().toISOString()
             });
@@ -1586,7 +1586,7 @@ async function toggleVoiceRecord(senderRole) {
                         const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${uid}/messages`));
                         await window.dbSet(msgRef, {
                             sender: senderRole,
-                            text: "🎤 Voice Message",
+                            text: "ðŸŽ¤ Voice Message",
                             audioUrl: base64Audio,
                             timestamp: new Date().toISOString()
                         });
@@ -1640,7 +1640,7 @@ function resetReportFilters() {
     const loading = document.getElementById('report-loading');
     loading.style.display = 'block';
     loading.innerHTML = `
-        <span style="font-size: 40px; display: block; margin-bottom: 10px;">📊</span>
+        <span style="font-size: 40px; display: block; margin-bottom: 10px;">ðŸ“Š</span>
         <p style="font-size: 16px; margin: 0;">Select your filters above and click <strong>"Generate Report"</strong> to analyze historical data.</p>
     `;
 }
@@ -1678,7 +1678,7 @@ async function generateReport() {
         now.setTime(new Date(toDate).getTime() + 86399000); 
     }
 
-    let targetUnitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
+    let targetUnitId = globalSelectedUnitId; // ðŸ”´ à·€à·™à¶±à·ƒà·Š à¶šà·… à·ƒà·Šà¶®à·à¶±à¶º
 
     if (currentUser && currentUser.role === 'customer' && targetUnitId && !isUnitAccessibleToCurrentUser(targetUnitId)) {
         loading.innerHTML = "<p style='color:#991B1B'>Access to this unit has been disabled by the admin.</p>";
@@ -1706,7 +1706,7 @@ async function generateReport() {
 
         if (currentReportData.length === 0) {
             loading.innerHTML = `
-                <span style="font-size: 40px; display: block; margin-bottom: 10px;">📭</span>
+                <span style="font-size: 40px; display: block; margin-bottom: 10px;">ðŸ“­</span>
                 <p style="font-size: 16px; margin: 0; color: #991B1B;">No data available for the selected date range.</p>
             `;
             return;
@@ -1748,7 +1748,7 @@ async function generateReport() {
             default:
                 reportHTML = `
                     <div style="padding: 40px; text-align: center;">
-                        <span style="font-size: 40px;">🚧</span>
+                        <span style="font-size: 40px;">ðŸš§</span>
                         <h3>Coming Soon</h3>
                         <p class="text-muted">This report type is currently under development.</p>
                     </div>
@@ -1930,8 +1930,8 @@ function buildProcessReport(data) {
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div class="param-card" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 20px;">
                 <p style="margin: 0; font-size: 12px; color: #64748B; font-weight: 600;">AVERAGE TEMPERATURE</p>
-                <h4 style="margin: 8px 0 0 0; font-size: 28px; color: #0F172A;">${avgTemp} °C</h4>
-                <p style="margin: 8px 0 0 0; font-size: 11px; color: #94A3B8;">Peak recorded: ${maxTemp} °C</p>
+                <h4 style="margin: 8px 0 0 0; font-size: 28px; color: #0F172A;">${avgTemp} Â°C</h4>
+                <p style="margin: 8px 0 0 0; font-size: 11px; color: #94A3B8;">Peak recorded: ${maxTemp} Â°C</p>
             </div>
             <div class="param-card" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 20px;">
                 <p style="margin: 0; font-size: 12px; color: #64748B; font-weight: 600;">AVERAGE pH LEVEL</p>
@@ -1951,7 +1951,7 @@ function buildSafetyReport(data) {
     let totalAlerts = 0, highPressureCount = 0, highH2SCount = 0, phIssueCount = 0;
     let alertRows = '';
 
-    // අලුත්ම දත්ත මුලින් පෙන්වීමට Reverse කිරීම
+    // à¶…à¶½à·”à¶­à·Šà¶¸ à¶¯à¶­à·Šà¶­ à¶¸à·”à¶½à·’à¶±à·Š à¶´à·™à¶±à·Šà·€à·“à¶¸à¶§ Reverse à¶šà·’à¶»à·“à¶¸
     const reversedData = [...data].reverse();
 
     reversedData.forEach(log => {
@@ -1964,7 +1964,7 @@ function buildSafetyReport(data) {
 
         if (isAlert) {
             totalAlerts++;
-            // වගුවේ පෙන්වීමට අවසන් අනතුරු ඇඟවීම් 10 පමණක් තෝරා ගැනීම
+            // à·€à¶œà·”à·€à·š à¶´à·™à¶±à·Šà·€à·“à¶¸à¶§ à¶…à·€à·ƒà¶±à·Š à¶…à¶±à¶­à·”à¶»à·” à¶‡à¶Ÿà·€à·“à¶¸à·Š 10 à¶´à¶¸à¶«à¶šà·Š à¶­à·à¶»à· à¶œà·à¶±à·“à¶¸
             if (totalAlerts <= 10) {
                 const time = new Date(log.timestamp).toLocaleString();
                 alertRows += `
@@ -2010,7 +2010,7 @@ function buildSafetyReport(data) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${alertRows || '<tr><td colspan="3" style="padding: 20px; text-align: center; color: #166534;">✅ No alerts recorded in this period.</td></tr>'}
+                    ${alertRows || '<tr><td colspan="3" style="padding: 20px; text-align: center; color: #166534;">âœ… No alerts recorded in this period.</td></tr>'}
                 </tbody>
             </table>
         </div>
@@ -2020,21 +2020,21 @@ function buildSafetyReport(data) {
 function buildInsightsReport(data) {
     if(data.length < 2) return `<p>Not enough data to generate insights.</p>`;
     
-    // දත්ත දෙකට කඩා සංසන්දනය කිරීම (පළමු අර්ධය සහ දෙවන අර්ධය)
+    // à¶¯à¶­à·Šà¶­ à¶¯à·™à¶šà¶§ à¶šà¶©à· à·ƒà¶‚à·ƒà¶±à·Šà¶¯à¶±à¶º à¶šà·’à¶»à·“à¶¸ (à¶´à·…à¶¸à·” à¶…à¶»à·Šà¶°à¶º à·ƒà·„ à¶¯à·™à·€à¶± à¶…à¶»à·Šà¶°à¶º)
     const mid = Math.floor(data.length / 2);
     const firstHalf = data.slice(0, mid);
     const secondHalf = data.slice(mid);
     
     const getAvg = (arr, key) => arr.reduce((sum, val) => sum + (Number(val[key])||0), 0) / arr.length;
     
-    const h2sTrend = getAvg(secondHalf, 'h2s') > getAvg(firstHalf, 'h2s') ? 'Increasing 📈' : 'Decreasing 📉';
-    const prodTrend = getAvg(secondHalf, 'gasVolume') > getAvg(firstHalf, 'gasVolume') ? 'Increasing 📈' : 'Decreasing 📉';
+    const h2sTrend = getAvg(secondHalf, 'h2s') > getAvg(firstHalf, 'h2s') ? 'Increasing ðŸ“ˆ' : 'Decreasing ðŸ“‰';
+    const prodTrend = getAvg(secondHalf, 'gasVolume') > getAvg(firstHalf, 'gasVolume') ? 'Increasing ðŸ“ˆ' : 'Decreasing ðŸ“‰';
     
     const latest = data[data.length - 1];
     let warnings = "";
     
-    if (latest.h2s > 1.5 && latest.h2s <= 1.8) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;">⚠️ <strong>H2S Approaching Limit:</strong> Concentration is currently at ${latest.h2s} ppm.</p>`;
-    if (latest.pressure > 1.1 && latest.pressure <= 1.3) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;">⚠️ <strong>Pressure Approaching Limit:</strong> System pressure is rising (${latest.pressure} bar).</p>`;
+    if (latest.h2s > 1.5 && latest.h2s <= 1.8) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;">âš ï¸ <strong>H2S Approaching Limit:</strong> Concentration is currently at ${latest.h2s} ppm.</p>`;
+    if (latest.pressure > 1.1 && latest.pressure <= 1.3) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;">âš ï¸ <strong>Pressure Approaching Limit:</strong> System pressure is rising (${latest.pressure} bar).</p>`;
     
     return `
         <div style="border-bottom: 2px solid #E5E7EB; padding-bottom: 16px; margin-bottom: 24px;">
@@ -2043,7 +2043,7 @@ function buildInsightsReport(data) {
         
         <div style="margin-bottom: 24px;">
             <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">EARLY WARNINGS</h4>
-            ${warnings || '<p style="color: #166534; background: #DCFCE7; padding: 10px; border-radius: 6px;">✅ All parameters are well within safe limits. No early warnings.</p>'}
+            ${warnings || '<p style="color: #166534; background: #DCFCE7; padding: 10px; border-radius: 6px;">âœ… All parameters are well within safe limits. No early warnings.</p>'}
         </div>
 
         <div>
@@ -2057,7 +2057,7 @@ function buildInsightsReport(data) {
 }
 
 function buildSummaryReport(data) {
-    // සරලව මූලික කරුණු සියල්ල එකට ගැනීම
+    // à·ƒà¶»à¶½à·€ à¶¸à·–à¶½à·’à¶š à¶šà¶»à·”à¶«à·” à·ƒà·’à¶ºà¶½à·Šà¶½ à¶‘à¶šà¶§ à¶œà·à¶±à·“à¶¸
     const latest = data[data.length - 1];
     return `
         <div style="border-bottom: 2px solid #E5E7EB; padding-bottom: 16px; margin-bottom: 24px;">
@@ -2090,13 +2090,13 @@ function exportReportToCSV() {
         return;
     }
 
-    // 1. CSV Headers සැකසීම
+    // 1. CSV Headers à·ƒà·à¶šà·ƒà·“à¶¸
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += "Timestamp,Gas Volume(L),CH4(%),CO2(%),H2S(ppm),Pressure(bar),Temperature(C),pH\n";
 
-    // 2. Data පේළි එකතු කිරීම
+    // 2. Data à¶´à·šà·…à·’ à¶‘à¶šà¶­à·” à¶šà·’à¶»à·“à¶¸
     currentReportData.forEach(log => {
-        // කොමා (,) වලින් වෙන් වන නිසා, දිනය/වේලාව තුළ ඇති කොමා ඉවත් කිරීම සුදුසුය
+        // à¶šà·œà¶¸à· (,) à·€à¶½à·’à¶±à·Š à·€à·™à¶±à·Š à·€à¶± à¶±à·’à·ƒà·, à¶¯à·’à¶±à¶º/à·€à·šà¶½à·à·€ à¶­à·”à·… à¶‡à¶­à·’ à¶šà·œà¶¸à· à¶‰à·€à¶­à·Š à¶šà·’à¶»à·“à¶¸ à·ƒà·”à¶¯à·”à·ƒà·”à¶º
         let time = new Date(log.timestamp).toLocaleString().replace(/,/g, ''); 
         
         const vol = Number(log.gasVolume || 0).toFixed(2);
@@ -2110,7 +2110,7 @@ function exportReportToCSV() {
         csvContent += `${time},${vol},${ch4},${co2},${h2s},${pres},${temp},${ph}\n`;
     });
 
-    // 3. බාගත කිරීම (Download)
+    // 3. à¶¶à·à¶œà¶­ à¶šà·’à¶»à·“à¶¸ (Download)
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -2123,28 +2123,28 @@ function exportReportToCSV() {
 function exportReportToPDF() {
     const reportElement = document.getElementById('report-preview-container');
     
-    // PDF එක සකස් කළ යුතු ආකාරය (Settings)
+    // PDF à¶‘à¶š à·ƒà¶šà·ƒà·Š à¶šà·… à¶ºà·”à¶­à·” à¶†à¶šà·à¶»à¶º (Settings)
     const opt = {
         margin:       15,
         filename:     `${currentReportTitle.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true }, // scale:2 න් පැහැදිලිතාවය වැඩි කරයි
+        html2canvas:  { scale: 2, useCORS: true }, // scale:2 à¶±à·Š à¶´à·à·„à·à¶¯à·’à¶½à·’à¶­à·à·€à¶º à·€à·à¶©à·’ à¶šà¶»à¶ºà·’
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // PDF එක Generate කර Download කිරීම
+    // PDF à¶‘à¶š Generate à¶šà¶» Download à¶šà·’à¶»à·“à¶¸
     html2pdf().set(opt).from(reportElement).save();
 }
 
 function buildTrendReport(data) {
     if(data.length === 0) return `<p>No sufficient data to generate trends.</p>`;
 
-    // දත්ත දෙකට කඩා සංසන්දනය කිරීම (Trend එක බැලීමට)
+    // à¶¯à¶­à·Šà¶­ à¶¯à·™à¶šà¶§ à¶šà¶©à· à·ƒà¶‚à·ƒà¶±à·Šà¶¯à¶±à¶º à¶šà·’à¶»à·“à¶¸ (Trend à¶‘à¶š à¶¶à·à¶½à·“à¶¸à¶§)
     const mid = Math.floor(data.length / 2);
     const firstHalf = data.slice(0, mid);
     const secondHalf = data.slice(mid);
 
-    // ගණනය කිරීම් සඳහා පොදු ශ්‍රිතයක්
+    // à¶œà¶«à¶±à¶º à¶šà·’à¶»à·“à¶¸à·Š à·ƒà¶³à·„à· à¶´à·œà¶¯à·” à·à·Šâ€à¶»à·’à¶­à¶ºà¶šà·Š
     function calcStats(key) {
         let sum = 0, min = Infinity, max = -Infinity;
         data.forEach(d => {
@@ -2161,11 +2161,11 @@ function buildTrendReport(data) {
         const fhAvg = firstHalf.length ? (fhSum / firstHalf.length) : 0;
         const shAvg = secondHalf.length ? (shSum / secondHalf.length) : 0;
 
-        // Trend එක තීරණය කිරීම (5% ක වෙනසක් සලකා)
-        let trend = "Stable ➖";
+        // Trend à¶‘à¶š à¶­à·“à¶»à¶«à¶º à¶šà·’à¶»à·“à¶¸ (5% à¶š à·€à·™à¶±à·ƒà¶šà·Š à·ƒà¶½à¶šà·)
+        let trend = "Stable âž–";
         let trendColor = "#4B5563";
-        if (shAvg > fhAvg * 1.05) { trend = "Increasing 📈"; trendColor = "#0284C7"; }
-        else if (shAvg < fhAvg * 0.95) { trend = "Decreasing 📉"; trendColor = "#D97706"; }
+        if (shAvg > fhAvg * 1.05) { trend = "Increasing ðŸ“ˆ"; trendColor = "#0284C7"; }
+        else if (shAvg < fhAvg * 0.95) { trend = "Decreasing ðŸ“‰"; trendColor = "#D97706"; }
 
         return {
             avg: avg.toFixed(2),
@@ -2176,7 +2176,7 @@ function buildTrendReport(data) {
         };
     }
 
-    // පරාමිති සියල්ල ගණනය කිරීම
+    // à¶´à¶»à·à¶¸à·’à¶­à·’ à·ƒà·’à¶ºà¶½à·Šà¶½ à¶œà¶«à¶±à¶º à¶šà·’à¶»à·“à¶¸
     const stats = {
         ch4: calcStats('ch4'),
         co2: calcStats('co2'),
@@ -2242,9 +2242,9 @@ function buildTrendReport(data) {
                     </tr>
                     <tr style="border-bottom: 1px solid #E5E7EB; background: #FAFAFA;">
                         <td style="padding: 16px; font-weight: 600; color: var(--text-dark);">Temperature</td>
-                        <td style="padding: 16px;">${stats.temperature.avg} °C</td>
-                        <td style="padding: 16px;">${stats.temperature.min} °C</td>
-                        <td style="padding: 16px;">${stats.temperature.max} °C</td>
+                        <td style="padding: 16px;">${stats.temperature.avg} Â°C</td>
+                        <td style="padding: 16px;">${stats.temperature.min} Â°C</td>
+                        <td style="padding: 16px;">${stats.temperature.max} Â°C</td>
                         <td style="padding: 16px; color: ${stats.temperature.trendColor}; font-weight: 600;">${stats.temperature.trend}</td>
                     </tr>
                     <tr>
@@ -2283,13 +2283,13 @@ function changeTheme(themeValue) {
 }
 
 function changeLanguage(langCode) {
-    // සැබෑ ව්‍යාපෘතියකදී මෙහිදී JSON ෆයිල් එකක් හරහා වචන පරිවර්තනය වීම සිදුවේ.
-    const langNames = { en: "English", si: "සිංහල", ta: "தமிழ்" };
+    // à·ƒà·à¶¶à·‘ à·€à·Šâ€à¶ºà·à¶´à·˜à¶­à·’à¶ºà¶šà¶¯à·“ à¶¸à·™à·„à·’à¶¯à·“ JSON à·†à¶ºà·’à¶½à·Š à¶‘à¶šà¶šà·Š à·„à¶»à·„à· à·€à¶ à¶± à¶´à¶»à·’à·€à¶»à·Šà¶­à¶±à¶º à·€à·“à¶¸ à·ƒà·’à¶¯à·”à·€à·š.
+    const langNames = { en: "English", si: "à·ƒà·’à¶‚à·„à¶½", ta: "à®¤à®®à®¿à®´à¯" };
     alert(`Language preferences saved: ${langNames[langCode]}.\n(Full translation module will be applied upon system build).`);
     localStorage.setItem('biogas_lang', langCode);
 }
 
-// පිටුව load වන විට කලින් save කරපු settings apply කිරීම
+// à¶´à·’à¶§à·”à·€ load à·€à¶± à·€à·’à¶§ à¶šà¶½à·’à¶±à·Š save à¶šà¶»à¶´à·” settings apply à¶šà·’à¶»à·“à¶¸
 window.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('biogas_theme');
     if(savedTheme) {
@@ -2315,7 +2315,7 @@ async function loadSensorStatus() {
     const container = document.getElementById('sensor-status-container');
     if (!container) return;
 
-    let targetUnitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
+    let targetUnitId = globalSelectedUnitId; // ðŸ”´ à·€à·™à¶±à·ƒà·Š à¶šà·… à·ƒà·Šà¶®à·à¶±à¶º
 
     if (currentUser && currentUser.role === 'customer' && targetUnitId && !isUnitAccessibleToCurrentUser(targetUnitId)) {
         container.innerHTML = "<p style='color:red;'>Access to this unit has been disabled by the admin.</p>";
@@ -2328,7 +2328,7 @@ async function loadSensorStatus() {
     }
 
     try {
-        // Firebase වෙතින් අවසන් දත්තය (Latest reading) පමණක් ලබා ගැනීම
+        // Firebase à·€à·™à¶­à·’à¶±à·Š à¶…à·€à·ƒà¶±à·Š à¶¯à¶­à·Šà¶­à¶º (Latest reading) à¶´à¶¸à¶«à¶šà·Š à¶½à¶¶à· à¶œà·à¶±à·“à¶¸
         const dbQuery = window.query(
             window.dbRef(window.firebaseDB, `sensor_logs/${targetUnitId}`),
             window.orderByKey(),
@@ -2345,22 +2345,22 @@ async function loadSensorStatus() {
         const latestKey = Object.keys(dataObj)[0];
         const log = dataObj[latestKey];
 
-        // Connection Status පරීක්ෂා කිරීම (අවසන් දත්තය විනාඩි 10කට වඩා පරණ නම් Offline ලෙස සලකයි)
+        // Connection Status à¶´à¶»à·“à¶šà·Šà·‚à· à¶šà·’à¶»à·“à¶¸ (à¶…à·€à·ƒà¶±à·Š à¶¯à¶­à·Šà¶­à¶º à·€à·’à¶±à·à¶©à·’ 10à¶šà¶§ à·€à¶©à· à¶´à¶»à¶« à¶±à¶¸à·Š Offline à¶½à·™à·ƒ à·ƒà¶½à¶šà¶ºà·’)
         const lastTime = new Date(log.timestamp).getTime();
         const now = new Date().getTime();
         const isOnline = (now - lastTime) < (10 * 60 * 1000); 
         
         const connectionBadge = isOnline ?
-            `<span style="background: #DCFCE7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">🟢 ONLINE</span>` :
-            `<span style="background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">🔴 OFFLINE</span>`;
+            `<span style="background: #DCFCE7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">ðŸŸ¢ ONLINE</span>` :
+            `<span style="background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">ðŸ”´ OFFLINE</span>`;
 
-        // සෙන්සර් පරාමිතීන් සහ Safe Ranges නිර්වචනය කිරීම
+        // à·ƒà·™à¶±à·Šà·ƒà¶»à·Š à¶´à¶»à·à¶¸à·’à¶­à·“à¶±à·Š à·ƒà·„ Safe Ranges à¶±à·’à¶»à·Šà·€à¶ à¶±à¶º à¶šà·’à¶»à·“à¶¸
         const sensors = [
             { id: 'ch4', name: 'Methane (CH4) Sensor', param: 'Gas Quality', value: Number(log.ch4||0).toFixed(1), unit: '%', safeRange: '50.0 - 70.0 %', isCritical: (log.ch4 < 40) },
             { id: 'h2s', name: 'Hydrogen Sulfide (H2S) Sensor', param: 'Toxic Gas Level', value: Number(log.h2s||0).toFixed(2), unit: 'ppm', safeRange: '< 1.50 ppm', isCritical: (log.h2s > 1.8) },
             { id: 'pressure', name: 'Pressure Sensor', param: 'System Pressure', value: Number(log.pressure||0).toFixed(2), unit: 'bar', safeRange: '1.00 - 1.20 bar', isCritical: (log.pressure > 1.3) },
             { id: 'ph', name: 'Digester pH Sensor', param: 'Acidity Level', value: Number(log.ph||0).toFixed(2), unit: '', safeRange: '6.50 - 7.50', isCritical: (log.ph < 6.0 || log.ph > 8.0) },
-            { id: 'temperature', name: 'Temperature Sensor', param: 'Process Heat', value: Number(log.temperature||0).toFixed(1), unit: '°C', safeRange: '30.0 - 40.0 °C', isCritical: (log.temperature > 45.0) }
+            { id: 'temperature', name: 'Temperature Sensor', param: 'Process Heat', value: Number(log.temperature||0).toFixed(1), unit: 'Â°C', safeRange: '30.0 - 40.0 Â°C', isCritical: (log.temperature > 45.0) }
         ];
 
         let html = '';
@@ -2374,7 +2374,7 @@ async function loadSensorStatus() {
                 status = "OFFLINE"; statusColor = "#4B5563"; statusBg = "#F3F4F6";
             } else if (s.isCritical) {
                 status = "CRITICAL"; statusColor = "#991B1B"; statusBg = "#FEE2E2";
-                alertMsg = "⚠️ Out of safe bounds!";
+                alertMsg = "âš ï¸ Out of safe bounds!";
             }
 
             html += `
@@ -2403,7 +2403,7 @@ async function loadSensorStatus() {
                             <span style="background: ${statusBg}; color: ${statusColor}; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">${status}</span>
                             <span style="font-size: 11px; color: #991B1B; margin-left: 8px; font-weight: 600;">${alertMsg}</span>
                         </div>
-                        <button class="btn-secondary-small" onclick="reportSpecificSensor('${s.name}', '${s.value} ${s.unit}', '${status}')" style="font-size: 12px; padding: 6px 12px; border: 1px solid #FCA5A5; color: #991B1B; background: #FFFFFF; cursor: pointer; transition: 0.2s;">⚠️ Report Issue</button>
+                        <button class="btn-secondary-small" onclick="reportSpecificSensor('${s.name}', '${s.value} ${s.unit}', '${status}')" style="font-size: 12px; padding: 6px 12px; border: 1px solid #FCA5A5; color: #991B1B; background: #FFFFFF; cursor: pointer; transition: 0.2s;">âš ï¸ Report Issue</button>
                     </div>
                 </div>
             `;
@@ -2416,13 +2416,13 @@ async function loadSensorStatus() {
     }
 }
 
-// අදාළ Sensor එක Mention කරමින් Complaint Center එකට යාම
+// à¶…à¶¯à·à·… Sensor à¶‘à¶š Mention à¶šà¶»à¶¸à·’à¶±à·Š Complaint Center à¶‘à¶šà¶§ à¶ºà·à¶¸
 function reportSpecificSensor(sensorName, currentValue, status) {
     switchCustomerTab('cust-support');
     
     const chatInput = document.getElementById('cust-chat-input');
     if(chatInput) {
-        const mentionTag = `[⚠️ Issue: ${sensorName}] Status: ${status} | Current Value: ${currentValue}. Please assist! `;
+        const mentionTag = `[âš ï¸ Issue: ${sensorName}] Status: ${status} | Current Value: ${currentValue}. Please assist! `;
         chatInput.value = mentionTag;
         chatInput.focus();
     }
@@ -2459,7 +2459,7 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
     let bgColor = type === 'critical' ? '#FEE2E2' : (type === 'chat' ? '#E0F2FE' : '#F3F4F6');
     let borderColor = type === 'critical' ? '#FCA5A5' : (type === 'chat' ? '#BAE6FD' : '#E5E7EB');
     let textColor = type === 'critical' ? '#991B1B' : (type === 'chat' ? '#0369A1' : '#374151');
-    let icon = type === 'critical' ? '🚨' : (type === 'chat' ? '💬' : 'ℹ️');
+    let icon = type === 'critical' ? 'ðŸš¨' : (type === 'chat' ? 'ðŸ’¬' : 'â„¹ï¸');
 
     toast.style.cssText = `
         background: ${bgColor}; color: ${textColor}; border: 1px solid ${borderColor}; 
@@ -2474,9 +2474,9 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
         <div style="flex: 1;">
             <strong style="display: block; font-size: 14px; margin-bottom: 4px;">${title}</strong>
             <span style="font-size: 12px; line-height: 1.4; display: block;">${body}</span>
-            ${type === 'critical' ? '<span style="font-size: 10px; font-weight: 700; margin-top: 8px; display: block; color: #7F1D1D;">Click to view Emergency Guide →</span>' : ''}
+            ${type === 'critical' ? '<span style="font-size: 10px; font-weight: 700; margin-top: 8px; display: block; color: #7F1D1D;">Click to view Emergency Guide â†’</span>' : ''}
         </div>
-        ${type === 'critical' ? `<button onclick="this.parentElement.style.transform='translateX(120%)'; setTimeout(() => this.parentElement.remove(), 400); event.stopPropagation();" style="background:none;border:none;font-size:16px;cursor:pointer;color:#991B1B;">✖</button>` : ''}
+        ${type === 'critical' ? `<button onclick="this.parentElement.style.transform='translateX(120%)'; setTimeout(() => this.parentElement.remove(), 400); event.stopPropagation();" style="background:none;border:none;font-size:16px;cursor:pointer;color:#991B1B;">âœ–</button>` : ''}
     `;
     
     toast.onclick = (e) => {
@@ -2490,7 +2490,7 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
     // Slide in
     setTimeout(() => toast.style.transform = 'translateX(0)', 50);
     
-    // 🔴 FIX: Critical ඒවට විනාඩියක් (60000ms) තියෙනවා ඔයා එනකන්! සාමාන්‍ය ඒවට තත්පර 6යි.
+    // ðŸ”´ FIX: Critical à¶’à·€à¶§ à·€à·’à¶±à·à¶©à·’à¶ºà¶šà·Š (60000ms) à¶­à·’à¶ºà·™à¶±à·€à· à¶”à¶ºà· à¶‘à¶±à¶šà¶±à·Š! à·ƒà·à¶¸à·à¶±à·Šâ€à¶º à¶’à·€à¶§ à¶­à¶­à·Šà¶´à¶» 6à¶ºà·’.
     const displayTime = type === 'critical' ? 60000 : 6000;
     
     setTimeout(() => {
@@ -2557,7 +2557,7 @@ function initRealtimeListeners() {
             if (msgTime > lastChatMsgTime && msg.sender !== currentUser.role) {
                 if (lastChatMsgTime !== 0 && (new Date().getTime() - msgTime) < 60000) {
                     const senderName = msg.sender === 'admin' ? 'System Admin' : 'Customer';
-                    const previewText = msg.imageUrl ? '📷 Image attached' : (msg.audioUrl ? '🎤 Voice message' : msg.text);
+                    const previewText = msg.imageUrl ? 'ðŸ“· Image attached' : (msg.audioUrl ? 'ðŸŽ¤ Voice message' : msg.text);
                     
                     triggerNotification(`New Message from ${senderName}`, previewText, 'chat', () => {
                         if(currentUser.role === 'customer') switchCustomerTab('cust-support');
@@ -2614,7 +2614,7 @@ function initRealtimeListeners() {
                             if (Number(log.pressure) > 1.3) {
                                 isCritical = true;
                                 triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
+                                    `ðŸš¨ Critical Alert: ${unitName}`, 
                                     `Location: ${locName}<br><strong>Pressure: ${log.pressure} bar</strong>`, 
                                     'critical'
                                 );
@@ -2623,16 +2623,16 @@ function initRealtimeListeners() {
                             if (Number(log.temperature) > 40) {
                                 isCritical = true;
                                 triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
-                                    `Location: ${locName}<br><strong>Temperature: ${log.temperature} °C</strong>`, 
+                                    `ðŸš¨ Critical Alert: ${unitName}`, 
+                                    `Location: ${locName}<br><strong>Temperature: ${log.temperature} Â°C</strong>`, 
                                     'critical'
                                 );
                             }
                             
                             if (isCritical) {
                                 const alertTab = document.getElementById('tab-cust-alerts');
-                                if (alertTab && !alertTab.innerHTML.includes('🚨')) {
-                                    alertTab.innerHTML += ' <span style="font-size: 10px; animation: floatIcon 1s infinite;">🚨</span>';
+                                if (alertTab && !alertTab.innerHTML.includes('ðŸš¨')) {
+                                    alertTab.innerHTML += ' <span style="font-size: 10px; animation: floatIcon 1s infinite;">ðŸš¨</span>';
                                 }
                             }
                         }
@@ -2790,10 +2790,10 @@ function paintCustomerOverview() {
     let switcherHtml = '<option value="" disabled>-- Switch Unit --</option>';
 
     for (const [locName, locUnits] of Object.entries(locationGroups)) {
-        switcherHtml += `<optgroup label="📍 ${locName}">`;
+        switcherHtml += `<optgroup label="ðŸ“ ${locName}">`;
         html += `
             <div class="location-group">
-                <h4 class="location-group-title">📍 Location: ${locName}</h4>
+                <h4 class="location-group-title">ðŸ“ Location: ${locName}</h4>
                 <div class="overview-grid">
         `;
 
@@ -2816,7 +2816,7 @@ function paintCustomerOverview() {
                         <h3 style="margin: 0; font-size: 16px; color: var(--text-dark);">${u.safeUnitName}</h3>
                         ${statusBadge}
                     </div>
-                    <!-- 🔴 MAC වෙනුවට Device ID එක (Firebase u.id) පෙන්වීම -->
+                    <!-- ðŸ”´ MAC à·€à·™à¶±à·”à·€à¶§ Device ID à¶‘à¶š (Firebase u.id) à¶´à·™à¶±à·Šà·€à·“à¶¸ -->
                     <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">Device ID: <strong style="color: var(--text-dark); font-family: monospace;">${u.id}</strong></p>
                     <p style="margin: 0; font-size: 13px; color: ${isUnitAccessOn ? 'var(--accent-coral)' : '#9CA3AF'}; font-weight: 600;">${isUnitAccessOn ? 'Click to monitor live data &rarr;' : 'Access disabled by admin'}</p>
                 </div>
@@ -2946,20 +2946,20 @@ function loadMonitorData() {
 // ==========================================
 
 function viewUnitAsAdmin(unitId) {
-    // 1. තිරය මාරු කිරීම (Admin -> Customer Dashboard)
+    // 1. à¶­à·’à¶»à¶º à¶¸à·à¶»à·” à¶šà·’à¶»à·“à¶¸ (Admin -> Customer Dashboard)
     document.getElementById('admin-screen').classList.remove('active');
     document.getElementById('customer-screen').classList.add('active');
     
-    // 2. Admin Back බොත්තම පෙන්වීම, සාමාන්‍ය Logout බොත්තම සැඟවීම
+    // 2. Admin Back à¶¶à·œà¶­à·Šà¶­à¶¸ à¶´à·™à¶±à·Šà·€à·“à¶¸, à·ƒà·à¶¸à·à¶±à·Šâ€à¶º Logout à¶¶à·œà¶­à·Šà¶­à¶¸ à·ƒà·à¶Ÿà·€à·“à¶¸
     const backBtn = document.getElementById('tab-back-admin');
     const logoutBtn = document.getElementById('customer-logout-btn');
     if (backBtn) backBtn.style.display = 'block';
     if (logoutBtn) logoutBtn.style.display = 'none';
 
-    // 3. Dropdowns සහ Overview එකට Admin ට අදාළව සියලුම Units Load කිරීම
+    // 3. Dropdowns à·ƒà·„ Overview à¶‘à¶šà¶§ Admin à¶§ à¶…à¶¯à·à·…à·€ à·ƒà·’à¶ºà¶½à·”à¶¸ Units Load à¶šà·’à¶»à·“à¶¸
     renderCustomerOverview();
 
-    // 4. තෝරාගත් Unit එකේ දත්ත Load කර Monitor තිරයට යාම
+    // 4. à¶­à·à¶»à·à¶œà¶­à·Š Unit à¶‘à¶šà·š à¶¯à¶­à·Šà¶­ Load à¶šà¶» Monitor à¶­à·’à¶»à¶ºà¶§ à¶ºà·à¶¸
     const unit = globalUnits[unitId];
     if (unit) {
         const locId = unit.locationId || unit.location_id;
@@ -2973,20 +2973,20 @@ function viewUnitAsAdmin(unitId) {
 }
 
 function returnToAdmin() {
-    // 1. තිරය නැවත Admin වෙත මාරු කිරීම
+    // 1. à¶­à·’à¶»à¶º à¶±à·à·€à¶­ Admin à·€à·™à¶­ à¶¸à·à¶»à·” à¶šà·’à¶»à·“à¶¸
     document.getElementById('customer-screen').classList.remove('active');
     document.getElementById('admin-screen').classList.add('active');
     
-    // 2. Admin Back බොත්තම සැඟවීම, Logout බොත්තම නැවත පෙන්වීම
+    // 2. Admin Back à¶¶à·œà¶­à·Šà¶­à¶¸ à·ƒà·à¶Ÿà·€à·“à¶¸, Logout à¶¶à·œà¶­à·Šà¶­à¶¸ à¶±à·à·€à¶­ à¶´à·™à¶±à·Šà·€à·“à¶¸
     const backBtn = document.getElementById('tab-back-admin');
     const logoutBtn = document.getElementById('customer-logout-btn');
     if (backBtn) backBtn.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'flex';
     
-    // 3. Admin ගේ Deployments තිරය Active කිරීම
+    // 3. Admin à¶œà·š Deployments à¶­à·’à¶»à¶º Active à¶šà·’à¶»à·“à¶¸
     switchAdminTab('admin-deployments');
     
-    // 4. Chart එක සහ Data Listeners අක්‍රිය කිරීම (Background Memory Save කිරීමට)
+    // 4. Chart à¶‘à¶š à·ƒà·„ Data Listeners à¶…à¶šà·Šâ€à¶»à·’à¶º à¶šà·’à¶»à·“à¶¸ (Background Memory Save à¶šà·’à¶»à·“à¶¸à¶§)
     if (liveChart) {
         liveChart.destroy();
         liveChart = null;
@@ -3003,14 +3003,14 @@ function copyText(text) {
 }
 
 function shareCustomerDetails(name, user, pass, loginLink, deviceLink) {
-    const shareText = `🌱 *BioGas System Setup*\n\n👤 *Customer:* ${name}\n\n🔗 *Your Secure Login Link:*\n${loginLink}\n\n👤 *Username:* ${user}\n🔑 *Password:* ${pass}\n\n📡 *Device Setup Token:*\n${deviceLink}\n\n_Please do not share these details with anyone._`;
+    const shareText = `ðŸŒ± *BioGas System Setup*\n\nðŸ‘¤ *Customer:* ${name}\n\nðŸ”— *Your Secure Login Link:*\n${loginLink}\n\nðŸ‘¤ *Username:* ${user}\nðŸ”‘ *Password:* ${pass}\n\nðŸ“¡ *Device Setup Token:*\n${deviceLink}\n\n_Please do not share these details with anyone._`;
     navigator.clipboard.writeText(shareText);
     alert('All details formatted and copied! Ready to paste in WhatsApp.');
 }
 
 function copySuccessDetails() {
     const modal = document.getElementById('success-deployment-modal');
-    const custName = modal.getAttribute('data-custname') || 'Customer'; // 🔴 නියම නම ගන්නවා
+    const custName = modal.getAttribute('data-custname') || 'Customer'; // ðŸ”´ à¶±à·’à¶ºà¶¸ à¶±à¶¸ à¶œà¶±à·Šà¶±à·€à·
     const user = document.getElementById('succ-user').innerText;
     const pass = document.getElementById('succ-pass').innerText;
     const login = document.getElementById('succ-login').innerText;
@@ -3042,7 +3042,7 @@ async function deleteUnit(unitId, unitName) {
             await window.dbSet(window.dbRef(window.firebaseDB, `units/${unitId}`), null);
             await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
             
-            // 🔴 අලුත්: Refresh නොකර ඒ වෙලාවෙම UI එකෙන් කාඩ් එක මකා දැමීම 🔴
+            // ðŸ”´ à¶…à¶½à·”à¶­à·Š: Refresh à¶±à·œà¶šà¶» à¶’ à·€à·™à¶½à·à·€à·™à¶¸ UI à¶‘à¶šà·™à¶±à·Š à¶šà·à¶©à·Š à¶‘à¶š à¶¸à¶šà· à¶¯à·à¶¸à·“à¶¸ ðŸ”´
             if (globalUnits[unitId]) {
                 delete globalUnits[unitId];
             }
@@ -3065,7 +3065,7 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
         Object.entries(unitsData).forEach(([unitId, unit]) => {
             total++;
             
-            // 🔴 අලුත්: Critical සහ Warning දෙකම ලිස්ට් එකට ගන්නවා
+            // ðŸ”´ à¶…à¶½à·”à¶­à·Š: Critical à·ƒà·„ Warning à¶¯à·™à¶šà¶¸ à¶½à·’à·ƒà·Šà¶§à·Š à¶‘à¶šà¶§ à¶œà¶±à·Šà¶±à·€à·
             if (unit.status === 'offline') {
                 offline++;
             } else if (unit.activeAlerts > 0 || unit.status === 'critical' || unit.status === 'warning') {
@@ -3082,18 +3082,18 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
                 const custPhone = globalCustomers[custId] ? globalCustomers[custId].phone : '';
                 const displayTitle = unit.unitName ? `${locName} - ${unit.unitName}` : locName;
                 
-                // Warning සහ Critical වලට අදාළව පාට වෙනස් කිරීම
+                // Warning à·ƒà·„ Critical à·€à¶½à¶§ à¶…à¶¯à·à·…à·€ à¶´à·à¶§ à·€à·™à¶±à·ƒà·Š à¶šà·’à¶»à·“à¶¸
                 const borderColor = isCritical ? '#FCA5A5' : '#FDE68A';
                 const leftBorder = isCritical ? '#EF4444' : '#F59E0B';
                 const titleColor = isCritical ? '#991B1B' : '#D97706';
-                const icon = isCritical ? '🚨' : '⚠️';
+                const icon = isCritical ? 'ðŸš¨' : 'âš ï¸';
                 
                 attentionHTML += `
                     <div style="background: #FFFFFF; border: 1px solid ${borderColor}; border-left: 4px solid ${leftBorder}; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div>
                                 <div style="font-weight: 700; color: ${titleColor}; font-size: 16px; margin-bottom: 4px;">${icon} ${displayTitle} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px; font-family: monospace;">ID: ${unitId}</span></div>
-                                <div style="font-size: 13px; color: #475569; font-weight: 500;">👤 ${custName} | 📞 ${custPhone}</div>
+                                <div style="font-size: 13px; color: #475569; font-weight: 500;">ðŸ‘¤ ${custName} | ðŸ“ž ${custPhone}</div>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">View Unit</button>
@@ -3102,26 +3102,26 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
                         </div>
                         
                         <div id="issues-${unitId}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed ${borderColor};">
-                            <span style="font-size: 13px; color: ${titleColor};">⏳ Fetching specific alert details...</span>
+                            <span style="font-size: 13px; color: ${titleColor};">â³ Fetching specific alert details...</span>
                         </div>
                     </div>
                 `;
 
-                // Live Database එකෙන් අදාළ Unit එකේ අවුල මොකක්ද කියලා අරන් පෙන්නනවා
+                // Live Database à¶‘à¶šà·™à¶±à·Š à¶…à¶¯à·à·… Unit à¶‘à¶šà·š à¶…à·€à·”à¶½ à¶¸à·œà¶šà¶šà·Šà¶¯ à¶šà·’à¶ºà¶½à· à¶…à¶»à¶±à·Š à¶´à·™à¶±à·Šà¶±à¶±à·€à·
                 window.dbGet(window.query(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), window.orderByKey(), window.limitToLast(1))).then(snap => {
                     const issuesContainer = document.getElementById(`issues-${unitId}`);
                     if (snap.exists() && issuesContainer) {
                         const log = Object.values(snap.val())[0];
                         let issues = [];
                         
-                        // 🔴 අලුත්: Warning සහ Critical වෙන් කර පෙන්වීම
+                        // ðŸ”´ à¶…à¶½à·”à¶­à·Š: Warning à·ƒà·„ Critical à·€à·™à¶±à·Š à¶šà¶» à¶´à·™à¶±à·Šà·€à·“à¶¸
                         if (log.pressure > 1.3) issues.push(`High System Pressure: ${log.pressure} bar (Critical)`);
                         else if (log.pressure > 1.1) issues.push(`Warning: Pressure is rising (${log.pressure} bar)`);
 
                         if (log.h2s > 1.8) issues.push(`Toxic Gas Alert: ${log.h2s} ppm (Critical)`);
                         else if (log.h2s > 1.5) issues.push(`Warning: H2S levels rising (${log.h2s} ppm)`);
 
-                        if (log.temperature > 40) issues.push(`High Temperature Detected: ${log.temperature}°C`);
+                        if (log.temperature > 40) issues.push(`High Temperature Detected: ${log.temperature}Â°C`);
                         if (log.ph < 6.0 || log.ph > 8.0) issues.push(`pH Level Imbalance: ${log.ph}`);
                         
                         if(issues.length > 0) {
@@ -3129,7 +3129,7 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
                             const issueText = isCritical ? '#991B1B' : '#D97706';
                             const issueBorder = isCritical ? '#FCA5A5' : '#FDE68A';
 
-                            issuesContainer.innerHTML = issues.map(i => `<div style="background: ${issueBg}; color: ${issueText}; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid ${issueBorder}; display: inline-block; width: fit-content;">${isCritical ? '🚨' : '⚠️'} ${i}</div>`).join('');
+                            issuesContainer.innerHTML = issues.map(i => `<div style="background: ${issueBg}; color: ${issueText}; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid ${issueBorder}; display: inline-block; width: fit-content;">${isCritical ? 'ðŸš¨' : 'âš ï¸'} ${i}</div>`).join('');
                         } else {
                             issuesContainer.innerHTML = `<span style="color: #475569; font-size: 13px;">Alert triggered, but recent logs show normal values.</span>`;
                         }
@@ -3166,7 +3166,7 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
         if (attentionHTML !== '') {
             attentionList.innerHTML = attentionHTML;
         } else {
-            attentionList.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748B; font-size: 14px; background: #F8FAFC; border-radius: 8px;">✅ No critical alerts at the moment. System is stable.</div>`;
+            attentionList.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748B; font-size: 14px; background: #F8FAFC; border-radius: 8px;">âœ… No critical alerts at the moment. System is stable.</div>`;
         }
     }
 }
@@ -3186,7 +3186,7 @@ function startDashboardLiveUpdates() {
         }
     };
 
-    // ඔයාගේ index.html එකට ගැළපෙන්න window.dbOnValue භාවිතා කිරීම
+    // à¶”à¶ºà·à¶œà·š index.html à¶‘à¶šà¶§ à¶œà·à·…à¶´à·™à¶±à·Šà¶± window.dbOnValue à¶·à·à·€à·’à¶­à· à¶šà·’à¶»à·“à¶¸
     window.dbOnValue(window.dbRef(db, 'units'), (snap) => { liveUnits = snap.val() || {}; triggerUpdate(); });
     window.dbOnValue(window.dbRef(db, 'chats'), (snap) => { liveChats = snap.val() || {}; triggerUpdate(); });
     window.dbOnValue(window.dbRef(db, 'locations'), (snap) => { liveLocations = snap.val() || {}; triggerUpdate(); });
@@ -3223,7 +3223,7 @@ async function clearAllAlerts() {
 // --- ADMIN: CUSTOMER MANAGEMENT LOGIC ---
 // ==========================================
 
-// 🔴 අලුත්: HTML Modals ඉබේම පිටුවට එකතු කරන කේතය (100% වැඩ කරන ක්‍රමය)
+// ðŸ”´ à¶…à¶½à·”à¶­à·Š: HTML Modals à¶‰à¶¶à·šà¶¸ à¶´à·’à¶§à·”à·€à¶§ à¶‘à¶šà¶­à·” à¶šà¶»à¶± à¶šà·šà¶­à¶º (100% à·€à·à¶© à¶šà¶»à¶± à¶šà·Šâ€à¶»à¶¸à¶º)
 function ensureEditModalsExist() {
     if (!document.getElementById('edit-customer-modal')) {
         const modalDiv = document.createElement('div');
@@ -3277,8 +3277,8 @@ function renderCustomersList() {
 
     const customerKeys = Object.keys(globalCustomers);
     if (customerKeys.length === 0) {
-        // If globalCustomers is empty, data might still be loading — re-fetch directly
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Loading customers...</div>';
+        // If globalCustomers is empty, data might still be loading â€” re-fetch directly
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">â³ Loading customers...</div>';
         window.dbGet(window.dbRef(window.firebaseDB, 'users')).then(snapshot => {
             if (snapshot.exists()) {
                 const users = snapshot.val();
@@ -3307,9 +3307,9 @@ function renderCustomersList() {
             if (loc.customerId === custId) {
                 locHTML += `
                     <div style="margin-top: 12px; padding: 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; position: relative;">
-                        <button class="btn-secondary-small" onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; padding: 4px 10px; font-size: 11px;">✏️ Edit</button>
+                        <button class="btn-secondary-small" onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; padding: 4px 10px; font-size: 11px;">âœï¸ Edit</button>
                         
-                        <strong style="color: var(--text-dark); font-size: 14px;">📍 ${loc.locationName || 'Location'}</strong><br>
+                        <strong style="color: var(--text-dark); font-size: 14px;">ðŸ“ ${loc.locationName || 'Location'}</strong><br>
                         <span style="font-size: 12px; color: var(--text-muted);">${loc.address || 'No address provided'}</span>
                         <ul style="margin-top: 12px; padding-left: 20px; font-size: 13px; color: var(--text-secondary); list-style-type: square;">`;
                 
@@ -3333,22 +3333,22 @@ function renderCustomersList() {
         const safePhone = cust.phone || 'N/A';
 
         const card = document.createElement('div');
-        // 🔴 param-card class එක පාවිච්චි කිරීමෙන් Dark Mode එක ඉබේම වැඩ කරයි!
+        // ðŸ”´ param-card class à¶‘à¶š à¶´à·à·€à·’à¶ à·Šà¶ à·’ à¶šà·’à¶»à·“à¶¸à·™à¶±à·Š Dark Mode à¶‘à¶š à¶‰à¶¶à·šà¶¸ à·€à·à¶© à¶šà¶»à¶ºà·’!
         card.className = 'param-card'; 
         card.style.cssText = "padding: 24px; margin-bottom: 20px;";
         
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; gap: 16px; align-items: center;">
-                    <div style="width: 48px; height: 48px; background: rgba(59,130,246,0.1); color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                    <div style="width: 48px; height: 48px; background: rgba(59,130,246,0.1); color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">ðŸ‘¤</div>
                     <div>
                         <h3 style="margin: 0 0 4px 0; font-size: 18px; color: var(--text-dark); font-weight: 700;">${safeName}</h3>
-                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">📧 ${safeEmail} <span style="color: var(--border-strong); margin: 0 8px;">|</span> 📞 ${safePhone}</p>
+                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">ðŸ“§ ${safeEmail} <span style="color: var(--border-strong); margin: 0 8px;">|</span> ðŸ“ž ${safePhone}</p>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-secondary-small" onclick="openEditCustomerModal('${custId}')">✏️ Edit Profile</button>
-                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: rgba(239,68,68,0.1); color: #DC2626; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">🗑️ Delete</button>
+                    <button class="btn-secondary-small" onclick="openEditCustomerModal('${custId}')">âœï¸ Edit Profile</button>
+                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: rgba(239,68,68,0.1); color: #DC2626; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">ðŸ—‘ï¸ Delete</button>
                 </div>
             </div>
             
@@ -3439,7 +3439,7 @@ async function saveLocationEdit() {
 
 // --- DELETE CUSTOMER ---
 async function deleteCustomerRecord(custId, custName) {
-    if(confirm(`⚠️ CRITICAL WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will permanently delete their account AND all their assigned locations, biogas units, sensor logs, and chat histories. This action CANNOT be undone.`)) {
+    if(confirm(`âš ï¸ CRITICAL WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will permanently delete their account AND all their assigned locations, biogas units, sensor logs, and chat histories. This action CANNOT be undone.`)) {
         try {
             const db = window.firebaseDB;
             const updates = {}; 
@@ -3477,86 +3477,85 @@ async function deleteCustomerRecord(custId, custName) {
         }
     }
 }
- f u n c t i o n   l o a d C u s t o m e r A l e r t s ( )   { 
-         c o n s t   c o n t a i n e r   =   d o c u m e n t . g e t E l e m e n t B y I d ( " c u s t o m e r - a l e r t s - c o n t a i n e r " ) ; 
-         i f   ( ! c o n t a i n e r )   r e t u r n ; 
-         
-         i f   ( ! g l o b a l S e l e c t e d U n i t I d )   { 
-                 c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   v a r ( - - t e x t - m u t e d ) ; \ " > P l e a s e   s e l e c t   a   u n i t   t o   v i e w   a l e r t s . < / p > " ; 
-                 r e t u r n ; 
-         } 
-         
-         c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   v a r ( - - t e x t - m u t e d ) ; \ " > L o a d i n g   a l e r t s . . . < / p > " ; 
-         
-         / /   F e t c h   l a t e s t   5 0   l o g s   t o   c h e c k   f o r   a n o m a l i e s 
-         c o n s t   l i v e S e n s o r Q u e r y   =   w i n d o w . q u e r y ( 
-                 w i n d o w . d b R e f ( w i n d o w . f i r e b a s e D B ,   ` s e n s o r _ l o g s / $ { g l o b a l S e l e c t e d U n i t I d } ` ) , 
-                 w i n d o w . o r d e r B y K e y ( ) , 
-                 w i n d o w . l i m i t T o L a s t ( 5 0 ) 
-         ) ; 
-         
-         w i n d o w . d b G e t ( l i v e S e n s o r Q u e r y ) . t h e n ( ( s n a p s h o t )   = >   { 
-                 i f   ( ! s n a p s h o t . e x i s t s ( ) )   { 
-                         c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   # 6 4 7 4 8 B ; \ " > N o   a l e r t s   f o u n d   f o r   t h i s   u n i t . < / p > " ; 
-                         r e t u r n ; 
-                 } 
-                 
-                 l e t   a l e r t s H t m l   =   " " ; 
-                 c o n s t   d a t a   =   s n a p s h o t . v a l ( ) ; 
-                 
-                 / /   C o n v e r t   t o   a r r a y   a n d   r e v e r s e   t o   s h o w   n e w e s t   f i r s t 
-                 c o n s t   l o g s   =   O b j e c t . v a l u e s ( d a t a ) . r e v e r s e ( ) ; 
-                 
-                 l o g s . f o r E a c h ( l o g   = >   { 
-                         l e t   i s A l e r t   =   f a l s e ; 
-                         l e t   a l e r t M s g   =   " " ; 
-                         l e t   a l e r t T y p e   =   " " ; 
-                         
-                         i f   ( N u m b e r ( l o g . p r e s s u r e )   >   1 . 3 )   { 
-                                 i s A l e r t   =   t r u e ; 
-                                 a l e r t M s g   =   ` H i g h   P r e s s u r e   D e t e c t e d :   $ { l o g . p r e s s u r e }   b a r ` ; 
-                                 a l e r t T y p e   =   " c r i t i c a l " ; 
-                         }   e l s e   i f   ( N u m b e r ( l o g . t e m p e r a t u r e )   >   4 0 )   { 
-                                 i s A l e r t   =   t r u e ; 
-                                 a l e r t M s g   =   ` H i g h   T e m p e r a t u r e   D e t e c t e d :   $ { l o g . t e m p e r a t u r e }   � C ` ; 
-                                 a l e r t T y p e   =   " c r i t i c a l " ; 
-                         } 
-                         
-                         i f   ( i s A l e r t )   { 
-                                 c o n s t   t i m e   =   l o g . t i m e s t a m p   ?   n e w   D a t e ( l o g . t i m e s t a m p ) . t o L o c a l e S t r i n g ( )   :   " U n k n o w n   T i m e " ; 
-                                 c o n s t   b g   =   a l e r t T y p e   = = =   " c r i t i c a l "   ?   " # F E E 2 E 2 "   :   " # F E F 3 C 7 " ; 
-                                 c o n s t   b o r d e r   =   a l e r t T y p e   = = =   " c r i t i c a l "   ?   " # F C A 5 A 5 "   :   " # F D E 6 8 A " ; 
-                                 c o n s t   c o l o r   =   a l e r t T y p e   = = =   " c r i t i c a l "   ?   " # 9 9 1 B 1 B "   :   " # D 9 7 7 0 6 " ; 
-                                 
-                                 a l e r t s H t m l   + =   ` 
-                                         < d i v   s t y l e = " b a c k g r o u n d :   $ { b g } ;   b o r d e r :   1 p x   s o l i d   $ { b o r d e r } ;   p a d d i n g :   1 6 p x ;   b o r d e r - r a d i u s :   8 p x ; " > 
-                                                 < d i v   s t y l e = " d i s p l a y :   f l e x ;   j u s t i f y - c o n t e n t :   s p a c e - b e t w e e n ;   m a r g i n - b o t t o m :   8 p x ; " > 
-                                                         < s t r o n g   s t y l e = " c o l o r :   $ { c o l o r } ; " > =ب�  $ { a l e r t T y p e . t o U p p e r C a s e ( ) }   A L E R T < / s t r o n g > 
-                                                         < s p a n   s t y l e = " f o n t - s i z e :   1 2 p x ;   c o l o r :   # 6 4 7 4 8 B ; " > $ { t i m e } < / s p a n > 
-                                                 < / d i v > 
-                                                 < d i v   s t y l e = " c o l o r :   # 4 7 5 5 6 9 ;   f o n t - s i z e :   1 4 p x ; " > $ { a l e r t M s g } < / d i v > 
-                                         < / d i v > 
-                                 ` ; 
-                         } 
-                 } ) ; 
-                 
-                 i f   ( a l e r t s H t m l   = = =   " " )   { 
-                         c o n t a i n e r . i n n e r H T M L   =   ` 
-                                 < d i v   s t y l e = " b a c k g r o u n d : # D C F C E 7 ;   p a d d i n g : 2 0 p x ;   b o r d e r - r a d i u s : 1 2 p x ;   b o r d e r : 1 p x   s o l i d   # 8 6 E F A C ;   d i s p l a y : f l e x ;   a l i g n - i t e m s : c e n t e r ;   g a p : 1 2 p x ; " > 
-                                         < s p a n   s t y l e = " f o n t - s i z e : 2 4 p x ; " > '< / s p a n > 
-                                         < d i v > 
-                                                 < h 4   s t y l e = " c o l o r : # 1 6 6 5 3 4 ;   m a r g i n : 0 ;   f o n t - s i z e : 1 6 p x ; " > S y s t e m   S t a b l e < / h 4 > 
-                                                 < p   s t y l e = " c o l o r : # 1 5 8 0 3 D ;   m a r g i n : 4 p x   0   0   0 ;   f o n t - s i z e : 1 4 p x ; " > N o   a n o m a l i e s   d e t e c t e d   i n   r e c e n t   l o g s . < / p > 
-                                         < / d i v > 
-                                 < / d i v > 
-                         ` ; 
-                 }   e l s e   { 
-                         c o n t a i n e r . i n n e r H T M L   =   a l e r t s H t m l ; 
-                 } 
-         } ) . c a t c h ( e r r   = >   { 
-                 c o n s o l e . e r r o r ( " E r r o r   l o a d i n g   a l e r t s : " ,   e r r ) ; 
-                 c o n t a i n e r . i n n e r H T M L   =   " < p   s t y l e = \ " c o l o r :   # D C 2 6 2 6 ; \ " > F a i l e d   t o   l o a d   a l e r t s . < / p > " ; 
-         } ) ; 
- } 
-  
- 
+
+function loadCustomerAlerts() {
+    const container = document.getElementById("customer-alerts-container");
+    if (!container) return;
+    
+    if (!globalSelectedUnitId) {
+        container.innerHTML = "<p style=\"color: var(--text-muted);\">Please select a unit to view alerts.</p>";
+        return;
+    }
+    
+    container.innerHTML = "<p style=\"color: var(--text-muted);\">Loading alerts...</p>";
+    
+    // Fetch latest 50 logs to check for anomalies
+    const liveSensorQuery = window.query(
+        window.dbRef(window.firebaseDB, `sensor_logs/${globalSelectedUnitId}`),
+        window.orderByKey(),
+        window.limitToLast(50)
+    );
+    
+    window.dbGet(liveSensorQuery).then((snapshot) => {
+        if (!snapshot.exists()) {
+            container.innerHTML = "<p style=\"color: #64748B;\">No alerts found for this unit.</p>";
+            return;
+        }
+        
+        let alertsHtml = "";
+        const data = snapshot.val();
+        
+        // Convert to array and reverse to show newest first
+        const logs = Object.values(data).reverse();
+        
+        logs.forEach(log => {
+            let isAlert = false;
+            let alertMsg = "";
+            let alertType = "";
+            
+            if (Number(log.pressure) > 1.3) {
+                isAlert = true;
+                alertMsg = `High Pressure Detected: ${log.pressure} bar`;
+                alertType = "critical";
+            } else if (Number(log.temperature) > 40) {
+                isAlert = true;
+                alertMsg = `High Temperature Detected: ${log.temperature} °C`;
+                alertType = "critical";
+            }
+            
+            if (isAlert) {
+                const time = log.timestamp ? new Date(log.timestamp).toLocaleString() : "Unknown Time";
+                const bg = alertType === "critical" ? "#FEE2E2" : "#FEF3C7";
+                const border = alertType === "critical" ? "#FCA5A5" : "#FDE68A";
+                const color = alertType === "critical" ? "#991B1B" : "#D97706";
+                
+                alertsHtml += `
+                    <div style="background: ${bg}; border: 1px solid ${border}; padding: 16px; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong style="color: ${color};">🚨 ${alertType.toUpperCase()} ALERT</strong>
+                            <span style="font-size: 12px; color: #64748B;">${time}</span>
+                        </div>
+                        <div style="color: #475569; font-size: 14px;">${alertMsg}</div>
+                    </div>
+                `;
+            }
+        });
+        
+        if (alertsHtml === "") {
+            container.innerHTML = `
+                <div style="background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:24px;">✅</span>
+                    <div>
+                        <h4 style="color:#166534; margin:0; font-size:16px;">System Stable</h4>
+                        <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No anomalies detected in recent logs.</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = alertsHtml;
+        }
+    }).catch(err => {
+        console.error("Error loading alerts:", err);
+        container.innerHTML = "<p style=\"color: #DC2626;\">Failed to load alerts.</p>";
+    });
+}
