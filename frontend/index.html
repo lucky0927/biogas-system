@@ -147,7 +147,7 @@
                 <div id="admin-deployments" class="admin-tab">
                     <div class="flex-header">
                         <h3 class="section-title">Manage Locations & Units</h3>
-                        <button class="btn-add-unit btn-floating-add" onclick="openAddDeploymentModal()">+ Add New Unit</button>                    </div>
+                        <button class="btn-add-unit btn-floating-add" onclick="openAddClientModal()">+ Add New Client</button>                    </div>
                     
                     <div class="units-list" id="all-units-list">
                         <!-- All locations and units will load here -->
@@ -256,49 +256,57 @@
             </div>
         </div>
     </div>
-    <div id="add-deployment-modal" class="modal">
-        <div class="modal-content">
+    <div id="add-client-modal" class="modal">
+        <div class="modal-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h3>Register Biogas Unit</h3>
-                <span class="close-btn" onclick="closeAddDeploymentModal()">&times;</span>
+                <h3 id="wizard-title">Add New Client & Deploy</h3>
+                <span class="close-btn" onclick="closeAddClientModal()">&times;</span>
             </div>
             
-            <div class="form-section">
-                <h4>1. Customer Details</h4>
-                <select id="customer-select" class="input-field" onchange="handleCustomerSelection()">
-                    <option value="new">+ Create New Customer</option>
-                </select>
-                
-                <div id="new-customer-fields" style="display: none;">
-                    <input type="text" id="cust-name" class="input-field" placeholder="Full Name">
-                    <input type="text" id="cust-phone" class="input-field" placeholder="Phone Number">
-    
-                     <!-- Auto Generate Message -->
-                    <div style="background: #ECFDF5; padding: 12px; border-radius: 8px; border: 1px dashed #10B981; margin-bottom: 12px; text-align: center;">
-                        <span style="color: #059669; font-size: 13px; font-weight: 600;">🔒 Username, Password & Login Links Auto-Generated</span>
-                    </div>
-                </div>  
-            </div>
-
-            <div class="form-section">
-                <h4>2. Location Details</h4>
-                <select id="location-select" class="input-field" onchange="handleLocationSelection()">
-                    <option value="new">+ Create New Location</option>
-                </select>
-                
-                <div id="new-location-fields">
-                    <input type="text" id="loc-name" class="input-field" placeholder="Location Name (e.g. Base Canteen)">
-                    <input type="text" id="loc-address" class="input-field" placeholder="Full Address">
+            <div id="wizard-step-1">
+                <div class="form-section">
+                    <h4>1. Client Details</h4>
+                    <label style="font-size: 12px; color: #64748B;">Client Logo</label>
+                    <input type="file" id="client-logo" class="input-field" accept="image/*">
+                    <input type="text" id="client-name" class="input-field" placeholder="Client Name (e.g. ABC Company)">
+                    <input type="text" id="client-phone" class="input-field" placeholder="Phone Number">
+                    <input type="text" id="client-address" class="input-field" placeholder="Main Address">
                 </div>
+
+                <div class="form-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4>2. Locations & Units</h4>
+                        <button class="btn-secondary-small" onclick="addLocationBlock()">+ Add Location</button>
+                    </div>
+                    <div id="locations-container" style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- JS injected locations -->
+                    </div>
+                </div>
+                
+                <div id="client-msg" style="text-align: center; margin-bottom: 10px; font-weight: bold;"></div>
+                <button class="btn-primary" onclick="saveNewClientFlow()">Deploy System</button>
             </div>
 
-            <div class="form-section">
-                <h4>3. Hardware Details</h4>
-                <input type="text" id="unit-name" class="input-field" placeholder="Unit Name (e.g. Unit 1) - Optional for single units">
-                <input type="text" id="unit-token" class="input-field" placeholder="Device Link / Token (Auto Generated)" readonly style="background-color: #ECFDF5; color: #059669; font-weight: 700; text-align: center; letter-spacing: 2px; border: 2px dashed #10B981;">            </div>
-            
-            <button class="btn-primary" onclick="saveNewDeployment()">Save Deployment</button>
-            <div id="deployment-msg" style="margin-top: 15px; font-size: 14px;"></div>
+            <div id="wizard-step-2" style="display: none;">
+                <div style="background: #ECFDF5; padding: 20px; border-radius: 12px; border: 1px dashed #10B981; text-align: center; margin-bottom: 20px;">
+                    <span style="font-size: 40px; display: block; margin-bottom: 10px;">✅</span>
+                    <h3 style="color: #059669; margin: 0;">Deployment Successful!</h3>
+                </div>
+                
+                <div class="param-card" style="border: 1px solid #E2E8F0; padding: 15px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #0F172A;">Client Login Credentials</h4>
+                    <p style="margin: 5px 0;"><strong>Dashboard Link:</strong> <span id="res-link" style="color: #1D4ED8; word-break: break-all;"></span></p>
+                    <p style="margin: 5px 0;"><strong>Username:</strong> <span id="res-user"></span></p>
+                    <p style="margin: 5px 0;"><strong>Password:</strong> <span id="res-pass"></span></p>
+                </div>
+
+                <div class="param-card" style="border: 1px solid #E2E8F0; padding: 15px;">
+                    <h4 style="margin: 0 0 10px 0; color: #0F172A;">Device Links (Enter into ESP32 Hotspot)</h4>
+                    <div id="res-device-links" style="font-size: 13px; color: #475569;"></div>
+                </div>
+
+                <button class="btn-primary" style="margin-top: 20px;" onclick="closeAddClientModal()">Done</button>
+            </div>
         </div>
     </div>
 
@@ -425,16 +433,16 @@
                                         <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-co2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.25"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/></linearGradient></defs><path d="M0 18 C10 15 20 22 35 20 S55 25 70 18 S90 22 120 26" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M0 18 C10 15 20 22 35 20 S55 25 70 18 S90 22 120 26 L120 36 L0 36Z" fill="url(#spk-co2)"/></svg></div>
                                     </div>
                                     <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Gas Volume</p>
+                                        <p class="sensor-mini-label">Temperature</p>
+                                        <div class="sensor-mini-val"><span id="val-temp">0.0</span><small>°C</small></div>
+                                        <span class="sensor-mini-tag good">Active</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-temp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12 L120 36 L0 36Z" fill="url(#spk-temp)"/></svg></div>
+                                    </div>
+                                    <div class="sensor-mini-card">
+                                        <p class="sensor-mini-label">Gas Volume (%)</p>
                                         <div class="sensor-mini-val"><span id="val-vol-pct">0.0</span><small>%</small></div>
                                         <span class="sensor-mini-tag good">Normal</span>
                                         <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-volpct" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8 L120 36 L0 36Z" fill="url(#spk-volpct)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">pH Level</p>
-                                        <div class="sensor-mini-val"><span id="val-ph">0.0</span></div>
-                                        <span class="sensor-mini-tag good">Optimal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19 L120 36 L0 36Z" fill="url(#spk-ph)"/></svg></div>
                                     </div>
                                 </div>
 
@@ -460,10 +468,10 @@
                                 <!-- RIGHT SENSORS 2×2 -->
                                 <div class="monitor-sensor-col">
                                     <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Temperature</p>
-                                        <div class="sensor-mini-val"><span id="val-temp">0.0</span><small>°C</small></div>
-                                        <span class="sensor-mini-tag good">Active</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-temp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12 L120 36 L0 36Z" fill="url(#spk-temp)"/></svg></div>
+                                        <p class="sensor-mini-label">pH Level</p>
+                                        <div class="sensor-mini-val"><span id="val-ph">0.0</span></div>
+                                        <span class="sensor-mini-tag good">Optimal</span>
+                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19 L120 36 L0 36Z" fill="url(#spk-ph)"/></svg></div>
                                     </div>
                                     <div class="sensor-mini-card">
                                         <p class="sensor-mini-label">Pressure</p>
@@ -478,7 +486,7 @@
                                         <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-hum" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/></linearGradient></defs><path d="M0 14 C15 16 25 18 40 20 S60 22 75 24 S95 26 120 28" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/><path d="M0 14 C15 16 25 18 40 20 S60 22 75 24 S95 26 120 28 L120 36 L0 36Z" fill="url(#spk-hum)"/></svg></div>
                                     </div>
                                     <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Gas Volume</p>
+                                        <p class="sensor-mini-label">Gas Volume (L)</p>
                                         <div class="sensor-mini-val"><span id="val-vol">0.0</span><small>L</small></div>
                                         <span class="sensor-mini-tag good">Normal</span>
                                         <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-vol" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8 L120 36 L0 36Z" fill="url(#spk-vol)"/></svg></div>
@@ -561,7 +569,7 @@
                     <div class="table-container">
                         <table class="data-table" id="history-table">
                             <thead>
-                                <tr><th>Time</th><th>CH4 (ppm)</th><th>CO2 (ppm)</th><th>H2S (ppm)</th><th>Temp (°C)</th><th>pH Level</th><th>Volume (L)</th></tr>
+                                <tr><th>Time</th><th>CH4 (ppm)</th><th>CO2 (ppm)</th><th>Temp (°C)</th><th>pH Level</th><th>Volume (L)</th></tr>
                             </thead>
                             <tbody id="history-tbody">
                                 <tr><td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit to view data logs.</td></tr>
@@ -654,25 +662,19 @@
                     <div class="flex-header" style="margin-bottom: 24px;">
                         <div>
                             <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Alerts</h2>
-                            <p class="text-muted" style="font-size: 14px;">Sensor threshold breaches for your biogas unit. Select a unit to view its alert history.</p>
+                            <p class="text-muted" style="font-size: 14px;">Review out-of-range sensor readings and critical warnings.</p>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
                             <select id="alerts-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
                                 <option value="" disabled>-- Switch Unit --</option>
                             </select>
-                            <select id="alert-filter-select" class="input-field" onchange="filterCustomerAlerts()" style="min-width: 160px;">
-                                <option value="all">All Alerts</option>
-                                <option value="active">Active / Acknowledged</option>
-                                <option value="resolved">Resolved</option>
-                            </select>
-                            <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh</button>
+                            <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh Alerts</button>
                         </div>
                     </div>
                     <div id="customer-alerts-container" style="display: flex; flex-direction: column; gap: 16px;">
                         <p style="color: var(--text-muted);">Please select a unit to view alerts.</p>
                     </div>
                 </div>
-
 
                 <!-- CUSTOMER TAB: SUPPORT (CHAT) -->
                 <div id="cust-support" class="admin-tab" style="padding: 0; height: calc(100vh - 40px);">

@@ -226,11 +226,6 @@ body:has(#login-screen.active) { overflow: hidden !important; }
     50%       { transform: translateY(-6px); }
 }
 
-@keyframes pulse-dot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(1.4); }
-}
-
 .input-group { margin-bottom: 20px; }
 .input-group label {
     display: block;
