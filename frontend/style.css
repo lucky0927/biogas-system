@@ -487,32 +487,78 @@ body:has(#login-screen.active) { overflow: hidden !important; }
     font-size: 20px;
 }
 
+/* ════════════════════════════════════════════
+   MODERN UNIT SWITCHER & REPORT BUTTON
+   ════════════════════════════════════════════ */
 .unit-switcher {
-    padding: 8px 36px 8px 16px; 
-    margin-bottom: 0;
-    width: auto;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: var(--surface-1);
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+    padding: 0 36px 0 16px;
+    height: 38px; /* 🔴 අනිත් ඒවගේ උසටම සමාන කිරීම */
     font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
     border-radius: 8px; 
-    background-color: var(--surface-1);
-    border: 1px solid var(--border-strong); 
-    color: var(--text-primary);
-    appearance: none; 
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 12px center; 
+    background-position: right 12px center;
     box-shadow: var(--shadow-xs);
-    transition: border-color var(--dur-base), box-shadow var(--dur-base);
+    transition: all 0.2s ease;
+    margin: 0;
 }
-
 .unit-switcher:focus, .unit-switcher:hover {
     border-color: var(--green-500);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.unit-switcher optgroup {
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--surface-2);
+}
+.unit-switcher option {
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--surface-1);
+}
+
+/* 🔴 Report Issue Button - Modern Design */
+.btn-report-issue {
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FCA5A5;
+    height: 38px; /* 🔴 Dropdown එකේ උසටම සමාන කිරීම */
+    padding: 0 16px;
+    border-radius: 8px; 
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: var(--shadow-xs);
+    transition: all 0.2s ease;
+}
+.btn-report-issue:hover {
+    background: #FEE2E2;
+    border-color: #F87171;
+    transform: translateY(-1px);
+}
+/* Dark Theme Overrides for Button */
+body.dark-theme .btn-report-issue {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+}
+body.dark-theme .btn-report-issue:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
 }
 
 .report-preview-panel {
