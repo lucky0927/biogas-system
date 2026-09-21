@@ -723,8 +723,7 @@ body.dark-theme .btn-report-issue:hover {
     box-shadow: var(--shadow-sm) !important;
     cursor: pointer !important;
     font-family: var(--font-body) !important;
-    transition: background var(--dur-base) !important, transform var(--dur-fast) !important;
-}
+    transition: background var(--dur-base), transform var(--dur-fast) !important;}
 .btn-add-unit:hover {
     background: var(--navy-800) !important;
     transform: translateY(-1px) !important;
@@ -757,8 +756,7 @@ body.dark-theme .btn-report-issue:hover {
     display: block !important;
     margin-top: 14px !important;
     text-decoration: none !important;
-    transition: background var(--dur-base) !important, color var(--dur-base) !important, border-color var(--dur-base) !important, transform var(--dur-fast) !important;
-    cursor: pointer;
+    transition: background var(--dur-base), color var(--dur-base), border-color var(--dur-base) !important;    cursor: pointer;
     font-family: var(--font-body) !important;
 }
 .btn-view-live:hover {
