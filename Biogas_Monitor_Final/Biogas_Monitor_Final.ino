@@ -352,8 +352,8 @@ void loop() {
     if (isnan(h)) h = 0.0;
     if (isnan(t)) t = 0.0;
     
-    // BMP280 gives pressure in Pascals. Divide by 100000 to get bar.
-    float p = bmp.readPressure() / 100000.0F;
+    // ESP32 sends millibar (hPa)
+    float p = bmp.readPressure() / 100.0F;
     if (isnan(p)) p = 0.0;
 
     // Stable Average for MQ Sensors (Fixes Fluctuations)
@@ -406,7 +406,7 @@ void loop() {
     display.setCursor(0, 32);
     display.printf("Vol:%.0fL", volumeLiters);
     display.setCursor(0, 48);
-    display.printf("Prs:%.2f", p);           // Pressure in bar needs decimals
+    display.printf("Prs:%.0f", p);           // Pressure in bar needs decimals
 
     display.setCursor(64, 0);
     display.printf("Tmp:%.1fC", t);
