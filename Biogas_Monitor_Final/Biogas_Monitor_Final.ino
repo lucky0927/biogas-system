@@ -30,7 +30,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 #define I2C_SCL 9
 #define MQ4_PIN 1
 #define MQ135_PIN 2
-#define PH_PIN 14    
+#define PH_PIN 3    
 #define TRIG_PIN 5
 #define ECHO_PIN 6
 #define VALVE1_PIN 10
@@ -70,30 +70,47 @@ float RO_CLEAN_AIR_FACTOR_MQ135 = 3.6;
 float MQ4_R0 = 0;
 float MQ135_R0 = 0;
 
-unsigned long lastCalibrationTime = 0;
-const unsigned long CALIBRATION_INTERVAL = 300000; 
-unsigned long lastSendTime = 0; 
-
 // ==========================================
 // Callbacks & Ticker
 // ==========================================
+// ---------- pH Sensor Calibration ----------
+float voltage_pH4 = 1.76;
+float voltage_pH7 = 1.28; 
+float pH4_value = 4.01;
+float pH7_value = 6.86;
+float ph_slope = (pH7_value - pH4_value) / (voltage_pH7 - voltage_pH4);
+float ph_intercept = pH4_value - (ph_slope * voltage_pH4);
+
+Preferences preferences;
+WiFiManager wifiManager;
+Ticker ledTicker;
+
+// Dynamic Settings from Captive Portal
+String apiLink = "";
+float tankDiameter = 100.0; 
+float tankHeight = 150.0; 
+
+unsigned long lastSendTime = 0;
+unsigned long lastCalibrationTime = 0;
+const unsigned long CALIBRATION_INTERVAL = 3600000; 
+
 void tickLED() {
   digitalWrite(LED_PIN, !digitalRead(LED_PIN));
 }
 
-void configModeCallback (WiFiManager *myWiFiManager) {
+void configModeCallback(WiFiManager *myWiFiManager) {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-  display.println("Connect to Hotspot:");
-  display.setTextSize(2);
+  display.setCursor(0, 0);
+  display.println("WiFi Setup Mode");
+  display.setCursor(0, 20);
+  display.println("Connect to:");
+  display.setCursor(0, 35);
   display.println("Biogas-Setup");
-  display.setTextSize(1);
-  display.setCursor(0, 45);
-  display.println("Enter WiFi & Details");
+  display.setCursor(0, 50);
+  display.println("192.168.4.1");
   display.display();
-  ledTicker.attach(0.2, tickLED);
 }
 
 void saveConfigCallback() {
@@ -111,6 +128,7 @@ void saveConfigCallback() {
 // ==========================================
 void setup() {
   Serial.begin(115200);
+  analogReadResolution(12);
   
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
@@ -287,15 +305,20 @@ void calibrateSensors() {
   for (int i = 0; i < 100; i++) {
     mq4_sum += analogRead(MQ4_PIN);
     mq135_sum += analogRead(MQ135_PIN);
-    delay(10);
+    delay(20); // Matched with auto calibration delay
   }
-  float mq4_vol = ((mq4_sum / 100.0) / 4095.0) * 3.3;
-  if (mq4_vol <= 0) mq4_vol = 0.001;
-  MQ4_R0 = (((5.0 - mq4_vol) / mq4_vol) * RL_VALUE) / RO_CLEAN_AIR_FACTOR_MQ4;
+  float mq4_avg_raw = mq4_sum / 100.0;
+  float mq135_avg_raw = mq135_sum / 100.0;
 
-  float mq135_vol = ((mq135_sum / 100.0) / 4095.0) * 3.3;
-  if (mq135_vol <= 0) mq135_vol = 0.001;
-  MQ135_R0 = (((5.0 - mq135_vol) / mq135_vol) * RL_VALUE) / RO_CLEAN_AIR_FACTOR_MQ135;
+  float mq4_vol = (mq4_avg_raw / 4095.0) * 3.3;
+  if(mq4_vol <= 0) mq4_vol = 0.001;
+  float mq4_rs = ((5.0 - mq4_vol) / mq4_vol) * RL_VALUE;
+  MQ4_R0 = mq4_rs / RO_CLEAN_AIR_FACTOR_MQ4;
+
+  float mq135_vol = (mq135_avg_raw / 4095.0) * 3.3;
+  if(mq135_vol <= 0) mq135_vol = 0.001;
+  float mq135_rs = ((5.0 - mq135_vol) / mq135_vol) * RL_VALUE;
+  MQ135_R0 = mq135_rs / RO_CLEAN_AIR_FACTOR_MQ135;
 }
 
 // ==========================================
@@ -337,7 +360,15 @@ void loop() {
     float mq135_ratio = mq135_rs / MQ135_R0;
     float co2_ppm = 110.47 * pow(mq135_ratio, -2.862);
 
-    float ph_val = analogRead(PH_PIN) * (14.0 / 4095.0); 
+    // Apply accurate pH calibration
+    long ph_sum = 0;
+    for(int i = 0; i < 10; i++) {
+      ph_sum += analogRead(PH_PIN);
+      delay(10);
+    }
+    float ph_avgRaw = ph_sum / 10.0;
+    float ph_voltage = (ph_avgRaw / 4095.0) * 3.3;
+    float ph_val = (ph_slope * ph_voltage) + ph_intercept; 
 
     float distance = getDistance();
     float tankRadius = tankDiameter / 2.0;
