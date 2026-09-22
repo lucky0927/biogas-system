@@ -239,14 +239,40 @@ void sendDataToCustomerAPI(String jsonPayload) {
 // Helper Functions
 // ==========================================
 float getDistance() {
-  digitalWrite(TRIG_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
-  long duration = pulseIn(ECHO_PIN, HIGH, 30000);
-  if (duration == 0) return 0; 
-  return duration * 0.034 / 2.0;
+  float readings[5];
+  int valid = 0;
+  
+  for(int i=0; i<5; i++) {
+    digitalWrite(TRIG_PIN, LOW);
+    delayMicroseconds(2);
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
+    long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+    if (duration > 0) {
+       float d = duration * 0.034 / 2.0;
+       if (d > 0 && d < 400) {
+         readings[valid] = d;
+         valid++;
+       }
+    }
+    delay(10);
+  }
+  
+  if (valid == 0) return 0;
+  
+  // Sort array to find median
+  for(int i=0; i<valid-1; i++) {
+    for(int j=i+1; j<valid; j++) {
+      if (readings[i] > readings[j]) {
+        float temp = readings[i];
+        readings[i] = readings[j];
+        readings[j] = temp;
+      }
+    }
+  }
+  
+  return readings[valid / 2];
 }
 
 void controlPneumatics(bool v1, bool v2, bool v3, bool pump) {
@@ -316,12 +342,7 @@ void loop() {
     float distance = getDistance();
     float tankRadius = tankDiameter / 2.0;
     float areaCm2 = 3.14159 * tankRadius * tankRadius;
-    
-    // Distance from top sensor to liquid. 
-    // Filled height = tankHeight - distance.
-    float filledHeight = tankHeight - distance;
-    if (filledHeight < 0) filledHeight = 0;
-    float volumeLiters = (areaCm2 * filledHeight) / 1000.0;
+    float volumeLiters = (areaCm2 * distance) / 1000.0;
 
     display.clearDisplay();
     display.setTextSize(1);

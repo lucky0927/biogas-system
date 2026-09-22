@@ -272,7 +272,9 @@ function updateLiveUI(data) {
     // Dynamic Tank Calculation using maxH
     const maxH = data.maxH || 150.0;
     const currentDistance = data.distance || 0;
-    let fillPercent = ((maxH - currentDistance) / maxH) * 100;
+    
+    // When distance is high, volume is high, so fill is high.
+    let fillPercent = (currentDistance / maxH) * 100;
     
     if (fillPercent > 100) fillPercent = 100;
     if (fillPercent < 0) fillPercent = 0;
