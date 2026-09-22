@@ -148,7 +148,17 @@ void setup() {
   delay(3000); 
 
   dht.begin();
-  bmp.begin(0x76);
+  
+  if(!bmp.begin(0x76)) {
+    Serial.println("BMP280 not found! Check wiring.");
+  } else {
+    // BMP280 එකේ readings ගොඩක් stable කරන්න Hardware Filtering දානවා
+    bmp.setSampling(Adafruit_BMP280::MODE_NORMAL, 
+                    Adafruit_BMP280::SAMPLING_X2, 
+                    Adafruit_BMP280::SAMPLING_X16, 
+                    Adafruit_BMP280::FILTER_X16, 
+                    Adafruit_BMP280::STANDBY_MS_500);
+  }
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
   pinMode(VALVE1_PIN, OUTPUT);
@@ -330,14 +340,13 @@ void loop() {
   }
   mqttClient.loop();
 
-  if (millis() - lastCalibrationTime >= CALIBRATION_INTERVAL) {
-    calibrateSensors();
-    lastCalibrationTime = millis();
-  }
+  // Auto Calibration inside the tank during loop causes baseline errors.
+  // We ONLY calibrate at startup in clean air. (Removed calibration from loop)
 
   if (millis() - lastSendTime >= 3000) {
     lastSendTime = millis();
 
+    // 1. DHT22 and BMP280
     float h = dht.readHumidity();
     float t = dht.readTemperature();
     if (isnan(h)) h = 0.0;
@@ -346,14 +355,24 @@ void loop() {
     float p = bmp.readPressure() / 100.0F;
     if (isnan(p)) p = 0.0;
 
-    int mq4_raw = analogRead(MQ4_PIN);
+    // Stable Average for MQ Sensors (Fixes Fluctuations)
+    long mq4_sum = 0, mq135_sum = 0;
+    for(int i = 0; i < 20; i++) {
+      mq4_sum += analogRead(MQ4_PIN);
+      mq135_sum += analogRead(MQ135_PIN);
+      delay(5);
+    }
+    float mq4_raw = mq4_sum / 20.0;
+    float mq135_raw = mq135_sum / 20.0;
+
+    // 2. MQ-4 Methane Calculation
     float mq4_vol = (mq4_raw / 4095.0) * 3.3;
     if (mq4_vol <= 0) mq4_vol = 0.001;
     float mq4_rs = ((5.0 - mq4_vol) / mq4_vol) * RL_VALUE;
     float mq4_ratio = mq4_rs / MQ4_R0;
     float methane_ppm = 1012.7 * pow(mq4_ratio, -2.786);
 
-    int mq135_raw = analogRead(MQ135_PIN);
+    // 3. MQ-135 CO2 Calculation
     float mq135_vol = (mq135_raw / 4095.0) * 3.3;
     if (mq135_vol <= 0) mq135_vol = 0.001;
     float mq135_rs = ((5.0 - mq135_vol) / mq135_vol) * RL_VALUE;
