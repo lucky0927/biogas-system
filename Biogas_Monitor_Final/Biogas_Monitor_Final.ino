@@ -201,6 +201,7 @@ void setup() {
   
   espClient.setInsecure(); 
   mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+  mqttClient.setBufferSize(512); // Fix for default 256 byte limit
   
   calibrateSensors();
   lastCalibrationTime = millis();
@@ -315,7 +316,12 @@ void loop() {
     float distance = getDistance();
     float tankRadius = tankDiameter / 2.0;
     float areaCm2 = 3.14159 * tankRadius * tankRadius;
-    float volumeLiters = (areaCm2 * distance) / 1000.0;
+    
+    // Distance from top sensor to liquid. 
+    // Filled height = tankHeight - distance.
+    float filledHeight = tankHeight - distance;
+    if (filledHeight < 0) filledHeight = 0;
+    float volumeLiters = (areaCm2 * filledHeight) / 1000.0;
 
     display.clearDisplay();
     display.setTextSize(1);
