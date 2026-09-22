@@ -538,15 +538,15 @@
                                                 .chart-btn { padding: 4px 12px; font-size: 12px; border-radius: 100px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; cursor: pointer; font-weight: 600; transition: 0.2s; }
                                                 .chart-btn.active { background: #0F172A; color: #FFF; border-color: #0F172A; }
                                             </style>
-                                            <button onclick="changeChartSensor('ch4', this)" class="chart-btn active">CH4</button>
+                                            <button onclick="changeChartSensor('ch4', this)" class="chart-btn">CH4</button>
                                             <button onclick="changeChartSensor('co2', this)" class="chart-btn">CO2</button>
                                             <button onclick="changeChartSensor('temp', this)" class="chart-btn">Temp</button>
                                             <button onclick="changeChartSensor('hum', this)" class="chart-btn">Humidity</button>
                                             <button onclick="changeChartSensor('ph', this)" class="chart-btn">pH</button>
-                                            <button onclick="changeChartSensor('vol', this)" class="chart-btn">Volume</button>
+                                            <button onclick="changeChartSensor('vol', this)" class="chart-btn active">Volume</button>
                                         </div>
                                     </div>
-                                    <div id="chart-container" style="height: 190px; position: relative;">
+                                    <div id="chart-container" style="width: 100%; height: 190px; position: relative;">
                                         <span class="text-muted" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;">Waiting for live data…</span>
                                     </div>
                                 </div>
@@ -560,6 +560,14 @@
                                     <div class="status-info-card" style="flex: 1;">
                                         <p class="status-info-label" style="margin-bottom: 14px;">Actuator Status</p>
                                         <div class="actuator-row-mini">
+                                            <div class="actuator-mini-item">
+                                                <span class="actuator-mini-label">Valve 1</span>
+                                                <div class="status-indicator" id="status-valve1">OFF</div>
+                                            </div>
+                                            <div class="actuator-mini-item">
+                                                <span class="actuator-mini-label">Valve 2</span>
+                                                <div class="status-indicator" id="status-valve2">OFF</div>
+                                            </div>
                                             <div class="actuator-mini-item">
                                                 <span class="actuator-mini-label">Valve 3</span>
                                                 <div class="status-indicator" id="status-valve">OFF</div>

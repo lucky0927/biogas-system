@@ -337,6 +337,8 @@ void loop() {
     display.setCursor(64, 32);
     display.printf("pH:%.1f", ph_val);
 
+    int v1_state = digitalRead(VALVE1_PIN);
+    int v2_state = digitalRead(VALVE2_PIN);
     int v3_state = digitalRead(VALVE3_PIN);
     int pump_state = digitalRead(PUMP_PIN);
     if (pump_state == HIGH || v3_state == HIGH) {
@@ -348,8 +350,8 @@ void loop() {
 
     char payload[512];
     snprintf(payload, sizeof(payload),
-      "{\"token\":\"%s\",\"ch4\":%.2f,\"co2\":%.2f,\"ph\":%.2f,\"pressure\":%.2f,\"distance\":%.2f,\"volume\":%.2f,\"temp\":%.2f,\"hum\":%.2f,\"v3\":%d,\"pump\":%d,\"maxH\":%.2f}",
-      apiLink.c_str(), methane_ppm, co2_ppm, ph_val, p, distance, volumeLiters, t, h, v3_state, pump_state, tankHeight);
+      "{\"token\":\"%s\",\"ch4\":%.2f,\"co2\":%.2f,\"ph\":%.2f,\"pressure\":%.2f,\"distance\":%.2f,\"volume\":%.2f,\"temp\":%.2f,\"hum\":%.2f,\"v1\":%d,\"v2\":%d,\"v3\":%d,\"pump\":%d,\"maxH\":%.2f}",
+      apiLink.c_str(), methane_ppm, co2_ppm, ph_val, p, distance, volumeLiters, t, h, v1_state, v2_state, v3_state, pump_state, tankHeight);
 
     mqttClient.publish(mqttTopic.c_str(), payload); 
     sendDataToCustomerAPI(String(payload));  

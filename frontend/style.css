@@ -1839,8 +1839,8 @@ body.dark-theme .sensor-mini-card {
 
 /* ── Bottom 2-column row ── */
 .monitor-bottom-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 14px;
 }
 
@@ -1911,7 +1911,7 @@ body.dark-theme .sensor-mini-card {
 
 .actuator-row-mini {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
 }
 

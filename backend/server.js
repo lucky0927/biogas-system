@@ -71,24 +71,29 @@ client.on('message', async (topic, message) => {
                 temperature: sensorData.temperature !== undefined ? sensorData.temperature : (sensorData.temp || 0),
                 humidity: sensorData.humidity !== undefined ? sensorData.humidity : (sensorData.hum || 0),
                 gasVolume: sensorData.gasVolume !== undefined ? sensorData.gasVolume : (sensorData.volume || 0),
+                valve1: sensorData.valve1 !== undefined ? sensorData.valve1 : (sensorData.v1 == 1 ? 'ON' : 'OFF'),
+                valve2: sensorData.valve2 !== undefined ? sensorData.valve2 : (sensorData.v2 == 1 ? 'ON' : 'OFF'),
                 valve3: sensorData.valve3 !== undefined ? sensorData.valve3 : (sensorData.v3 == 1 ? 'ON' : 'OFF'),
                 pump: (sensorData.pump === 1 || sensorData.pump === 'ON') ? 'ON' : 'OFF',
             };
 
-            // 2. Socket.io හරහා Frontend එකේ Live Monitor එකට යැවීම
+            // 2. Socket.io Live Data Emit
             io.emit('liveData', { unitId: firebaseUnitId, ...normalizedData });
-            
-            // 3. Frontend එකේ History Tab එකට පෙන්වීම සඳහා sensor_logs යටතේ Save කිරීම
-            const logRef = db.ref(`sensor_logs/${firebaseUnitId}`).push();
-            await logRef.set({
+
+            // 3. Sensor Logs
+            const logsRef = db.ref(`sensor_logs/${firebaseUnitId}`);
+            logsRef.push({
                 ch4: normalizedData.ch4 || 0,
                 co2: normalizedData.co2 || 0,
+                h2s: normalizedData.h2s || 0,
                 ph: normalizedData.ph || 0,
                 pressure: normalizedData.pressure || 0,
                 distance: normalizedData.distance || 0,
                 gasVolume: normalizedData.gasVolume,
                 temperature: normalizedData.temperature,
                 humidity: normalizedData.humidity,
+                valve1: normalizedData.valve1,
+                valve2: normalizedData.valve2,
                 valve3: normalizedData.valve3,
                 pump: normalizedData.pump,
                 timestamp: new Date().toISOString()

@@ -32,7 +32,7 @@ function loadCustomerDashboard(userData) {
     renderCustomerOverview();
 }
 
-let currentChartSensor = 'ch4'; // Default chart sensor
+let activeChartSensors = ['vol']; // Default chart sensor
 let chartLabelsMap = {
     'ch4': 'CH4 (ppm)',
     'co2': 'CO2 (ppm)',
@@ -51,14 +51,15 @@ let chartColorsMap = {
 };
 
 function changeChartSensor(sensorKey, btnElement) {
-    currentChartSensor = sensorKey;
-    
-    // Update active button styling
-    const buttons = document.querySelectorAll('#chart-selectors .chart-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    if(btnElement) btnElement.classList.add('active');
-
-    // Reinitialize chart with new dataset settings
+    if (activeChartSensors.includes(sensorKey)) {
+        if (activeChartSensors.length > 1) { // Prevent deselecting all
+            activeChartSensors = activeChartSensors.filter(s => s !== sensorKey);
+            if (btnElement) btnElement.classList.remove('active');
+        }
+    } else {
+        activeChartSensors.push(sensorKey);
+        if (btnElement) btnElement.classList.add('active');
+    }
     initLiveChart();
 }
 
@@ -101,16 +102,26 @@ function initLiveChart() {
         liveChart.destroy();
     }
 
-    const labelStr = chartLabelsMap[currentChartSensor] || 'Sensor Value';
-    const colorStr = chartColorsMap[currentChartSensor] || '#16A34A';
+    const datasets = activeChartSensors.map(sensor => {
+        const labelStr = chartLabelsMap[sensor] || 'Sensor Value';
+        const colorStr = chartColorsMap[sensor] || '#16A34A';
+        return {
+            label: labelStr,
+            data: [],
+            borderColor: colorStr,
+            backgroundColor: colorStr + '20',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0
+        };
+    });
 
     liveChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [], 
-            datasets: [
-                { label: labelStr, data: [], borderColor: colorStr, backgroundColor: colorStr + '20', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0 }
-            ]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -214,22 +225,48 @@ function updateLiveUI(data) {
     const volumeValue = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
     document.getElementById('val-vol').innerText = volumeValue.toFixed(2);    
     
+    const v1Status = document.getElementById('status-valve1');
+    if (v1Status) {
+        if (data.valve1 === 'ON') {
+            v1Status.innerText = 'ON';
+            v1Status.classList.add('on');
+        } else {
+            v1Status.innerText = 'OFF';
+            v1Status.classList.remove('on');
+        }
+    }
+
+    const v2Status = document.getElementById('status-valve2');
+    if (v2Status) {
+        if (data.valve2 === 'ON') {
+            v2Status.innerText = 'ON';
+            v2Status.classList.add('on');
+        } else {
+            v2Status.innerText = 'OFF';
+            v2Status.classList.remove('on');
+        }
+    }
+
     const vStatus = document.getElementById('status-valve');
-    if (data.valve3 === 'ON') {
-        vStatus.innerText = 'ON';
-        vStatus.classList.add('on');
-    } else {
-        vStatus.innerText = 'OFF';
-        vStatus.classList.remove('on');
+    if (vStatus) {
+        if (data.valve3 === 'ON') {
+            vStatus.innerText = 'ON';
+            vStatus.classList.add('on');
+        } else {
+            vStatus.innerText = 'OFF';
+            vStatus.classList.remove('on');
+        }
     }
 
     const pStatus = document.getElementById('status-pump');
-    if (data.pump === 'ON') {
-        pStatus.innerText = 'ON';
-        pStatus.classList.add('on');
-    } else {
-        pStatus.innerText = 'OFF';
-        pStatus.classList.remove('on');
+    if (pStatus) {
+        if (data.pump === 'ON') {
+            pStatus.innerText = 'ON';
+            pStatus.classList.add('on');
+        } else {
+            pStatus.innerText = 'OFF';
+            pStatus.classList.remove('on');
+        }
     }
 
     // Dynamic Tank Calculation using maxH
@@ -258,19 +295,23 @@ function updateLiveUI(data) {
         const timeNow = new Date().toLocaleTimeString();
         liveChart.data.labels.push(timeNow);
         
-        let plotValue = 0;
-        if (currentChartSensor === 'ch4') plotValue = data.ch4 || 0;
-        else if (currentChartSensor === 'co2') plotValue = data.co2 || 0;
-        else if (currentChartSensor === 'temp') plotValue = data.temperature || 0;
-        else if (currentChartSensor === 'hum') plotValue = data.humidity || 0;
-        else if (currentChartSensor === 'ph') plotValue = data.ph || 0;
-        else if (currentChartSensor === 'vol') plotValue = volumeValue;
-        
-        liveChart.data.datasets[0].data.push(plotValue);
+        activeChartSensors.forEach((sensor, index) => {
+            let plotValue = 0;
+            if (sensor === 'ch4') plotValue = data.ch4 || 0;
+            else if (sensor === 'co2') plotValue = data.co2 || 0;
+            else if (sensor === 'temp') plotValue = data.temperature || 0;
+            else if (sensor === 'hum') plotValue = data.humidity || 0;
+            else if (sensor === 'ph') plotValue = data.ph || 0;
+            else if (sensor === 'vol') plotValue = volumeValue;
+            
+            liveChart.data.datasets[index].data.push(plotValue);
+        });
         
         if (liveChart.data.labels.length > 20) {
             liveChart.data.labels.shift();
-            liveChart.data.datasets[0].data.shift();
+            activeChartSensors.forEach((sensor, index) => {
+                liveChart.data.datasets[index].data.shift();
+            });
         }
         liveChart.update();
     }
