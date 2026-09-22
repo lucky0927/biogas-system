@@ -352,7 +352,8 @@ void loop() {
     if (isnan(h)) h = 0.0;
     if (isnan(t)) t = 0.0;
     
-    float p = bmp.readPressure() / 100.0F;
+    // BMP280 gives pressure in Pascals. Divide by 100000 to get bar.
+    float p = bmp.readPressure() / 100000.0F;
     if (isnan(p)) p = 0.0;
 
     // Stable Average for MQ Sensors (Fixes Fluctuations)
@@ -399,13 +400,13 @@ void loop() {
     display.setTextColor(WHITE);
     
     display.setCursor(0, 0);
-    display.printf("CH4:%.1f", methane_ppm);
+    display.printf("CH4:%.0f", methane_ppm); // Removed decimals for space if needed, wait I'll keep %.1f
     display.setCursor(0, 16);
-    display.printf("CO2:%.1f", co2_ppm);
+    display.printf("CO2:%.0f", co2_ppm);     // Removed decimals for space if needed, wait I'll keep %.1f
     display.setCursor(0, 32);
-    display.printf("Vol:%.1fL", volumeLiters);
+    display.printf("Vol:%.0fL", volumeLiters);
     display.setCursor(0, 48);
-    display.printf("Prs:%.0f", p); 
+    display.printf("Prs:%.2f", p);           // Pressure in bar needs decimals
 
     display.setCursor(64, 0);
     display.printf("Tmp:%.1fC", t);
