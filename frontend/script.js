@@ -2434,6 +2434,307 @@ function reportSpecificSensor(sensorName, currentValue, status) {
 }
 
 // ==========================================
+// --- INDUSTRIAL ALERT SYSTEM ---
+// ==========================================
+
+// Threshold definitions
+const ALERT_THRESHOLDS = [
+    {
+        id: 'ch4', label: 'Methane (CH4)', unit: '%', icon: '🔥',
+        safeMin: 50, safeMax: 70,
+        warning:  { check: v => v < 45 && v >= 40, msg: 'CH4 dropping — digester performance degrading' },
+        critical: { check: v => v < 40,             msg: 'CH4 critically low — poor gas quality' }
+    },
+    {
+        id: 'co2', label: 'Carbon Dioxide (CO2)', unit: '%', icon: '💨',
+        safeMin: 25, safeMax: 45,
+        warning:  { check: v => v > 45 && v <= 50, msg: 'CO2 elevated — check gas composition balance' },
+        critical: { check: v => v > 50,             msg: 'CO2 critically high — excessive CO2 concentration' }
+    },
+    {
+        id: 'pressure', label: 'System Pressure', unit: 'bar', icon: '⚙️',
+        safeMin: 1.0, safeMax: 1.2,
+        warning:  { check: v => v > 1.1 && v <= 1.3, msg: 'Pressure rising — monitor closely' },
+        critical: { check: v => v > 1.3,              msg: 'Overpressure detected — check relief valve immediately' }
+    },
+    {
+        id: 'temperature', label: 'Digester Temperature', unit: '°C', icon: '🌡️',
+        safeMin: 30, safeMax: 40,
+        warning:  { check: v => v > 40 && v <= 45, msg: 'Temperature above optimal range' },
+        critical: { check: v => v > 45,             msg: 'Critical overheating — risk of process failure' }
+    },
+    {
+        id: 'ph', label: 'pH Level', unit: '', icon: '🧪',
+        safeMin: 6.5, safeMax: 7.5,
+        warning:  { check: v => (v < 6.5 && v >= 6.0) || (v > 7.5 && v <= 8.0), msg: 'pH drifting outside optimal range — consider buffering' },
+        critical: { check: v => v < 6.0 || v > 8.0,                              msg: 'pH critical — microbial activity at risk' }
+    }
+];
+
+let _allAlertCards = []; // holds all generated cards for filtering
+
+function loadCustomerAlerts() {
+    const unitId = globalSelectedUnitId;
+    const container = document.getElementById('customer-alerts-container');
+    const summaryBar = document.getElementById('alert-summary-bar');
+    const filterBar  = document.getElementById('alert-filter-bar');
+
+    if (!unitId) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:60px 20px; color:var(--text-muted);">
+                <div style="font-size:52px; margin-bottom:14px;">🛡️</div>
+                <h3 style="margin:0 0 8px 0; color:var(--text-dark); font-weight:700;">No Unit Selected</h3>
+                <p style="margin:0; font-size:14px;">Use the unit switcher above to select a biogas unit.</p>
+            </div>`;
+        return;
+    }
+
+    // Show loading
+    container.innerHTML = `
+        <div style="text-align:center; padding:50px 20px; color:var(--text-muted);">
+            <div style="font-size:36px; margin-bottom:12px; animation: spin 1s linear infinite;">⚙️</div>
+            <p style="font-size:14px; font-weight:600;">Analyzing sensor readings...</p>
+        </div>`;
+
+    // Fetch last 100 sensor logs
+    const q = window.query(
+        window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`),
+        window.orderByKey(),
+        window.limitToLast(100)
+    );
+
+    window.dbGet(q).then(snapshot => {
+        if (!snapshot.exists()) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:60px 20px;">
+                    <div style="font-size:48px; margin-bottom:12px;">📭</div>
+                    <h3 style="margin:0 0 8px 0; color:var(--text-dark);">No Data Available</h3>
+                    <p style="margin:0; font-size:14px; color:var(--text-muted);">No sensor readings found for this unit yet.</p>
+                </div>`;
+            return;
+        }
+
+        const logs = Object.values(snapshot.val()).reverse(); // newest first
+        const latestLog = logs[0];
+        const lastTime = latestLog.timestamp ? new Date(latestLog.timestamp) : new Date();
+        const isOnline = (Date.now() - lastTime.getTime()) < 10 * 60 * 1000;
+
+        // Get unit & location info
+        const unit = globalUnits[unitId] || {};
+        const loc  = globalLocations[unit.locationId] || {};
+        const unitLabel = unit.unitName ? `${loc.locationName || ''} — ${unit.unitName}` : (loc.locationName || unitId);
+
+        // Evaluate each sensor against thresholds
+        _allAlertCards = [];
+        let criticalCount = 0, warningCount = 0, normalCount = 0;
+
+        ALERT_THRESHOLDS.forEach(sensor => {
+            const rawVal = latestLog[sensor.id];
+            if (rawVal == null) return;
+
+            const val = Number(rawVal);
+            let severity = 'normal';
+            let message  = `Within safe range (${sensor.safeMin}${sensor.unit ? ' ' + sensor.unit : ''} – ${sensor.safeMax}${sensor.unit ? ' ' + sensor.unit : ''})`;
+
+            if (!isOnline) {
+                severity = 'offline';
+                message  = 'Device offline — data may be stale';
+            } else if (sensor.critical.check(val)) {
+                severity = 'critical';
+                message  = sensor.critical.msg;
+                criticalCount++;
+            } else if (sensor.warning.check(val)) {
+                severity = 'warning';
+                message  = sensor.warning.msg;
+                warningCount++;
+            } else {
+                normalCount++;
+            }
+
+            // Compute a mini trend from last 10 readings
+            const recentVals = logs.slice(0, 10).map(l => Number(l[sensor.id] || 0)).filter(v => v > 0);
+            const trend = recentVals.length >= 2
+                ? (recentVals[0] > recentVals[recentVals.length - 1] ? '📈 Rising' : '📉 Falling')
+                : '➡️ Stable';
+
+            // Style config per severity
+            const cfg = {
+                critical: { bg: '#FEF2F2', border: '#EF4444', leftBar: '#DC2626', badge: '#DC2626', badgeBg: '#FEE2E2', icon: '🚨', label: 'CRITICAL' },
+                warning:  { bg: '#FFFBEB', border: '#F59E0B', leftBar: '#D97706', badge: '#D97706', badgeBg: '#FEF3C7', icon: '⚠️',  label: 'WARNING'  },
+                normal:   { bg: 'var(--bg-primary)', border: '#E2E8F0', leftBar: '#10B981', badge: '#16A34A', badgeBg: '#DCFCE7', icon: '✅', label: 'NORMAL' },
+                offline:  { bg: '#F8FAFC', border: '#CBD5E1', leftBar: '#94A3B8', badge: '#6B7280', badgeBg: '#F3F4F6', icon: '📡', label: 'OFFLINE' }
+            }[severity];
+
+            const displayVal = Number.isInteger(val) ? val : val.toFixed(2);
+            const alertTimestamp = lastTime.toLocaleString();
+
+            const cardHtml = `
+                <div class="ialert-card" data-severity="${severity}"
+                     style="background:${cfg.bg}; border:1px solid ${cfg.border}; border-left:5px solid ${cfg.leftBar}; border-radius:12px; padding:20px 24px; transition:0.2s;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+                        <div style="display:flex; align-items:center; gap:14px;">
+                            <span style="font-size:28px; line-height:1;">${sensor.icon}</span>
+                            <div>
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                    <h4 style="margin:0; font-size:16px; color:var(--text-dark); font-weight:700;">${sensor.label}</h4>
+                                    <span style="background:${cfg.badgeBg}; color:${cfg.badge}; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:800; letter-spacing:0.8px;">${cfg.icon} ${cfg.label}</span>
+                                </div>
+                                <p style="margin:0; font-size:13px; color:#64748B;">${message}</p>
+                            </div>
+                        </div>
+                        <div style="text-align:right; flex-shrink:0;">
+                            <div style="font-size:28px; font-weight:800; color:${cfg.badge}; line-height:1;">${displayVal}${sensor.unit ? ' <span style="font-size:14px; font-weight:600;">' + sensor.unit + '</span>' : ''}</div>
+                            <div style="font-size:11px; color:#94A3B8; margin-top:4px;">Current Reading</div>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid ${cfg.border};">
+                        <div style="background:rgba(0,0,0,0.03); padding:10px 14px; border-radius:8px;">
+                            <div style="font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Safe Range</div>
+                            <div style="font-size:13px; font-weight:700; color:var(--text-dark);">${sensor.safeMin} – ${sensor.safeMax}${sensor.unit ? ' ' + sensor.unit : ''}</div>
+                        </div>
+                        <div style="background:rgba(0,0,0,0.03); padding:10px 14px; border-radius:8px;">
+                            <div style="font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">10-Reading Trend</div>
+                            <div style="font-size:13px; font-weight:700; color:var(--text-dark);">${trend}</div>
+                        </div>
+                        <div style="background:rgba(0,0,0,0.03); padding:10px 14px; border-radius:8px;">
+                            <div style="font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Last Reading</div>
+                            <div style="font-size:12px; font-weight:600; color:var(--text-dark);">${alertTimestamp}</div>
+                        </div>
+                    </div>
+
+                    ${severity === 'critical' || severity === 'warning' ? `
+                    <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                        <button onclick="reportSpecificSensor('${sensor.label}', '${displayVal} ${sensor.unit}', '${cfg.label}')"
+                                style="padding:8px 16px; font-size:12px; font-weight:700; background:#FFF; color:#1D4ED8; border:1.5px solid #BFDBFE; border-radius:8px; cursor:pointer;">
+                            💬 Report to Support
+                        </button>
+                        ${severity === 'critical' ? `
+                        <button onclick="openGuideModal('${sensor.label}', '${displayVal} ${sensor.unit}')"
+                                style="padding:8px 16px; font-size:12px; font-weight:700; background:#DC2626; color:#FFF; border:none; border-radius:8px; cursor:pointer;">
+                            🚨 View Emergency Guide
+                        </button>` : ''}
+                    </div>` : ''}
+                </div>`;
+
+            _allAlertCards.push({ severity, html: cardHtml });
+        });
+
+        // Sort: critical → warning → normal → offline
+        const order = { critical: 0, warning: 1, normal: 2, offline: 3 };
+        _allAlertCards.sort((a, b) => order[a.severity] - order[b.severity]);
+
+        // Update summary bar
+        const el = id => document.getElementById(id);
+        if (summaryBar) { summaryBar.style.display = 'flex'; }
+        if (filterBar)  { filterBar.style.display  = 'flex'; }
+        if (el('alert-count-critical')) el('alert-count-critical').innerText = criticalCount;
+        if (el('alert-count-warning'))  el('alert-count-warning').innerText  = warningCount;
+        if (el('alert-count-normal'))   el('alert-count-normal').innerText   = normalCount;
+        if (el('alert-unit-label'))     el('alert-unit-label').innerText     = unitLabel;
+        if (el('alert-last-updated'))   el('alert-last-updated').innerText   = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+        // Pulse dot color
+        const dot = el('alert-pulse-dot');
+        if (dot) {
+            dot.style.background = criticalCount > 0 ? '#EF4444' : warningCount > 0 ? '#F59E0B' : '#10B981';
+        }
+
+        // Render all cards
+        renderAlertCards('all');
+
+        // Update tab badge
+        updateAlertTabBadge(criticalCount + warningCount);
+
+        // All-clear case
+        if (_allAlertCards.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:60px 20px;">
+                    <div style="font-size:52px; margin-bottom:12px;">✅</div>
+                    <h3 style="margin:0 0 8px 0; color:#166534; font-weight:700;">All Systems Nominal</h3>
+                    <p style="margin:0; font-size:14px; color:#15803D;">All sensors are operating within safe thresholds.</p>
+                </div>`;
+        }
+
+    }).catch(err => {
+        console.error('loadCustomerAlerts error:', err);
+        container.innerHTML = `
+            <div style="text-align:center; padding:50px 20px; color:#DC2626;">
+                <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
+                <h3 style="margin:0 0 8px 0;">Failed to load alert data</h3>
+                <p style="margin:0; font-size:13px;">Check your connection and try refreshing.</p>
+            </div>`;
+    });
+}
+
+function renderAlertCards(filter) {
+    const container = document.getElementById('customer-alerts-container');
+    if (!container) return;
+
+    const filtered = filter === 'all'
+        ? _allAlertCards
+        : _allAlertCards.filter(c => c.severity === filter);
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+                <div style="font-size:36px; margin-bottom:10px;">🔍</div>
+                <p style="font-size:14px; font-weight:600; margin:0;">No ${filter} alerts found.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(c => c.html).join('');
+}
+
+function filterAlerts(type) {
+    // Update button styles
+    ['all', 'critical', 'warning', 'normal'].forEach(t => {
+        const btn = document.getElementById('af-' + t);
+        if (!btn) return;
+        if (t === type) {
+            btn.style.background = '#0F172A';
+            btn.style.color = '#fff';
+            btn.style.borderColor = '#0F172A';
+        } else {
+            const defaults = {
+                critical: { border: '#FCA5A5', color: '#DC2626' },
+                warning:  { border: '#FDE68A', color: '#D97706' },
+                normal:   { border: '#BBF7D0', color: '#16A34A' },
+                all:      { border: '#CBD5E1', color: '#374151' }
+            };
+            btn.style.background = '#FFF';
+            btn.style.color = defaults[t].color;
+            btn.style.borderColor = defaults[t].border;
+        }
+    });
+
+    renderAlertCards(type);
+}
+
+function updateAlertTabBadge(activeCount) {
+    const tab = document.getElementById('tab-cust-alerts');
+    if (!tab) return;
+    // Remove existing badge
+    const existing = tab.querySelector('.alert-badge');
+    if (existing) existing.remove();
+
+    if (activeCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'alert-badge';
+        badge.style.cssText = `
+            display: inline-flex; align-items: center; justify-content: center;
+            background: #EF4444; color: #FFF; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 10px; font-weight: 800;
+            margin-left: 6px; vertical-align: middle; border: 2px solid #FFF;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        `;
+        badge.innerText = activeCount > 99 ? '99+' : activeCount;
+        tab.appendChild(badge);
+    }
+}
+
+// ==========================================
 // --- REAL-TIME ALERTS & NOTIFICATIONS ---
 // ==========================================
 

@@ -696,20 +696,64 @@
 
                 <!-- CUSTOMER TAB: ALERTS -->
                 <div id="cust-alerts" class="admin-tab" style="padding: 24px;">
-                    <div class="flex-header" style="margin-bottom: 24px;">
+
+                    <!-- HEADER -->
+                    <div class="flex-header" style="margin-bottom: 20px;">
                         <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Alerts</h2>
-                            <p class="text-muted" style="font-size: 14px;">Review out-of-range sensor readings and critical warnings.</p>
+                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0 0 4px 0;">System Alert Center</h2>
+                            <p class="text-muted" style="font-size: 14px; margin: 0;">Real-time monitoring of all sensor thresholds and safety boundaries.</p>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <select id="alerts-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <select id="alerts-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)" style="min-width: 180px;">
                                 <option value="" disabled>-- Switch Unit --</option>
                             </select>
-                            <button class="btn-secondary-small" onclick="loadCustomerAlerts()">🔄 Refresh Alerts</button>
+                            <button onclick="loadCustomerAlerts()" style="padding: 10px 18px; font-size: 13px; font-weight: 600; background: #0F172A; color: #fff; border: none; border-radius: 10px; cursor: pointer;">🔄 Refresh</button>
                         </div>
                     </div>
-                    <div id="customer-alerts-container" style="display: flex; flex-direction: column; gap: 16px;">
-                        <p style="color: var(--text-muted);">Please select a unit to view alerts.</p>
+
+                    <!-- SUMMARY BAR -->
+                    <div id="alert-summary-bar" style="display:none; background: #0F172A; border-radius: 14px; padding: 18px 24px; margin-bottom: 20px; gap: 32px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div id="alert-pulse-dot" style="width: 10px; height: 10px; background: #EF4444; border-radius: 50%;"></div>
+                            <span style="color: #94A3B8; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Live Monitoring</span>
+                        </div>
+                        <div style="display: flex; gap: 28px; align-items: center;">
+                            <div style="text-align: center;">
+                                <div id="alert-count-critical" style="font-size: 30px; font-weight: 800; color: #EF4444; line-height: 1;">0</div>
+                                <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px;">CRITICAL</div>
+                            </div>
+                            <div style="width: 1px; height: 36px; background: #1E293B;"></div>
+                            <div style="text-align: center;">
+                                <div id="alert-count-warning" style="font-size: 30px; font-weight: 800; color: #F59E0B; line-height: 1;">0</div>
+                                <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px;">WARNING</div>
+                            </div>
+                            <div style="width: 1px; height: 36px; background: #1E293B;"></div>
+                            <div style="text-align: center;">
+                                <div id="alert-count-normal" style="font-size: 30px; font-weight: 800; color: #10B981; line-height: 1;">0</div>
+                                <div style="font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px;">NORMAL</div>
+                            </div>
+                        </div>
+                        <div style="margin-left: auto; text-align: right;">
+                            <div id="alert-unit-label" style="font-size: 14px; color: #CBD5E1; font-weight: 600;">—</div>
+                            <div id="alert-last-updated" style="font-size: 11px; color: #475569; margin-top: 3px;">Last updated: —</div>
+                        </div>
+                    </div>
+
+                    <!-- FILTER BAR -->
+                    <div id="alert-filter-bar" style="display:none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button onclick="filterAlerts('all')"      id="af-all"      style="padding: 8px 20px; border-radius: 20px; border: 2px solid #0F172A; background: #0F172A; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">All</button>
+                        <button onclick="filterAlerts('critical')" id="af-critical" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #FCA5A5; background: #FFF; color: #DC2626; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">🔴 Critical</button>
+                        <button onclick="filterAlerts('warning')"  id="af-warning"  style="padding: 8px 20px; border-radius: 20px; border: 2px solid #FDE68A; background: #FFF; color: #D97706; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">🟡 Warning</button>
+                        <button onclick="filterAlerts('normal')"   id="af-normal"   style="padding: 8px 20px; border-radius: 20px; border: 2px solid #BBF7D0; background: #FFF; color: #16A34A; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">🟢 Normal</button>
+                    </div>
+
+                    <!-- ALERT CARDS -->
+                    <div id="customer-alerts-container" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                            <div style="font-size: 52px; margin-bottom: 14px;">🛡️</div>
+                            <h3 style="margin: 0 0 8px 0; color: var(--text-dark); font-weight: 700;">Alert Center Ready</h3>
+                            <p style="margin: 0; font-size: 14px;">Select a unit above to begin real-time threshold monitoring.</p>
+                        </div>
                     </div>
                 </div>
 
