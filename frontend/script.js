@@ -3070,91 +3070,32 @@ async function deleteUnit(unitId, unitName) {
 
 // --- PRO OVERVIEW DASHBOARD LOGIC ---
 function updateDashboardStats(unitsData, chatsData, locationsData) {
-    let total = 0, online = 0, warning = 0, critical = 0, offline = 0;
-    const attentionList = document.getElementById('attention-list-container');
-    let attentionHTML = '';
+    let total = 0, online = 0, offline = 0, accessOn = 0, accessOff = 0;
 
     if (unitsData) {
         Object.entries(unitsData).forEach(([unitId, unit]) => {
             total++;
-            
-            // 🔴 අලුත්: Critical සහ Warning දෙකම ලිස්ට් එකට ගන්නවා
+
+            // Online / Offline
             if (unit.status === 'offline') {
                 offline++;
-            } else if (unit.activeAlerts > 0 || unit.status === 'critical' || unit.status === 'warning') {
-                
-                let isCritical = unit.activeAlerts > 0 || unit.status === 'critical';
-                
-                if (isCritical) critical++;
-                else warning++;
-
-                const loc = locationsData && locationsData[unit.locationId] ? locationsData[unit.locationId] : {};
-                const locName = loc.locationName || 'Unknown Location';
-                const custId = loc.customerId;
-                const custName = globalCustomers[custId] ? globalCustomers[custId].name : 'Customer';
-                const custPhone = globalCustomers[custId] ? globalCustomers[custId].phone : '';
-                const displayTitle = unit.unitName ? `${locName} - ${unit.unitName}` : locName;
-                
-                // Warning සහ Critical වලට අදාළව පාට වෙනස් කිරීම
-                const borderColor = isCritical ? '#FCA5A5' : '#FDE68A';
-                const leftBorder = isCritical ? '#EF4444' : '#F59E0B';
-                const titleColor = isCritical ? '#991B1B' : '#D97706';
-                const icon = isCritical ? '🚨' : '⚠️';
-                
-                attentionHTML += `
-                    <div style="background: #FFFFFF; border: 1px solid ${borderColor}; border-left: 4px solid ${leftBorder}; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <div style="font-weight: 700; color: ${titleColor}; font-size: 16px; margin-bottom: 4px;">${icon} ${displayTitle} <span style="color: #64748B; font-weight: normal; font-size: 13px; margin-left: 8px; font-family: monospace;">ID: ${unitId}</span></div>
-                                <div style="font-size: 13px; color: #475569; font-weight: 500;">👤 ${custName} | 📞 ${custPhone}</div>
-                            </div>
-                            <div style="display: flex; gap: 8px;">
-                                <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding: 8px 16px; font-size: 12px; background: #FFFFFF; color: #0F172A; border: 1px solid #CBD5E1; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">View Unit</button>
-                                <button onclick="switchAdminTab('admin-complaints'); setTimeout(() => openAdminChat('${unitId}', {name:'${custName}', phone:'${custPhone}'}, '${displayTitle}'), 100);" style="padding: 8px 16px; font-size: 12px; background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">Customer Chat</button>
-                            </div>
-                        </div>
-                        
-                        <div id="issues-${unitId}" style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed ${borderColor};">
-                            <span style="font-size: 13px; color: ${titleColor};">⏳ Fetching specific alert details...</span>
-                        </div>
-                    </div>
-                `;
-
-                // Live Database එකෙන් අදාළ Unit එකේ අවුල මොකක්ද කියලා අරන් පෙන්නනවා
-                window.dbGet(window.query(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), window.orderByKey(), window.limitToLast(1))).then(snap => {
-                    const issuesContainer = document.getElementById(`issues-${unitId}`);
-                    if (snap.exists() && issuesContainer) {
-                        const log = Object.values(snap.val())[0];
-                        let issues = [];
-                        
-                        // 🔴 අලුත්: Warning සහ Critical වෙන් කර පෙන්වීම
-                        if (log.pressure > 1.3) issues.push(`High System Pressure: ${log.pressure} bar (Critical)`);
-                        else if (log.pressure > 1.1) issues.push(`Warning: Pressure is rising (${log.pressure} bar)`);
-
-                        if (log.h2s > 1.8) issues.push(`Toxic Gas Alert: ${log.h2s} ppm (Critical)`);
-                        else if (log.h2s > 1.5) issues.push(`Warning: H2S levels rising (${log.h2s} ppm)`);
-
-                        if (log.temperature > 40) issues.push(`High Temperature Detected: ${log.temperature}°C`);
-                        if (log.ph < 6.0 || log.ph > 8.0) issues.push(`pH Level Imbalance: ${log.ph}`);
-                        
-                        if(issues.length > 0) {
-                            const issueBg = isCritical ? '#FEE2E2' : '#FEF3C7';
-                            const issueText = isCritical ? '#991B1B' : '#D97706';
-                            const issueBorder = isCritical ? '#FCA5A5' : '#FDE68A';
-
-                            issuesContainer.innerHTML = issues.map(i => `<div style="background: ${issueBg}; color: ${issueText}; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid ${issueBorder}; display: inline-block; width: fit-content;">${isCritical ? '🚨' : '⚠️'} ${i}</div>`).join('');
-                        } else {
-                            issuesContainer.innerHTML = `<span style="color: #475569; font-size: 13px;">Alert triggered, but recent logs show normal values.</span>`;
-                        }
-                    }
-                });
-
             } else {
                 online++;
+            }
+
+            // Access ON / OFF
+            if (unit.accessGranted !== false) {
+                accessOn++;
+            } else {
+                accessOff++;
             }
         });
     }
 
+    // Total unique customers
+    const totalCustomers = Object.keys(globalCustomers).length;
+
+    // Active complaints count
     let activeComplaintsCount = 0;
     if (chatsData) {
         Object.values(chatsData).forEach(chat => {
@@ -3162,26 +3103,18 @@ function updateDashboardStats(unitsData, chatsData, locationsData) {
         });
     }
 
-    const setVal = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
-    
-    setVal('dash-total', total);
-    setVal('dash-online', online);
-    setVal('dash-warning', warning);
-    setVal('dash-critical', critical);
-    setVal('dash-complaints', activeComplaintsCount);
+    const setVal = (id, val) => { if (document.getElementById(id)) document.getElementById(id).innerText = val; };
 
-    setVal('stat-norm', online);
-    setVal('stat-warn', warning);
-    setVal('stat-crit', critical);
-    setVal('stat-off', offline);
+    setVal('dash-total',       total);
+    setVal('dash-online',      online);
+    setVal('dash-customers',   totalCustomers);
+    setVal('dash-access-on',   accessOn);
+    setVal('dash-complaints',  activeComplaintsCount);
 
-    if (attentionList) {
-        if (attentionHTML !== '') {
-            attentionList.innerHTML = attentionHTML;
-        } else {
-            attentionList.innerHTML = `<div style="text-align: center; padding: 20px; color: #64748B; font-size: 14px; background: #F8FAFC; border-radius: 8px;">✅ No critical alerts at the moment. System is stable.</div>`;
-        }
-    }
+    setVal('stat-norm',        online);
+    setVal('stat-off',         offline);
+    setVal('stat-access-on',   accessOn);
+    setVal('stat-access-off',  accessOff);
 }
 
 // --- START LIVE DASHBOARD SYNC (Fixed Memory Leak) ---
