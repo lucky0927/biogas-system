@@ -2368,7 +2368,8 @@ async function loadSensorStatus() {
         // සෙන්සර් පරාමිතීන් සහ Safe Ranges නිර්වචනය කිරීම
         const sensors = [
             { id: 'ch4', name: 'Methane (CH4) Sensor', param: 'Gas Quality', value: Number(log.ch4||0).toFixed(1), unit: '%', safeRange: '50.0 - 70.0 %', isCritical: (log.ch4 < 40) },
-            { id: 'h2s', name: 'Hydrogen Sulfide (H2S) Sensor', param: 'Toxic Gas Level', value: Number(log.h2s||0).toFixed(2), unit: 'ppm', safeRange: '< 1.50 ppm', isCritical: (log.h2s > 1.8) },
+            { id: 'co2', name: 'Carbon Dioxide (CO2) Sensor', param: 'CO2 Concentration', value: Number(log.co2||0).toFixed(1), unit: '%', safeRange: '25.0 - 45.0 %', isCritical: (log.co2 > 50) },
+
             { id: 'pressure', name: 'Pressure Sensor', param: 'System Pressure', value: Number(log.pressure||0).toFixed(2), unit: 'bar', safeRange: '1.00 - 1.20 bar', isCritical: (log.pressure > 1.3) },
             { id: 'ph', name: 'Digester pH Sensor', param: 'Acidity Level', value: Number(log.ph||0).toFixed(2), unit: '', safeRange: '6.50 - 7.50', isCritical: (log.ph < 6.0 || log.ph > 8.0) },
             { id: 'temperature', name: 'Temperature Sensor', param: 'Process Heat', value: Number(log.temperature||0).toFixed(1), unit: '°C', safeRange: '30.0 - 40.0 °C', isCritical: (log.temperature > 45.0) }
@@ -2521,8 +2522,9 @@ function openGuideModal(sensorName, value) {
     title.innerText = `Critical Alert: ${sensorName}`;
     
     let instructions = "";
-    if (sensorName.includes("H2S") || sensorName.includes("Hydrogen Sulfide")) {
-        instructions = "<ul><li><strong>Evacuate immediately:</strong> Ensure all personnel leave the immediate vicinity.</li><li><strong>Ventilation:</strong> Open all vents and turn on exhaust fans remotely.</li><li><strong>Check Scrubber:</strong> Inspect the desulfurization unit for blockages or depleted media.</li></ul>";
+    if (sensorName.includes("CO2") || sensorName.includes("Carbon Dioxide")) {
+        instructions = "<ul><li><strong>Increase Ventilation:</strong> Ensure all vents are open and exhaust fans are running.</li><li><strong>Check Gas Outlet:</strong> Inspect the gas outlet lines for blockages causing CO2 buildup.</li><li><strong>Review Feed Ratio:</strong> Adjust the carbon-to-nitrogen ratio in feedstock to balance CO2 production.</li><li><strong>Contact Support:</strong> If CO2 remains high, notify maintenance team immediately.</li></ul>";
+
     } else if (sensorName.includes("Pressure")) {
         instructions = "<ul><li><strong>Check Relief Valve:</strong> Ensure the pressure relief valve is functioning immediately.</li><li><strong>Reduce Feed:</strong> Temporarily halt the input of new material to the digester.</li><li><strong>Inspect Pipes:</strong> Look for physical blockages in the gas outlet line.</li></ul>";
     } else if (sensorName.includes("pH")) {
@@ -2626,15 +2628,15 @@ function initRealtimeListeners() {
                             let isCritical = false;
 
                             // Threshold Checks
-                            if (Number(log.h2s) > 1.8) {
+                            if (Number(log.co2) > 50) {
                                 isCritical = true;
                                 triggerNotification(
                                     `🚨 Critical Alert: ${unitName}`, 
-                                    `Location: ${locName}<br><strong>H2S Level: ${log.h2s} ppm</strong>`, 
+                                    `Location: ${locName}<br><strong>CO2 Level: ${log.co2} %</strong>`, 
                                     'critical', 
                                     () => {
                                         handleUnitSwitch(unitId); 
-                                        openGuideModal(`Hydrogen Sulfide (H2S) - ${unitName}`, `${log.h2s} ppm`);
+                                        openGuideModal(`Carbon Dioxide (CO2) - ${unitName}`, `${log.co2} %`);
                                     }
                                 );
                             }
