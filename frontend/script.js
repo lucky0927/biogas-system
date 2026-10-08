@@ -164,13 +164,7 @@ socket.on('liveData', (data) => {
         updateLiveUI(data);
     }
     
-    // 2. 🔴 Admin ලොග් වී සිටී නම්, Refresh නොකරම Alerts සජීවීව පරීක්ෂා කිරීම 🔴
-    if (currentUser && currentUser.role === 'admin') {
-        // Overview ටැබ් එකේ සිටී නම් පමණක් Alert එක අප්ඩේට් කරයි
-        if (document.getElementById('admin-overview').classList.contains('active')) {
-            checkSystemAlerts();
-        }
-    }
+    // 2. Admin overview alerts section is hidden — no live alert check needed for admin
 
     // 🔴 3. අලුත්: History ටැබ් එකේ ඉන්නකොට සජීවීව අලුත් දත්ත වගුවට එකතු කිරීම 🔴
     const historyTab = document.getElementById('cust-history');
@@ -347,7 +341,7 @@ function listenToAdminData() {
         if (totalUnitsEl) totalUnitsEl.innerText = Object.keys(globalUnits).length;
         unitsLoaded = true;
         tryUpdateDeployments();
-        checkSystemAlerts();
+        // checkSystemAlerts() disabled — alert section hidden from admin per team leader requirement
     });
 }
 
