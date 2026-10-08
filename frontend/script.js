@@ -1034,20 +1034,20 @@ function fetchHistoryData() {
     const tbody = document.getElementById('history-tbody');
 
     if (currentUser && currentUser.role === 'customer' && unitId && !isUnitAccessibleToCurrentUser(unitId)) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #991B1B;">Access to this unit has been disabled by the admin.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #991B1B;">Access to this unit has been disabled by the admin.</td></tr>';
         return;
     }
 
     if (!unitId) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit from the top dropdown to view data logs.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit from the top dropdown to view data logs.</td></tr>';
         return;
     }
     
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">Loading historical data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Loading historical data...</td></tr>';
 
     window.dbGet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`)).then((snapshot) => {
         if (!snapshot.exists()) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
             return;
         }
         
@@ -1069,7 +1069,6 @@ function fetchHistoryData() {
                     <td style="font-weight: 500; color: var(--text-dark);">${time}</td>
                     <td>${data.ch4 != null ? data.ch4.toFixed(2) : '-'}</td>
                     <td>${data.co2 != null ? data.co2.toFixed(2) : '-'}</td>
-                    <td>${data.h2s != null ? data.h2s.toFixed(2) : '-'}</td>
                     <td>${data.temperature != null ? data.temperature.toFixed(1) : '-'}</td>
                     <td>${data.ph != null ? data.ph.toFixed(2) : '-'}</td>
                     <td>${data.gasVolume != null ? data.gasVolume.toFixed(2) : '-'}</td>
@@ -1078,13 +1077,13 @@ function fetchHistoryData() {
         }
         
         if (!hasData) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #F59E0B;">No records found for the selected date.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #F59E0B;">No records found for the selected date.</td></tr>';
         } else {
             tbody.innerHTML = rowsHtml;
         }
     }).catch(err => {
         console.error(err);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">Error loading data. Check console.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">Error loading data. Check console.</td></tr>';
     });
 }
 
@@ -1103,7 +1102,7 @@ window.clearUnitHistory = async function() {
             
             // UI එකේ Table එක හිස් කිරීම
             const tbody = document.getElementById('history-tbody'); 
-            if(tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
+            if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
             
         } catch(error) {
             alert("Error clearing history: " + error.message);
