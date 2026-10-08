@@ -32,96 +32,83 @@ function loadCustomerDashboard(userData) {
     renderCustomerOverview();
 }
 
-let activeChartSensors = ['vol']; // Default chart sensor
-let chartLabelsMap = {
-    'ch4': 'CH4 (ppm)',
-    'co2': 'CO2 (ppm)',
-    'temp': 'Temperature (°C)',
-    'hum': 'Humidity (%)',
-    'ph': 'pH Level',
-    'vol': 'Volume (L)'
-};
-let chartColorsMap = {
-    'ch4': '#16A34A',
-    'co2': '#F59E0B',
-    'temp': '#DC2626',
-    'hum': '#3B82F6',
-    'ph': '#8B5CF6',
-    'vol': '#059669'
-};
-
-function changeChartSensor(sensorKey, btnElement) {
-    if (activeChartSensors.includes(sensorKey)) {
-        if (activeChartSensors.length > 1) { // Prevent deselecting all
-            activeChartSensors = activeChartSensors.filter(s => s !== sensorKey);
-            if (btnElement) btnElement.classList.remove('active');
+function listenToCustomerData(uid) {
+    // 1. Fetch Locations owned by this customer
+    window.dbOnValue(window.dbRef(window.firebaseDB, 'locations'), (snapshot) => {
+        const allLocs = snapshot.val() || {};
+        customerLocations = {};
+        for(const [locId, loc] of Object.entries(allLocs)) {
+            if(loc.customerId === uid) {
+                customerLocations[locId] = loc;
+            }
         }
-    } else {
-        activeChartSensors.push(sensorKey);
-        if (btnElement) btnElement.classList.add('active');
-    }
-    initLiveChart();
+        fetchCustomerUnits();
+    });
 }
 
-function listenToCustomerData(uid) {
-    // Deprecated: Handled by renderCustomerOverview lower down.
+function fetchCustomerUnits() {
+    // 2. Fetch Units assigned to those locations
+    window.dbOnValue(window.dbRef(window.firebaseDB, 'units'), (snapshot) => {
+        const allUnits = snapshot.val() || {};
+        customerUnits = {};
+        for(const [unitId, unit] of Object.entries(allUnits)) {
+            if(customerLocations[unit.locationId]) {
+                customerUnits[unitId] = unit;
+            }
+        }
+        renderCustomerUnits();
+    });
+}
+
+function renderCustomerUnits() {
+
 }
 
 function switchCustomerTab(tabId) {
+    // 1. සියලුම ටැබ් සඟවන්න
     document.querySelectorAll('#customer-screen .admin-tab').forEach(tab => {
         tab.classList.remove('active');
-        tab.style.display = 'none';
+        tab.style.display = 'none'; // <-- අලුතින් එකතු කළ කොටස
     });
     
+    // 2. මෙනුවේ සියලුම ලින්ක් වල active තත්ත්වය ඉවත් කරන්න
     document.querySelectorAll('#customer-screen .nav-links li').forEach(li => {
         li.classList.remove('active');
     });
     
+    // 3. තෝරාගත් ටැබ් එක පමණක් පෙන්වන්න
     const selectedTab = document.getElementById(tabId);
     if (selectedTab) {
         selectedTab.classList.add('active');
-        selectedTab.style.display = 'block';
+        selectedTab.style.display = 'block'; // <-- සුදු තිරේ ප්‍රශ්නය විසඳන පේළිය
     }
     
+    // 4. මෙනුවේ අදාළ ලින්ක් එක active කරන්න
     const selectedNav = document.getElementById('tab-' + tabId);
     if (selectedNav) {
         selectedNav.classList.add('active');
     }
 }
 
-let liveChart = null;
+let liveChart = null; // ප්‍රස්ථාරය රඳවා තබාගන්නා විචල්‍යය
 
 function initLiveChart() {
     const container = document.getElementById('chart-container');
-    if(!container) return;
-    
     container.innerHTML = '<canvas id="live-data-chart"></canvas>';
     const ctx = document.getElementById('live-data-chart').getContext('2d');
 
     if (liveChart) {
-        liveChart.destroy();
+        liveChart.destroy(); // වෙනත් Unit එකකට මාරු වුවහොත් පරණ ප්‍රස්ථාරය මකා දමයි
     }
-
-    const datasets = activeChartSensors.map(sensor => {
-        const labelStr = chartLabelsMap[sensor] || 'Sensor Value';
-        const colorStr = chartColorsMap[sensor] || '#16A34A';
-        return {
-            label: labelStr,
-            data: [],
-            borderColor: colorStr,
-            backgroundColor: colorStr + '20',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2,
-            pointRadius: 0
-        };
-    });
 
     liveChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [], 
-            datasets: datasets
+            labels: [], // කාලය (Timestamps)
+            datasets: [
+                { label: 'CH4 (ppm)', data: [], borderColor: '#16A34A', tension: 0.4, borderWidth: 2, pointRadius: 0 },
+                { label: 'CO2 (ppm)', data: [], borderColor: '#F59E0B', tension: 0.4, borderWidth: 2, pointRadius: 0 }
+            ]
         },
         options: {
             responsive: true,
@@ -130,7 +117,7 @@ function initLiveChart() {
                 x: { display: true },
                 y: { display: true, beginAtZero: true }
             },
-            animation: false
+            animation: false // සජීවීව දත්ත එන විට ගැස්සීම් වළක්වා ගැනීමට animation off කර ඇත
         }
     });
 }
@@ -138,6 +125,7 @@ function initLiveChart() {
 function openLiveMonitor(unitId, title, address) {
     currentMonitorUnitId = unitId;
     globalSelectedUnitId = unitId;
+    // Use the proper tab switching instead of non-existent element references
     switchCustomerTab('cust-monitor');
     
     const nameEl = document.getElementById('live-unit-name');
@@ -145,6 +133,7 @@ function openLiveMonitor(unitId, title, address) {
     const locEl = document.getElementById('live-unit-location');
     if (locEl) locEl.innerText = address;
 
+    // Initialise chart and load latest data
     initLiveChart();
     loadMonitorData();
 }
@@ -166,30 +155,38 @@ document.getElementById('customer-logout-btn')?.addEventListener('click', () => 
 // --- LIVE DATA HANDLING (SOCKET.IO) ---
 // ==========================================
 
+// Connect to backend Socket (Make sure server.js is running)
 const socket = io('https://biogas-system-jh34.onrender.com'); 
 
 socket.on('liveData', (data) => {
+    // 1. Customer Monitor එකේ අගයන් සජීවීව වෙනස් කිරීම
     if (currentMonitorUnitId && data.unitId === currentMonitorUnitId) {
         updateLiveUI(data);
     }
     
+    // 2. 🔴 Admin ලොග් වී සිටී නම්, Refresh නොකරම Alerts සජීවීව පරීක්ෂා කිරීම 🔴
     if (currentUser && currentUser.role === 'admin') {
+        // Overview ටැබ් එකේ සිටී නම් පමණක් Alert එක අප්ඩේට් කරයි
         if (document.getElementById('admin-overview').classList.contains('active')) {
             checkSystemAlerts();
         }
     }
 
+    // 🔴 3. අලුත්: History ටැබ් එකේ ඉන්නකොට සජීවීව අලුත් දත්ත වගුවට එකතු කිරීම 🔴
     const historyTab = document.getElementById('cust-history');
     if (historyTab && historyTab.classList.contains('active')) {
         if (globalSelectedUnitId === data.unitId) {
+            
             const dateVal = document.getElementById('history-date-select').value;
             const todayStr = new Date().toISOString().split('T')[0];
             
+            // Date filter එක හිස් නම් හෝ අද දවස තෝරලා තියෙනවා නම් පමණක් සජීවීව පෙන්වන්න
             if (!dateVal || dateVal === todayStr) {
                 const tbody = document.getElementById('history-tbody');
                 const time = new Date().toLocaleTimeString();
                 const newRow = document.createElement('tr');
                 
+                // අලුත් දත්තයක් ආපු ගමන් ලා කොළ පාටින් Highlight වී මැකී යාමට හැදීම
                 newRow.style.transition = "background-color 2s ease";
                 newRow.style.backgroundColor = "#DCFCE7"; 
                 setTimeout(() => { newRow.style.backgroundColor = "transparent"; }, 2000);
@@ -205,76 +202,52 @@ socket.on('liveData', (data) => {
                     <td>${gasVol.toFixed(2)}</td>
                 `;
                 
+                // "No records" මැසේජ් එක තියෙනවා නම් ඒක අයින් කිරීම
                 if (tbody.innerHTML.includes('No historical records') || tbody.innerHTML.includes('Loading') || tbody.innerHTML.includes('Please select')) {
                     tbody.innerHTML = '';
                 }
                 
+                // වගුවේ මුලටම (උඩටම) අලුත් Row එක එකතු කිරීම
                 tbody.prepend(newRow);
             }
         }
     }
+
 });
 
 function updateLiveUI(data) {
     document.getElementById('val-ch4').innerText = data.ch4 != null ? data.ch4.toFixed(2) : '0.00';
     document.getElementById('val-co2').innerText = data.co2 != null ? data.co2.toFixed(2) : '0.00';
+    // H2S has been completely removed from the system.
     document.getElementById('val-ph').innerText = data.ph != null ? data.ph.toFixed(2) : '0.0';
     document.getElementById('val-pressure').innerText = data.pressure != null ? data.pressure.toFixed(2) : '0.0';
     document.getElementById('val-temp').innerText = data.temperature != null ? data.temperature.toFixed(1) : '0.0';
     document.getElementById('val-hum').innerText = data.humidity != null ? data.humidity.toFixed(1) : '0.0';
+// 'gasVolume' සහ 'volume' යන නම් දෙකම හඳුනාගැනීම
     const volumeValue = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
-    document.getElementById('val-vol').innerText = volumeValue.toFixed(2);    
-    
-    const v1Status = document.getElementById('status-valve1');
-    if (v1Status) {
-        if (data.valve1 === 'ON') {
-            v1Status.innerText = 'ON';
-            v1Status.classList.add('on');
-        } else {
-            v1Status.innerText = 'OFF';
-            v1Status.classList.remove('on');
-        }
-    }
-
-    const v2Status = document.getElementById('status-valve2');
-    if (v2Status) {
-        if (data.valve2 === 'ON') {
-            v2Status.innerText = 'ON';
-            v2Status.classList.add('on');
-        } else {
-            v2Status.innerText = 'OFF';
-            v2Status.classList.remove('on');
-        }
-    }
-
+    document.getElementById('val-vol').innerText = volumeValue.toFixed(2);    // Update Valve & Pump Status
     const vStatus = document.getElementById('status-valve');
-    if (vStatus) {
-        if (data.valve3 === 'ON') {
-            vStatus.innerText = 'ON';
-            vStatus.classList.add('on');
-        } else {
-            vStatus.innerText = 'OFF';
-            vStatus.classList.remove('on');
-        }
+    if (data.valve3 === 'ON') {
+        vStatus.innerText = 'ON';
+        vStatus.classList.add('on');
+    } else {
+        vStatus.innerText = 'OFF';
+        vStatus.classList.remove('on');
     }
 
     const pStatus = document.getElementById('status-pump');
-    if (pStatus) {
-        if (data.pump === 'ON') {
-            pStatus.innerText = 'ON';
-            pStatus.classList.add('on');
-        } else {
-            pStatus.innerText = 'OFF';
-            pStatus.classList.remove('on');
-        }
+    if (data.pump === 'ON') {
+        pStatus.innerText = 'ON';
+        pStatus.classList.add('on');
+    } else {
+        pStatus.innerText = 'OFF';
+        pStatus.classList.remove('on');
     }
 
-    // Dynamic Tank Calculation using maxH
-    const maxH = data.maxH || 150.0;
-    const currentDistance = data.distance || 0;
+    // Update 3D Tank Level (Gas Volume එක අනුව වෙනස් වීමට හැදීම)
+    const maxTankVolume = 150; // 🔴 මෙතනට ඔයාගේ ටැංකියේ උපරිම ධාරිතාව (ලීටර් ගාණ) දෙන්න (උදා: 150L)
     
-    // When distance is high, volume is high, so fill is high.
-    let fillPercent = (currentDistance / maxH) * 100;
+    let fillPercent = (volumeValue / maxTankVolume) * 100;
     
     if (fillPercent > 100) fillPercent = 100;
     if (fillPercent < 0) fillPercent = 0;
@@ -284,37 +257,32 @@ function updateLiveUI(data) {
         tankFillElement.style.height = `${fillPercent}%`;
     }
 
+    // Gas Volume mini-card eka % widihata (H2S card eke thibba thanata gena awa)
     const volPctElement = document.getElementById('val-vol-pct');
     if (volPctElement) {
         volPctElement.innerText = fillPercent.toFixed(1);
     }
 
+    // Distance අගය යටින් දිගටම පෙන්වීමට
     if (data.distance != null) {
         document.getElementById('val-distance').innerText = data.distance.toFixed(1);
     }
 
+    // Update Chart with Real-time Data
     if (liveChart) {
         const timeNow = new Date().toLocaleTimeString();
+        
         liveChart.data.labels.push(timeNow);
+        liveChart.data.datasets[0].data.push(data.ch4 || 0);
+        liveChart.data.datasets[1].data.push(data.co2 || 0);
         
-        activeChartSensors.forEach((sensor, index) => {
-            let plotValue = 0;
-            if (sensor === 'ch4') plotValue = data.ch4 || 0;
-            else if (sensor === 'co2') plotValue = data.co2 || 0;
-            else if (sensor === 'temp') plotValue = data.temperature || 0;
-            else if (sensor === 'hum') plotValue = data.humidity || 0;
-            else if (sensor === 'ph') plotValue = data.ph || 0;
-            else if (sensor === 'vol') plotValue = volumeValue;
-            
-            liveChart.data.datasets[index].data.push(plotValue);
-        });
-        
+        // ප්‍රස්ථාරයේ එකවර පෙන්වන්නේ අවසන් දත්ත ලක්ෂ්‍ය (data points) 20 පමණි
         if (liveChart.data.labels.length > 20) {
             liveChart.data.labels.shift();
-            activeChartSensors.forEach((sensor, index) => {
-                liveChart.data.datasets[index].data.shift();
-            });
+            liveChart.data.datasets[0].data.shift();
+            liveChart.data.datasets[1].data.shift();
         }
+        
         liveChart.update();
     }
 }
@@ -2616,73 +2584,86 @@ function initRealtimeListeners() {
     // ----------------------------------------------------
     // 2. SMART SENSOR ALERTS (Live Notifications)
     // ----------------------------------------------------
-    if (currentUser.role === 'customer') {
+    if (currentUser.role === 'customer' && typeof globalUnits !== 'undefined') {
+        
         if (!window.lastAlertedTimes) window.lastAlertedTimes = {};
 
-        // Use customerUnits since globalUnits is for admins
-        const targetUnits = typeof customerUnits !== 'undefined' ? customerUnits : {};
-
-        Object.keys(targetUnits).forEach(unitId => {
-            const unit = targetUnits[unitId];
+        Object.keys(globalUnits).forEach(unitId => {
+            const unit = globalUnits[unitId];
             const locId = unit.locationId || unit.location_id;
-            const loc = customerLocations[locId] || {};
+            const loc = globalLocations[locId] || {};
             
-            const unitName = unit.unitName || unit.name || "Unknown Unit";
-            const locName = loc.locationName || loc.name || "Unknown Location";
-
-            if (!window.lastAlertedTimes[unitId]) window.lastAlertedTimes[unitId] = 0;
-
-            const liveSensorQuery = window.query(
-                window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`),
-                window.orderByKey(),
-                window.limitToLast(1)
-            );
-            
-            window.dbOnValue(liveSensorQuery, (snapshot) => {
-                if(!snapshot.exists()) return;
+            if (loc.customerId === currentUser.uid) {
                 
-                const data = snapshot.val();
-                const key = Object.keys(data)[0];
-                const log = data[key];
+                const unitName = unit.unitName || unit.name || "Unknown Unit";
+                const locName = loc.locationName || loc.name || "Unknown Location";
 
-                if (log && log.timestamp) {
+                if (!window.lastAlertedTimes[unitId]) window.lastAlertedTimes[unitId] = 0;
+
+                // 🔴 FIX: පරණ දත්ත නෙවෙයි, අලුතින්ම එන එක විතරක් ගන්න
+                const liveSensorQuery = window.query(
+                    window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`),
+                    window.orderByKey(),
+                    window.limitToLast(1) // අන්තිමට ආපු එක
+                );
+                
+                window.dbOnValue(liveSensorQuery, (snapshot) => {
+                    if(!snapshot.exists()) return;
+                    
+                    const data = snapshot.val();
+                    const key = Object.keys(data)[0];
+                    const log = data[key];
+                    
                     const logTime = new Date(log.timestamp).getTime();
                     const now = new Date().getTime();
                     
+                    // 🔴 FIX: Timestamp එක අලුත් එකක් නම් විතරක් Check කරනවා
                     if (logTime > window.lastAlertedTimes[unitId]) {
+                        
+                        // තත්පර 10කට වඩා අලුත් නම් (පරණ ඒවා පෙන්නන්නේ නැහැ)
                         if ((now - logTime) < 10000 && window.lastAlertedTimes[unitId] !== 0) {
                             
                             let isCritical = false;
-                            
+
+                            // Threshold Checks
+                            if (Number(log.h2s) > 1.8) {
+                                isCritical = true;
+                                triggerNotification(
+                                    `🚨 Critical Alert: ${unitName}`, 
+                                    `Location: ${locName}<br><strong>H2S Level: ${log.h2s} ppm</strong>`, 
+                                    'critical', 
+                                    () => {
+                                        handleUnitSwitch(unitId); 
+                                        openGuideModal(`Hydrogen Sulfide (H2S) - ${unitName}`, `${log.h2s} ppm`);
+                                    }
+                                );
+                            }
                             if (Number(log.pressure) > 1.3) {
                                 isCritical = true;
                                 triggerNotification(
                                     `🚨 Critical Alert: ${unitName}`, 
                                     `Location: ${locName}<br><strong>Pressure: ${log.pressure} bar</strong>`, 
-                                    'critical'
+                                    'critical', 
+                                    () => {
+                                        handleUnitSwitch(unitId); 
+                                        openGuideModal(`System Pressure - ${unitName}`, `${log.pressure} bar`);
+                                    }
                                 );
                             }
 
-                            if (Number(log.temperature) > 40) {
-                                isCritical = true;
-                                triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
-                                    `Location: ${locName}<br><strong>Temperature: ${log.temperature} °C</strong>`, 
-                                    'critical'
-                                );
-                            }
-                            
+                            // Menu අයිකනය රතු කිරීම
                             if (isCritical) {
                                 const alertTab = document.getElementById('tab-cust-alerts');
-                                if (alertTab && !alertTab.innerHTML.includes('🚨')) {
-                                    alertTab.innerHTML += ' <span style="font-size: 10px; animation: floatIcon 1s infinite;">🚨</span>';
+                                if (alertTab && !alertTab.innerHTML.includes('🔴')) {
+                                    alertTab.innerHTML += ' <span style="font-size: 10px; animation: floatIcon 1s infinite;">🔴</span>';
                                 }
                             }
                         }
+                        // අලුත් වෙලාව Save කරගන්නවා
                         window.lastAlertedTimes[unitId] = logTime;
                     }
-                }
-            });
+                });
+            }
         });
     }
 }
@@ -2732,19 +2713,13 @@ function renderCustomerOverview() {
 
     if (!customerOverviewListenersBound) {
         customerOverviewListenersBound = true;
-        let locsLoaded = false;
-        let unitsLoaded = false;
-        
         window.dbOnValue(locRef, (locSnapshot) => {
             globalLocations = locSnapshot.exists() ? locSnapshot.val() : {};
-            locsLoaded = true;
-            if (unitsLoaded) paintCustomerOverview();
+            paintCustomerOverview();
         });
-        
         window.dbOnValue(unitsRef, (unitSnapshot) => {
             globalUnits = unitSnapshot.exists() ? unitSnapshot.val() : {};
-            unitsLoaded = true;
-            if (locsLoaded) paintCustomerOverview();
+            paintCustomerOverview();
         });
     } else {
         paintCustomerOverview();
@@ -3339,7 +3314,7 @@ function renderCustomersList() {
         }).catch(() => {
             container.innerHTML = '<div style="text-align:center;padding:40px;color:red;">Failed to load customers. Check connection.</div>';
         });
-        return;
+        return; // Early return since data is still loading
     }
 
     customerKeys.forEach(custId => {
@@ -3519,86 +3494,4 @@ async function deleteCustomerRecord(custId, custName) {
             alert("Error deleting customer and data: " + error.message);
         }
     }
-}
-
-function loadCustomerAlerts() {
-    const container = document.getElementById("customer-alerts-container");
-    if (!container) return;
-    
-    if (!globalSelectedUnitId) {
-        container.innerHTML = "<p style=\"color: var(--text-muted);\">Please select a unit to view alerts.</p>";
-        return;
-    }
-    
-    container.innerHTML = "<p style=\"color: var(--text-muted);\">Loading alerts...</p>";
-    
-    // Fetch latest 50 logs to check for anomalies
-    const liveSensorQuery = window.query(
-        window.dbRef(window.firebaseDB, `sensor_logs/${globalSelectedUnitId}`),
-        window.orderByKey(),
-        window.limitToLast(50)
-    );
-    
-    window.dbGet(liveSensorQuery).then((snapshot) => {
-        if (!snapshot.exists()) {
-            container.innerHTML = "<p style=\"color: #64748B;\">No alerts found for this unit.</p>";
-            return;
-        }
-        
-        let alertsHtml = "";
-        const data = snapshot.val();
-        
-        // Convert to array and reverse to show newest first
-        const logs = Object.values(data).reverse();
-        
-        logs.forEach(log => {
-            let isAlert = false;
-            let alertMsg = "";
-            let alertType = "";
-            
-            if (Number(log.pressure) > 1.3) {
-                isAlert = true;
-                alertMsg = `High Pressure Detected: ${log.pressure} bar`;
-                alertType = "critical";
-            } else if (Number(log.temperature) > 40) {
-                isAlert = true;
-                alertMsg = `High Temperature Detected: ${log.temperature} °C`;
-                alertType = "critical";
-            }
-            
-            if (isAlert) {
-                const time = log.timestamp ? new Date(log.timestamp).toLocaleString() : "Unknown Time";
-                const bg = alertType === "critical" ? "#FEE2E2" : "#FEF3C7";
-                const border = alertType === "critical" ? "#FCA5A5" : "#FDE68A";
-                const color = alertType === "critical" ? "#991B1B" : "#D97706";
-                
-                alertsHtml += `
-                    <div style="background: ${bg}; border: 1px solid ${border}; padding: 16px; border-radius: 8px; margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <strong style="color: ${color};">🚨 ${alertType.toUpperCase()} ALERT</strong>
-                            <span style="font-size: 12px; color: #64748B;">${time}</span>
-                        </div>
-                        <div style="color: #475569; font-size: 14px;">${alertMsg}</div>
-                    </div>
-                `;
-            }
-        });
-        
-        if (alertsHtml === "") {
-            container.innerHTML = `
-                <div style="background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">✅</span>
-                    <div>
-                        <h4 style="color:#166534; margin:0; font-size:16px;">System Stable</h4>
-                        <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No anomalies detected in recent logs.</p>
-                    </div>
-                </div>
-            `;
-        } else {
-            container.innerHTML = alertsHtml;
-        }
-    }).catch(err => {
-        console.error("Error loading alerts:", err);
-        container.innerHTML = "<p style=\"color: #DC2626;\">Failed to load alerts.</p>";
-    });
 }
