@@ -210,16 +210,16 @@ socket.on('liveData', (data) => {
 });
 
 function updateLiveUI(data) {
-    document.getElementById('val-ch4').innerText = data.ch4 != null ? data.ch4.toFixed(2) : '0.00';
-    document.getElementById('val-co2').innerText = data.co2 != null ? data.co2.toFixed(2) : '0.00';
+    document.getElementById('val-ch4').innerText = data.ch4 != null ? Number(data.ch4).toFixed(2) : '0.00';
+    document.getElementById('val-co2').innerText = data.co2 != null ? Number(data.co2).toFixed(2) : '0.00';
     // H2S has been completely removed from the system.
-    document.getElementById('val-ph').innerText = data.ph != null ? data.ph.toFixed(2) : '0.0';
-    document.getElementById('val-pressure').innerText = data.pressure != null ? data.pressure.toFixed(2) : '0.0';
-    document.getElementById('val-temp').innerText = data.temperature != null ? data.temperature.toFixed(1) : '0.0';
-    document.getElementById('val-hum').innerText = data.humidity != null ? data.humidity.toFixed(1) : '0.0';
+    document.getElementById('val-ph').innerText = data.ph != null ? Number(data.ph).toFixed(2) : '0.0';
+    document.getElementById('val-pressure').innerText = data.pressure != null ? Number(data.pressure).toFixed(2) : '0.0';
+    document.getElementById('val-temp').innerText = data.temperature != null ? Number(data.temperature).toFixed(1) : '0.0';
+    document.getElementById('val-hum').innerText = data.humidity != null ? Number(data.humidity).toFixed(1) : '0.0';
 // 'gasVolume' සහ 'volume' යන නම් දෙකම හඳුනාගැනීම
-    const volumeValue = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
-    document.getElementById('val-vol').innerText = volumeValue.toFixed(2);    // Update Valve & Pump Status
+    const volumeValue = data.gasVolume != null ? Number(data.gasVolume) : (data.volume != null ? Number(data.volume) : 0);
+    document.getElementById('val-vol').innerText = Number(volumeValue).toFixed(2);    // Update Valve & Pump Status
     const vStatus = document.getElementById('status-valve');
     if (data.valve3 === 'ON') {
         vStatus.innerText = 'ON';
@@ -263,7 +263,7 @@ function updateLiveUI(data) {
 
     // Distance අගය යටින් දිගටම පෙන්වීමට
     if (data.distance != null) {
-        document.getElementById('val-distance').innerText = data.distance.toFixed(1);
+        document.getElementById('val-distance').innerText = distanceValue.toFixed(1);
     }
 
     // Update Chart with Real-time Data
