@@ -240,11 +240,11 @@ function updateLiveUI(data) {
 
     // The ultrasonic sensor measures the empty space from the tank top.
     const distanceValue = Number(data.distance);
-    const maxTankHeight = Number(data.maxH);
+    const maxTankHeight = data.maxH ? Number(data.maxH) : 300; // Default to 300 if maxH is not provided
     const hasValidTankLevel = Number.isFinite(distanceValue)
         && Number.isFinite(maxTankHeight)
         && maxTankHeight > 0
-        && distanceValue > 0
+        && distanceValue >= 0
         && distanceValue <= maxTankHeight;
     const fillPercent = hasValidTankLevel
         ? ((maxTankHeight - distanceValue) / maxTankHeight) * 100
