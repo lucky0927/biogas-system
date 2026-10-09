@@ -238,13 +238,17 @@ function updateLiveUI(data) {
         pStatus.classList.remove('on');
     }
 
-    // Update 3D Tank Level (Gas Volume එක අනුව වෙනස් වීමට හැදීම)
-    const maxTankVolume = 150; // 🔴 මෙතනට ඔයාගේ ටැංකියේ උපරිම ධාරිතාව (ලීටර් ගාණ) දෙන්න (උදා: 150L)
-    
-    let fillPercent = (volumeValue / maxTankVolume) * 100;
-    
-    if (fillPercent > 100) fillPercent = 100;
-    if (fillPercent < 0) fillPercent = 0;
+    // The ultrasonic sensor measures the empty space from the tank top.
+    const distanceValue = Number(data.distance);
+    const maxTankHeight = Number(data.maxH);
+    const hasValidTankLevel = Number.isFinite(distanceValue)
+        && Number.isFinite(maxTankHeight)
+        && maxTankHeight > 0
+        && distanceValue > 0
+        && distanceValue <= maxTankHeight;
+    const fillPercent = hasValidTankLevel
+        ? ((maxTankHeight - distanceValue) / maxTankHeight) * 100
+        : 0;
     
     const tankFillElement = document.getElementById('tank-level-fill');
     if (tankFillElement) {

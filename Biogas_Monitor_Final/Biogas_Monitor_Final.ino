@@ -393,7 +393,11 @@ void loop() {
     float distance = getDistance();
     float tankRadius = tankDiameter / 2.0;
     float areaCm2 = 3.14159 * tankRadius * tankRadius;
-    float volumeLiters = (areaCm2 * distance) / 1000.0;
+    float volumeLiters = 0;
+    if (distance > 0 && distance <= tankHeight && tankHeight > 0) {
+      float filledHeight = tankHeight - distance;
+      volumeLiters = (areaCm2 * filledHeight) / 1000.0;
+    }
 
     display.clearDisplay();
     display.setTextSize(1);
