@@ -103,15 +103,16 @@ client.on('message', async (topic, message) => {
             let activeAlertsCount = 0;
             let newStatus = 'active';
 
-            // Safety Thresholds පරීක්ෂාව
-            if (normalizedData.pressure > 1.3) activeAlertsCount++;
-            if (normalizedData.temperature > 40) activeAlertsCount++;
+            // Safety Thresholds පරීක්ෂාව (H2S ඉවත් කර ඇත, Pressure mbar වලට ගැළපෙන සේ සකසා ඇත)
+            if (normalizedData.pressure > 1300) activeAlertsCount++; // 1300 mbar (1.3 bar)
+            if (normalizedData.temperature > 45) activeAlertsCount++; // උෂ්ණත්වය 45 C වලට වඩා වැඩි නම්
             if (normalizedData.ph < 6.0 || normalizedData.ph > 8.0) activeAlertsCount++;
+            if (normalizedData.co2 > 50) activeAlertsCount++; // CO2 50% ට වඩා වැඩි නම්
 
             // Warning හෝ Critical බව තීරණය කිරීම
             if (activeAlertsCount > 0) {
                 newStatus = 'critical';
-            } else if (sensorData.pressure > 1.1) {
+            } else if (normalizedData.pressure > 1100) { // 1100 mbar (1.1 bar)
                 newStatus = 'warning';
             } else {
                 newStatus = 'active';
@@ -122,7 +123,6 @@ client.on('message', async (topic, message) => {
                 activeAlerts: activeAlertsCount,
                 status: newStatus
             });
-            
             console.log(`Data saved to database for unit: ${firebaseUnitId}`);
         } else {
             console.log(`Unregistered Token received: ${incomingToken}`);
