@@ -114,20 +114,24 @@
   function styleLiveChart(isDark) {
     if (typeof liveChart === 'undefined' || !liveChart) return;
     try {
-      const ds = liveChart.data.datasets;
-      if (ds[0]) {
-        ds[0].borderColor = isDark ? '#39FF14' : '#00A84F';
-        ds[0].backgroundColor = isDark
-          ? 'rgba(57,255,20,0.08)' : 'rgba(0,168,79,0.08)';
-        ds[0].pointBackgroundColor = isDark ? '#39FF14' : '#00A84F';
-        ds[0].fill = true;
-      }
-      if (ds[1]) {
-        ds[1].borderColor = isDark ? '#00FF88' : '#007A3D';
-        ds[1].backgroundColor = isDark
-          ? 'rgba(0,255,136,0.06)' : 'rgba(0,122,61,0.06)';
-        ds[1].pointBackgroundColor = isDark ? '#00FF88' : '#007A3D';
-        ds[1].fill = true;
+      const textColor = isDark ? '#A7F3D0' : '#2D5A3D';
+      const gridColor = isDark ? 'rgba(57,255,20,0.10)' : 'rgba(26,46,34,0.08)';
+
+      if (liveChart.options && liveChart.options.scales) {
+        if (liveChart.options.scales.x) {
+          liveChart.options.scales.x.ticks = liveChart.options.scales.x.ticks || {};
+          liveChart.options.scales.x.ticks.color = textColor;
+          liveChart.options.scales.x.ticks.font = { family: "'JetBrains Mono', monospace", size: 10, weight: '600' };
+          liveChart.options.scales.x.grid = liveChart.options.scales.x.grid || {};
+          liveChart.options.scales.x.grid.color = gridColor;
+        }
+        if (liveChart.options.scales.y) {
+          liveChart.options.scales.y.ticks = liveChart.options.scales.y.ticks || {};
+          liveChart.options.scales.y.ticks.color = textColor;
+          liveChart.options.scales.y.ticks.font = { family: "'JetBrains Mono', monospace", size: 10, weight: '600' };
+          liveChart.options.scales.y.grid = liveChart.options.scales.y.grid || {};
+          liveChart.options.scales.y.grid.color = gridColor;
+        }
       }
       liveChart.update('none');
     } catch (e) { /* chart not ready yet */ }
@@ -574,10 +578,13 @@
       const btn = e.target.closest('.btn-primary, .btn-primary-small, .btn-add-unit, .login-button');
       if (!btn) return;
 
+      // Purge any existing unremoved ripples to prevent accumulation
+      btn.querySelectorAll('.ripple').forEach(r => r.remove());
+
       const ripple = document.createElement('span');
       ripple.className = 'ripple';
       const rect = btn.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
+      const size = Math.max(rect.width, rect.height, 40);
       ripple.style.cssText = `
         width: ${size}px; height: ${size}px;
         left: ${e.clientX - rect.left - size / 2}px;
@@ -585,6 +592,7 @@
       `;
       btn.appendChild(ripple);
       ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      setTimeout(() => { if (ripple.parentNode) ripple.remove(); }, 650);
     }, { passive: true });
   }
 

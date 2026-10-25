@@ -90,34 +90,215 @@ function switchCustomerTab(tabId) {
     }
 }
 
-let liveChart = null; // ප්‍රස්ථාරය රඳවා තබාගන්නා විචල්‍යය
+let liveChart = null; // Chart.js instance
+
+// Active chart sensors set (Multi-Select toggle)
+let activeChartSensors = new Set(['ch4', 'co2']);
+
+// Buffer for live chart data points (retained across sensor toggles)
+let liveChartBuffer = {
+    labels: [],
+    ch4: [],
+    co2: [],
+    temp: [],
+    hum: [],
+    ph: [],
+    pressure: [],
+    vol: []
+};
+
+const CHART_SENSOR_DEFS = {
+    ch4: {
+        label: 'CH4 (%)',
+        color: '#39FF14',
+        bgColor: 'rgba(57,255,20,0.08)',
+        getValue: d => (d.ch4 != null ? Number(d.ch4) : 0)
+    },
+    co2: {
+        label: 'CO2 (%)',
+        color: '#38BDF8',
+        bgColor: 'rgba(56,189,248,0.08)',
+        getValue: d => (d.co2 != null ? Number(d.co2) : 0)
+    },
+    temp: {
+        label: 'Temp (°C)',
+        color: '#FB923C',
+        bgColor: 'rgba(251,146,60,0.08)',
+        getValue: d => (d.temperature != null ? Number(d.temperature) : 0)
+    },
+    hum: {
+        label: 'Humidity (%)',
+        color: '#60A5FA',
+        bgColor: 'rgba(96,165,250,0.08)',
+        getValue: d => (d.humidity != null ? Number(d.humidity) : 0)
+    },
+    ph: {
+        label: 'pH',
+        color: '#C084FC',
+        bgColor: 'rgba(192,132,252,0.08)',
+        getValue: d => (d.ph != null ? Number(d.ph) : 0)
+    },
+    pressure: {
+        label: 'Pressure (bar)',
+        color: '#F87171',
+        bgColor: 'rgba(248,113,113,0.08)',
+        getValue: d => (d.pressure != null ? Number(d.pressure) : 0)
+    },
+    vol: {
+        label: 'Volume (L)',
+        color: '#10B981',
+        bgColor: 'rgba(16,185,129,0.08)',
+        getValue: d => (d.gasVolume != null ? Number(d.gasVolume) : (d.volume != null ? Number(d.volume) : 0))
+    }
+};
+
+window.toggleChartSensor = function(sensorKey, btnElement) {
+    if (!CHART_SENSOR_DEFS[sensorKey]) return;
+
+    if (activeChartSensors.has(sensorKey)) {
+        // Allow removing only if at least 1 sensor remains
+        if (activeChartSensors.size > 1) {
+            activeChartSensors.delete(sensorKey);
+            if (btnElement) btnElement.classList.remove('active');
+        } else {
+            return;
+        }
+    } else {
+        activeChartSensors.add(sensorKey);
+        if (btnElement) btnElement.classList.add('active');
+    }
+
+    rebuildChartDatasets();
+};
+
+function rebuildChartDatasets() {
+    if (!liveChart) return;
+    const datasets = [];
+    activeChartSensors.forEach(key => {
+        const def = CHART_SENSOR_DEFS[key];
+        if (!def) return;
+        datasets.push({
+            id: key,
+            label: def.label,
+            data: [...(liveChartBuffer[key] || [])],
+            borderColor: def.color,
+            backgroundColor: def.bgColor,
+            pointBackgroundColor: def.color,
+            tension: 0.35,
+            borderWidth: 2.2,
+            pointRadius: 2.5,
+            pointHoverRadius: 5,
+            fill: true
+        });
+    });
+
+    liveChart.data.labels = [...liveChartBuffer.labels];
+    liveChart.data.datasets = datasets;
+    liveChart.update();
+}
 
 function initLiveChart() {
     const container = document.getElementById('chart-container');
+    if (!container) return;
     container.innerHTML = '<canvas id="live-data-chart"></canvas>';
     const ctx = document.getElementById('live-data-chart').getContext('2d');
 
     if (liveChart) {
-        liveChart.destroy(); // වෙනත් Unit එකකට මාරු වුවහොත් පරණ ප්‍රස්ථාරය මකා දමයි
+        liveChart.destroy();
+    }
+
+    const isDark = document.body.classList.contains('dark-theme');
+    const textColor = isDark ? '#A7F3D0' : '#1A2E22';
+    const gridColor = isDark ? 'rgba(57,255,20,0.08)' : 'rgba(26,46,34,0.06)';
+
+    // Reset buffer on unit change
+    liveChartBuffer = { labels: [], ch4: [], co2: [], temp: [], hum: [], ph: [], pressure: [], vol: [] };
+
+    const datasets = [];
+    activeChartSensors.forEach(key => {
+        const def = CHART_SENSOR_DEFS[key];
+        if (!def) return;
+        datasets.push({
+            id: key,
+            label: def.label,
+            data: [],
+            borderColor: def.color,
+            backgroundColor: def.bgColor,
+            pointBackgroundColor: def.color,
+            tension: 0.35,
+            borderWidth: 2.2,
+            pointRadius: 2.5,
+            pointHoverRadius: 5,
+            fill: true
+        });
+    });
+
+    // Sync button active classes with activeChartSensors set
+    const selectorBox = document.getElementById('chart-selectors');
+    if (selectorBox) {
+        const keyMap = { 'ch4': 0, 'co2': 1, 'temp': 2, 'hum': 3, 'ph': 4, 'pressure': 5, 'vol': 6 };
+        const buttons = selectorBox.querySelectorAll('.chart-btn');
+        Object.entries(keyMap).forEach(([k, idx]) => {
+            if (buttons[idx]) {
+                buttons[idx].classList.toggle('active', activeChartSensors.has(k));
+            }
+        });
     }
 
     liveChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [], // කාලය (Timestamps)
-            datasets: [
-                { label: 'CH4 (ppm)', data: [], borderColor: '#16A34A', tension: 0.4, borderWidth: 2, pointRadius: 0 },
-                { label: 'CO2 (ppm)', data: [], borderColor: '#F59E0B', tension: 0.4, borderWidth: 2, pointRadius: 0 }
-            ]
+            labels: [],
+            datasets: datasets
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                x: { display: true },
-                y: { display: true, beginAtZero: true }
+            interaction: {
+                mode: 'index',
+                intersect: false
             },
-            animation: false // සජීවීව දත්ත එන විට ගැස්සීම් වළක්වා ගැනීමට animation off කර ඇත
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: textColor,
+                        font: { family: "'JetBrains Mono', monospace", size: 11, weight: '600' },
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(7,20,12,0.95)' : 'rgba(255,255,255,0.98)',
+                    titleColor: isDark ? '#39FF14' : '#007A3D',
+                    bodyColor: isDark ? '#E8FFF0' : '#1A2E22',
+                    borderColor: isDark ? 'rgba(57,255,20,0.3)' : '#CBD5E1',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    ticks: {
+                        color: textColor,
+                        font: { family: "'JetBrains Mono', monospace", size: 10, weight: '600' }
+                    },
+                    grid: { color: gridColor }
+                },
+                y: {
+                    display: true,
+                    beginAtZero: true,
+                    ticks: {
+                        color: textColor,
+                        font: { family: "'JetBrains Mono', monospace", size: 10, weight: '600' }
+                    },
+                    grid: { color: gridColor }
+                }
+            },
+            animation: false
         }
     });
 }
@@ -179,20 +360,20 @@ socket.on('liveData', (data) => {
                 const tbody = document.getElementById('history-tbody');
                 const time = new Date().toLocaleTimeString();
                 const newRow = document.createElement('tr');
+                newRow.className = 'row-new-neon-flash';
                 
-                // අලුත් දත්තයක් ආපු ගමන් ලා කොළ පාටින් Highlight වී මැකී යාමට හැදීම
-                newRow.style.transition = "background-color 2s ease";
-                newRow.style.backgroundColor = "#DCFCE7"; 
-                setTimeout(() => { newRow.style.backgroundColor = "transparent"; }, 2000);
-                
-                const gasVol = data.gasVolume != null ? data.gasVolume : (data.volume != null ? data.volume : 0);
+                const gasVol = data.gasVolume != null ? Number(data.gasVolume) : (data.volume != null ? Number(data.volume) : 0);
+                const humVal = data.humidity != null ? Number(data.humidity).toFixed(1) : '-';
+                const pressVal = data.pressure != null ? Number(data.pressure).toFixed(2) : '-';
 
                 newRow.innerHTML = `
                     <td style="font-weight: 500; color: var(--text-dark);">${time}</td>
-                    <td>${data.ch4 != null ? data.ch4.toFixed(2) : '-'}</td>
-                    <td>${data.co2 != null ? data.co2.toFixed(2) : '-'}</td>
-                    <td>${data.temperature != null ? data.temperature.toFixed(1) : '-'}</td>
-                    <td>${data.ph != null ? data.ph.toFixed(2) : '-'}</td>
+                    <td>${data.ch4 != null ? Number(data.ch4).toFixed(2) : '-'}</td>
+                    <td>${data.co2 != null ? Number(data.co2).toFixed(2) : '-'}</td>
+                    <td>${data.temperature != null ? Number(data.temperature).toFixed(1) : '-'}</td>
+                    <td>${humVal}</td>
+                    <td>${pressVal}</td>
+                    <td>${data.ph != null ? Number(data.ph).toFixed(2) : '-'}</td>
                     <td>${gasVol.toFixed(2)}</td>
                 `;
                 
@@ -266,22 +447,31 @@ function updateLiveUI(data) {
         document.getElementById('val-distance').innerText = distanceValue.toFixed(1);
     }
 
-    // Update Chart with Real-time Data
+    // Update Chart with Real-time Data Buffer
     if (liveChart) {
-        const timeNow = new Date().toLocaleTimeString();
+        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         
-        liveChart.data.labels.push(timeNow);
-        liveChart.data.datasets[0].data.push(data.ch4 || 0);
-        liveChart.data.datasets[1].data.push(data.co2 || 0);
+        liveChartBuffer.labels.push(timeNow);
+        Object.keys(CHART_SENSOR_DEFS).forEach(k => {
+            liveChartBuffer[k].push(CHART_SENSOR_DEFS[k].getValue(data));
+        });
         
-        // ප්‍රස්ථාරයේ එකවර පෙන්වන්නේ අවසන් දත්ත ලක්ෂ්‍ය (data points) 20 පමණි
-        if (liveChart.data.labels.length > 20) {
-            liveChart.data.labels.shift();
-            liveChart.data.datasets[0].data.shift();
-            liveChart.data.datasets[1].data.shift();
+        if (liveChartBuffer.labels.length > 20) {
+            liveChartBuffer.labels.shift();
+            Object.keys(CHART_SENSOR_DEFS).forEach(k => {
+                liveChartBuffer[k].shift();
+            });
         }
         
-        liveChart.update();
+        // Push buffer to datasets
+        liveChart.data.labels = [...liveChartBuffer.labels];
+        liveChart.data.datasets.forEach(ds => {
+            if (liveChartBuffer[ds.id]) {
+                ds.data = [...liveChartBuffer[ds.id]];
+            }
+        });
+        
+        liveChart.update('none');
     }
 }
 
@@ -1040,20 +1230,20 @@ function fetchHistoryData() {
     const tbody = document.getElementById('history-tbody');
 
     if (currentUser && currentUser.role === 'customer' && unitId && !isUnitAccessibleToCurrentUser(unitId)) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #991B1B;">Access to this unit has been disabled by the admin.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #991B1B;">Access to this unit has been disabled by the admin.</td></tr>';
         return;
     }
 
     if (!unitId) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit from the top dropdown to view data logs.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit from the top dropdown to view data logs.</td></tr>';
         return;
     }
     
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">Loading historical data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Loading historical data...</td></tr>';
 
     window.dbGet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`)).then((snapshot) => {
         if (!snapshot.exists()) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
             return;
         }
         
@@ -1070,26 +1260,32 @@ function fetchHistoryData() {
             
             hasData = true;
             const time = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : 'N/A';
+            const humVal = data.humidity != null ? Number(data.humidity).toFixed(1) : '-';
+            const pressVal = data.pressure != null ? Number(data.pressure).toFixed(2) : '-';
+            const gasVol = data.gasVolume != null ? Number(data.gasVolume).toFixed(2) : (data.volume != null ? Number(data.volume).toFixed(2) : '-');
+
             rowsHtml += `
                 <tr>
                     <td style="font-weight: 500; color: var(--text-dark);">${time}</td>
-                    <td>${data.ch4 != null ? data.ch4.toFixed(2) : '-'}</td>
-                    <td>${data.co2 != null ? data.co2.toFixed(2) : '-'}</td>
-                    <td>${data.temperature != null ? data.temperature.toFixed(1) : '-'}</td>
-                    <td>${data.ph != null ? data.ph.toFixed(2) : '-'}</td>
-                    <td>${data.gasVolume != null ? data.gasVolume.toFixed(2) : '-'}</td>
+                    <td>${data.ch4 != null ? Number(data.ch4).toFixed(2) : '-'}</td>
+                    <td>${data.co2 != null ? Number(data.co2).toFixed(2) : '-'}</td>
+                    <td>${data.temperature != null ? Number(data.temperature).toFixed(1) : '-'}</td>
+                    <td>${humVal}</td>
+                    <td>${pressVal}</td>
+                    <td>${data.ph != null ? Number(data.ph).toFixed(2) : '-'}</td>
+                    <td>${gasVol}</td>
                 </tr>
             `;
         }
         
         if (!hasData) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #F59E0B;">No records found for the selected date.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #F59E0B;">No records found for the selected date.</td></tr>';
         } else {
             tbody.innerHTML = rowsHtml;
         }
     }).catch(err => {
         console.error(err);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">Error loading data. Check console.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #EF4444;">Error loading data. Check console.</td></tr>';
     });
 }
 
@@ -1108,7 +1304,7 @@ window.clearUnitHistory = async function() {
             
             // UI එකේ Table එක හිස් කිරීම
             const tbody = document.getElementById('history-tbody'); 
-            if(tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
+            if(tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #EF4444;">No historical records found for this unit.</td></tr>';
             
         } catch(error) {
             alert("Error clearing history: " + error.message);
@@ -2420,7 +2616,7 @@ async function loadSensorStatus() {
                             <span style="background: ${statusBg}; color: ${statusColor}; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">${status}</span>
                             <span style="font-size: 11px; color: #991B1B; margin-left: 8px; font-weight: 600;">${alertMsg}</span>
                         </div>
-                        <button class="btn-secondary-small" onclick="reportSpecificSensor('${s.name}', '${s.value} ${s.unit}', '${status}')" style="font-size: 12px; padding: 6px 12px; border: 1px solid #FCA5A5; color: #991B1B; background: #FFFFFF; cursor: pointer; transition: 0.2s;">${typeof icon === "function" ? icon("alert-triangle", 13) : ""} Report Issue</button>
+                        <button class="btn-sensor-report" onclick="reportSpecificSensor('${s.name}', '${s.value} ${s.unit}', '${status}')">${typeof icon === "function" ? icon("alert-triangle", 13) : ""} Report Issue</button>
                     </div>
                 </div>
             `;
@@ -2571,59 +2767,56 @@ function loadCustomerAlerts() {
 
             // Style config per severity
             const cfg = {
-                critical: { bg: '#FEF2F2', border: '#EF4444', leftBar: '#DC2626', badge: '#DC2626', badgeBg: '#FEE2E2', iconKey: 'siren', label: 'CRITICAL' },
-                warning:  { bg: '#FFFBEB', border: '#F59E0B', leftBar: '#D97706', badge: '#D97706', badgeBg: '#FEF3C7', iconKey: 'alert-triangle',  label: 'WARNING'  },
-                normal:   { bg: 'var(--bg-primary)', border: '#E2E8F0', leftBar: '#10B981', badge: '#16A34A', badgeBg: '#DCFCE7', iconKey: 'check-circle', label: 'NORMAL' },
-                offline:  { bg: '#F8FAFC', border: '#CBD5E1', leftBar: '#94A3B8', badge: '#6B7280', badgeBg: '#F3F4F6', iconKey: 'wifi-off', label: 'OFFLINE' }
+                critical: { badgeClass: 'badge critical', valColor: 'var(--red-400, #F87171)', iconKey: 'siren', label: 'CRITICAL' },
+                warning:  { badgeClass: 'badge warning', valColor: '#F59E0B', iconKey: 'alert-triangle', label: 'WARNING' },
+                normal:   { badgeClass: 'badge active', valColor: 'var(--neon, #10B981)', iconKey: 'check-circle', label: 'NORMAL' },
+                offline:  { badgeClass: 'badge offline', valColor: '#94A3B8', iconKey: 'wifi-off', label: 'OFFLINE' }
             }[severity];
 
             const displayVal = Number.isInteger(val) ? val : val.toFixed(2);
             const alertTimestamp = lastTime.toLocaleString();
 
             const cardHtml = `
-                <div class="ialert-card" data-severity="${severity}"
-                     style="background:${cfg.bg}; border:1px solid ${cfg.border}; border-left:5px solid ${cfg.leftBar}; border-radius:12px; padding:20px 24px; transition:0.2s;">
+                <div class="ialert-card ${severity}" data-severity="${severity}">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                         <div style="display:flex; align-items:center; gap:14px;">
                             <span style="display:inline-flex;align-items:center;color:var(--text-accent);">${typeof icon === "function" ? icon(sensor.icon || "gauge", 26) : ""}</span>
                             <div>
                                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                                    <h4 style="margin:0; font-size:16px; color:var(--text-dark); font-weight:700;">${sensor.label}</h4>
-                                    <span style="background:${cfg.badgeBg}; color:${cfg.badge}; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:800; letter-spacing:0.8px;"><span class="led-indicator ${severity === "critical" ? "led-critical" : severity === "warning" ? "led-warning" : "led-online"}"></span> ${cfg.label}</span>
+                                    <h4 style="margin:0; font-size:16px; color:var(--text-primary); font-weight:700;">${sensor.label}</h4>
+                                    <span class="${cfg.badgeClass}"><span class="led-indicator ${severity === "critical" ? "led-critical" : severity === "warning" ? "led-warning" : "led-online"}"></span> ${cfg.label}</span>
                                 </div>
-                                <p style="margin:0; font-size:13px; color:#64748B;">${message}</p>
+                                <p style="margin:0; font-size:13px; color:var(--text-muted);">${message}</p>
                             </div>
                         </div>
                         <div style="text-align:right; flex-shrink:0;">
-                            <div style="font-size:28px; font-weight:800; color:${cfg.badge}; line-height:1;">${displayVal}${sensor.unit ? ' <span style="font-size:14px; font-weight:600;">' + sensor.unit + '</span>' : ''}</div>
-                            <div style="font-size:11px; color:#94A3B8; margin-top:4px;">Current Reading</div>
+                            <div style="font-size:28px; font-weight:800; color:${cfg.valColor}; line-height:1;">${displayVal}${sensor.unit ? ' <span style="font-size:14px; font-weight:600;">' + sensor.unit + '</span>' : ''}</div>
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Current Reading</div>
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid ${cfg.border};">
-                        <div style="background:rgba(0,0,0,0.03); padding:10px 14px; border-radius:8px;">
-                            <div style="font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Safe Range</div>
-                            <div style="font-size:13px; font-weight:700; color:var(--text-dark);">${sensor.safeMin} – ${sensor.safeMax}${sensor.unit ? ' ' + sensor.unit : ''}</div>
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+                        <div class="alert-stat-card">
+                            <div class="stat-lbl">Safe Range</div>
+                            <div class="stat-val">${sensor.safeMin} – ${sensor.safeMax}${sensor.unit ? ' ' + sensor.unit : ''}</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.03); padding:10px 14px; border-radius:8px;">
-                            <div style="font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">10-Reading Trend</div>
-                            <div style="font-size:13px; font-weight:700; color:var(--text-dark);">${trend}</div>
+                        <div class="alert-stat-card">
+                            <div class="stat-lbl">10-Reading Trend</div>
+                            <div class="stat-val">${trend}</div>
                         </div>
-                        <div style="background:rgba(0,0,0,0.03); padding:10px 14px; border-radius:8px;">
-                            <div style="font-size:10px; color:#94A3B8; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Last Reading</div>
-                            <div style="font-size:12px; font-weight:600; color:var(--text-dark);">${alertTimestamp}</div>
+                        <div class="alert-stat-card">
+                            <div class="stat-lbl">Last Reading</div>
+                            <div class="stat-val">${alertTimestamp}</div>
                         </div>
                     </div>
 
                     ${severity === 'critical' || severity === 'warning' ? `
                     <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-                        <button onclick="reportSpecificSensor('${sensor.label}', '${displayVal} ${sensor.unit}', '${cfg.label}')"
-                                style="padding:8px 16px; font-size:12px; font-weight:700; background:#FFF; color:#1D4ED8; border:1.5px solid #BFDBFE; border-radius:8px; cursor:pointer;">
+                        <button class="btn-alert-report" onclick="reportSpecificSensor('${sensor.label}', '${displayVal} ${sensor.unit}', '${cfg.label}')">
                             ${typeof icon === "function" ? icon("chat", 14) : ""} Report to Support
                         </button>
                         ${severity === 'critical' ? `
-                        <button onclick="openGuideModal('${sensor.label}', '${displayVal} ${sensor.unit}')"
-                                style="padding:8px 16px; font-size:12px; font-weight:700; background:#DC2626; color:#FFF; border:none; border-radius:8px; cursor:pointer;">
+                        <button class="btn-alert-emergency" onclick="openGuideModal('${sensor.label}', '${displayVal} ${sensor.unit}')">
                             ${typeof icon === "function" ? icon("siren", 14) : ""} Emergency Guide
                         </button>` : ''}
                     </div>` : ''}
@@ -2643,6 +2836,9 @@ function loadCustomerAlerts() {
         if (el('alert-count-critical')) el('alert-count-critical').innerText = criticalCount;
         if (el('alert-count-warning'))  el('alert-count-warning').innerText  = warningCount;
         if (el('alert-count-normal'))   el('alert-count-normal').innerText   = normalCount;
+        if (el('btn-count-critical'))   el('btn-count-critical').innerText   = criticalCount;
+        if (el('btn-count-warning'))    el('btn-count-warning').innerText    = warningCount;
+        if (el('btn-count-normal'))     el('btn-count-normal').innerText     = normalCount;
         if (el('alert-unit-label'))     el('alert-unit-label').innerText     = unitLabel;
         if (el('alert-last-updated'))   el('alert-last-updated').innerText   = `Last updated: ${new Date().toLocaleTimeString()}`;
 
@@ -2700,24 +2896,17 @@ function renderAlertCards(filter) {
 }
 
 function filterAlerts(type) {
-    // Update button styles
+    // Update button active state cleanly without overriding theme styles
     ['all', 'critical', 'warning', 'normal'].forEach(t => {
         const btn = document.getElementById('af-' + t);
         if (!btn) return;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
         if (t === type) {
-            btn.style.background = '#0F172A';
-            btn.style.color = '#fff';
-            btn.style.borderColor = '#0F172A';
+            btn.classList.add('active');
         } else {
-            const defaults = {
-                critical: { border: '#FCA5A5', color: '#DC2626' },
-                warning:  { border: '#FDE68A', color: '#D97706' },
-                normal:   { border: '#BBF7D0', color: '#16A34A' },
-                all:      { border: '#CBD5E1', color: '#374151' }
-            };
-            btn.style.background = '#FFF';
-            btn.style.color = defaults[t].color;
-            btn.style.borderColor = defaults[t].border;
+            btn.classList.remove('active');
         }
     });
 

@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
     <meta name="theme-color" content="#050B08">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -619,12 +619,13 @@
                                             Real-Time Telemetry Stream
                                         </h4>
                                         <div class="segmented-control" id="chart-selectors">
-                                            <button onclick="changeChartSensor('ch4', this)" class="chart-btn seg-btn">CH4</button>
-                                            <button onclick="changeChartSensor('co2', this)" class="chart-btn seg-btn">CO2</button>
-                                            <button onclick="changeChartSensor('temp', this)" class="chart-btn seg-btn">Temp</button>
-                                            <button onclick="changeChartSensor('hum', this)" class="chart-btn seg-btn">Hum</button>
-                                            <button onclick="changeChartSensor('ph', this)" class="chart-btn seg-btn">pH</button>
-                                            <button onclick="changeChartSensor('vol', this)" class="chart-btn seg-btn active">Volume</button>
+                                            <button onclick="toggleChartSensor('ch4', this)" class="chart-btn seg-btn active">CH4</button>
+                                            <button onclick="toggleChartSensor('co2', this)" class="chart-btn seg-btn active">CO2</button>
+                                            <button onclick="toggleChartSensor('temp', this)" class="chart-btn seg-btn">Temp</button>
+                                            <button onclick="toggleChartSensor('hum', this)" class="chart-btn seg-btn">Hum</button>
+                                            <button onclick="toggleChartSensor('ph', this)" class="chart-btn seg-btn">pH</button>
+                                            <button onclick="toggleChartSensor('pressure', this)" class="chart-btn seg-btn">Pressure</button>
+                                            <button onclick="toggleChartSensor('vol', this)" class="chart-btn seg-btn">Volume</button>
                                         </div>
                                     </div>
                                     <div id="chart-container" style="width:100%;height:220px;position:relative;padding:10px 16px;">
@@ -712,10 +713,10 @@
                     <div class="table-container">
                         <table class="data-table" id="history-table">
                             <thead>
-                                <tr><th>Time</th><th>CH4 (ppm)</th><th>CO2 (ppm)</th><th>Temp (°C)</th><th>pH Level</th><th>Volume (L)</th></tr>
+                                <tr><th>Time</th><th>CH4 (ppm)</th><th>CO2 (ppm)</th><th>Temp (°C)</th><th>Humidity (%)</th><th>Pressure (bar)</th><th>pH Level</th><th>Volume (L)</th></tr>
                             </thead>
                             <tbody id="history-tbody">
-                                <tr><td colspan="6" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit to view data logs.</td></tr>
+                                <tr><td colspan="8" style="text-align: center; padding: 40px; color: #9CA3AF;">Please select a unit to view data logs.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -865,7 +866,7 @@
 
                     <!-- FILTER BAR -->
                     <div id="alert-filter-bar" style="display:none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                        <button onclick="filterAlerts('all')"      id="af-all"      style="padding: 8px 20px; border-radius: 20px; border: 2px solid #0F172A; background: #0F172A; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">All</button>
+                        <button onclick="filterAlerts('all')"      id="af-all"      class="chart-btn active">All</button>
                         <button onclick="filterAlerts('critical')" id="af-critical" class="chart-btn"><span class="led-indicator led-critical"></span> Critical (<span id="btn-count-critical">0</span>)</button>
                         <button onclick="filterAlerts('warning')" id="af-warning" class="chart-btn"><span class="led-indicator led-warning"></span> Warning (<span id="btn-count-warning">0</span>)</button>
                         <button onclick="filterAlerts('normal')" id="af-normal" class="chart-btn"><span class="led-indicator led-online"></span> Normal (<span id="btn-count-normal">0</span>)</button>
@@ -1194,7 +1195,7 @@
     <script>if (typeof THREE === 'undefined') document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
     <script src="icons.js"></script>
     <script src="twin3d.js" defer></script>
-    <script src="script.js"></script>
-    <script src="ui.js?v=11" defer></script>
+    <script src="script.js?v=12"></script>
+    <script src="ui.js?v=12" defer></script>
 </body>
 </html>
