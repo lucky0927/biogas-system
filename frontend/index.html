@@ -10,7 +10,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
+    <meta name="theme-color" content="#050B08">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,41 +20,35 @@
 <body>
 
    <!-- ========================================== -->
-    <!-- MODERN ANIMATED LOGIN SCREEN               -->
+    <!-- MODERN 3D ANIMATED LOGIN SCREEN            -->
     <!-- ========================================== -->
-    <div id="login-screen" class="screen active" style="justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-sage) 100%); position: relative; overflow: hidden;">
-        
-        <!-- Background decorative elements -->
-        <div style="position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--bg-lavender); border-radius: 50%; filter: blur(80px); opacity: 0.6; z-index: 1;"></div>
-        <div style="position: absolute; bottom: -10%; right: -10%; width: 300px; height: 300px; background: var(--accent-coral); border-radius: 50%; filter: blur(80px); opacity: 0.2; z-index: 1;"></div>
+    <div id="login-screen" class="screen active">
 
-        <div class="login-container" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); padding: 48px 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid rgba(255,255,255,0.5); width: 100%; max-width: 420px; z-index: 2; animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
-            
+        <!-- Three.js canvas mount (lazy loaded by ui.js) -->
+        <div id="login-canvas-bg"></div>
+
+        <div class="login-container" id="login-card">
             <div class="login-header">
                 <img src="assets/biomonitor-logo.png?v=3" alt="BioMonitor" class="brand-logo">
                 <h2 class="login-wordmark"><span class="brand-bio">Bio</span>Monitor</h2>
-                <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Authorized Personnel Access</p>
+                <p>Authorized Personnel Access</p>
             </div>
 
-            <!-- 
-                Form ටැග් එක මගින් Browser එකට Password Save කරගැනීමට සංඥා කරයි. 
-                autocomplete="username" සහ autocomplete="current-password" අත්‍යවශ්‍ය වේ.
-            -->
             <form id="login-form" onsubmit="event.preventDefault(); document.getElementById('login-btn').click();">
-                <div class="input-group" style="margin-bottom: 20px; text-align: left;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Email Address</label>
+                <div class="input-group">
+                    <label>Email Address</label>
                     <input type="email" id="user-email" autocomplete="username" required placeholder="name@example.com" class="login-input">
                 </div>
-                
-                <div class="input-group" style="margin-bottom: 24px; text-align: left;">
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Password</label>
+
+                <div class="input-group">
+                    <label>Password</label>
                     <input type="password" id="user-password" autocomplete="current-password" required placeholder="••••••••" class="login-input">
                 </div>
 
-                <div id="login-error" style="color: #991B1B; font-size: 13px; text-align: center; margin-bottom: 16px; min-height: 20px; font-weight: 500;"></div>
+                <div id="login-error"></div>
 
                 <button type="submit" id="login-btn" class="btn-primary-small login-button">
-                    Sign In <span style="font-size: 18px; margin-left: 8px; transition: transform 0.3s;">➔</span>
+                    Sign In <span style="font-size:18px;margin-left:8px;">➔</span>
                 </button>
             </form>
         </div>
@@ -68,30 +64,52 @@
                     <img src="assets/biomonitor-logo.png?v=3" alt="BioMonitor" class="brand-logo-sidebar">
                     <span class="brand-wordmark"><span class="brand-bio">Bio</span>Monitor<span class="coral-dot">.</span></span>
                 </div>
+                <span class="nav-section-label">Dashboard</span>
                 <ul class="nav-links">
-                    <li id="tab-admin-overview" class="active" onclick="switchAdminTab('admin-overview')">Overview</li>
-                    <li id="tab-admin-deployments" onclick="switchAdminTab('admin-deployments')">Deployments</li>
-                    <li id="tab-admin-customers" onclick="switchAdminTab('admin-customers'); renderCustomersList();">Customers</li>
-                    <li id="tab-admin-complaints" onclick="switchAdminTab('admin-complaints')">Complaints</li>
-                    <li id="tab-admin-settings" onclick="switchAdminTab('admin-settings')">Settings</li>
+                    <li id="tab-admin-overview" class="active" onclick="switchAdminTab('admin-overview')">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
+                        Overview
+                    </li>
+                    <li id="tab-admin-deployments" onclick="switchAdminTab('admin-deployments')">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+                        Deployments
+                    </li>
+                    <li id="tab-admin-customers" onclick="switchAdminTab('admin-customers'); renderCustomersList();">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                        Customers
+                    </li>
+                    <li id="tab-admin-complaints" onclick="switchAdminTab('admin-complaints')">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                        Complaints
+                    </li>
+                    <li id="tab-admin-settings" onclick="switchAdminTab('admin-settings')">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                        Settings
+                    </li>
                 </ul>
                 <div class="sidebar-footer">
-                    <button class="btn-logout" id="admin-logout-btn">Sign Out</button>
+                    <button class="btn-logout" id="admin-logout-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Sign Out
+                    </button>
                 </div>
             </div>
 
             <!-- MAIN CONTENT -->
             <div class="main-content">
-                
+
                 <!-- TOP HEADER & SEARCH -->
                 <div class="header-bar">
                     <div>
                         <h2 id="admin-welcome-msg">Welcome, Admin</h2>
-                        <p class="text-muted">System Overview & Management</p>
+                        <p class="text-muted">System Overview &amp; Management</p>
                     </div>
-                    <div class="search-box" style="position: relative;">
-                        <input type="text" id="admin-search-input" placeholder="Search customer, location or unit ID...">
-                        <div id="search-suggestions" class="suggestions-dropdown"></div>
+                    <div class="header-controls">
+                        <div class="search-box">
+                            <input type="text" id="admin-search-input" placeholder="Search customer, location or unit ID...">
+                            <div id="search-suggestions" class="suggestions-dropdown"></div>
+                        </div>
+                        <button id="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">🌙</button>
                     </div>
                 </div>
 
@@ -354,7 +372,7 @@
     <!-- SCREEN 3: CUSTOMER DASHBOARD -->
     <div id="customer-screen" class="screen">
         <div class="dashboard-layout">
-            
+
             <!-- SIDEBAR -->
             <div class="sidebar">
                 <div class="brand" id="customer-brand">
@@ -362,31 +380,55 @@
                     <span class="brand-wordmark"><span class="brand-bio">Bio</span>Monitor<span class="coral-dot">.</span></span>
                 </div>
                 <ul class="nav-links">
-                    <li id="tab-back-admin" onclick="returnToAdmin()" style="display: none; background: #0F172A; color: #FFFFFF; font-weight: 700; margin-bottom: 24px; text-align: center; border-radius: 100px;">
-                        ⬅ Return to Admin Panel
+                    <li id="tab-back-admin" onclick="returnToAdmin()" style="display:none;">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></span>
+                        Return to Admin Panel
                     </li>
-                    <li id="tab-cust-overview" onclick="switchCustomerTab('cust-overview'); renderCustomerOverview();" class="active">Overview</li>
-                    <li id="tab-cust-monitor" onclick="switchCustomerTab('cust-monitor'); loadMonitorData();">Monitor</li>
-                    <li id="tab-cust-history" onclick="switchCustomerTab('cust-history'); fetchHistoryData();">History</li>
-                    <li id="tab-cust-reports" onclick="switchCustomerTab('cust-reports'); resetReportFilters();">Reports & Analytics</li>
-                    <li id="tab-cust-sensors" onclick="switchCustomerTab('cust-sensors'); loadSensorStatus();">Sensor Status</li>
-                    <li id="tab-cust-alerts" onclick="switchCustomerTab('cust-alerts'); loadCustomerAlerts();">System Alerts</li>
-                    <li id="tab-cust-settings" onclick="switchCustomerTab('cust-settings')">Settings</li>
-                    <li id="tab-cust-contact" onclick="switchCustomerTab('cust-contact')">Contact Us</li>
+                    <li id="tab-cust-overview" onclick="switchCustomerTab('cust-overview'); renderCustomerOverview();" class="active">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
+                        Overview
+                    </li>
+                    <li id="tab-cust-monitor" onclick="switchCustomerTab('cust-monitor'); loadMonitorData();">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+                        Live Monitor
+                    </li>
+                    <li id="tab-cust-history" onclick="switchCustomerTab('cust-history'); fetchHistoryData();">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                        History
+                    </li>
+                    <li id="tab-cust-reports" onclick="switchCustomerTab('cust-reports'); resetReportFilters();">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+                        Reports
+                    </li>
+                    <li id="tab-cust-sensors" onclick="switchCustomerTab('cust-sensors'); loadSensorStatus();">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                        Sensor Status
+                    </li>
+                    <li id="tab-cust-alerts" onclick="switchCustomerTab('cust-alerts'); loadCustomerAlerts();">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+                        System Alerts
+                    </li>
+                    <li id="tab-cust-settings" onclick="switchCustomerTab('cust-settings')">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                        Settings
+                    </li>
+                    <li id="tab-cust-contact" onclick="switchCustomerTab('cust-contact')">
+                        <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.46a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+                        Contact Us
+                    </li>
                 </ul>
-                <!-- SIDEBAR FOOTER (Support & Sign Out) -->
-                <div class="sidebar-footer" style="margin-top: auto; padding-bottom: 20px;">
-                    <ul class="nav-links" style="margin-bottom: 12px; padding: 0;">
-                        <li id="tab-cust-support" onclick="switchCustomerTab('cust-support'); loadCustomerChatForUnit();" style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 18px;">💬</span> Support Center
+
+                <!-- SIDEBAR FOOTER -->
+                <div class="sidebar-footer">
+                    <ul class="nav-links" style="margin-bottom:12px;padding:0;">
+                        <li id="tab-cust-support" onclick="switchCustomerTab('cust-support'); loadCustomerChatForUnit();">
+                            <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                            Support Center
                         </li>
                     </ul>
-                    
-<!-- 🔴 අලුත්: Light/Dark දෙකටම වැඩ කරන Profile Badge -->
+
                     <div class="sidebar-profile-card">
-                        <div class="profile-avatar">
-                            👤
-                        </div>
+                        <div class="profile-avatar">👤</div>
                         <div class="profile-info">
                             <h4 id="top-user-name">Loading...</h4>
                             <p id="top-user-email">Please wait</p>
@@ -394,14 +436,16 @@
                     </div>
 
                     <button id="customer-logout-btn" class="btn-logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         Sign Out
                     </button>
                 </div>
             </div>
+
 <!-- MAIN CONTENT -->
-            <div class="main-content" style="background-color: #F8FAFC; position: relative;">
-                
-                
+            <div class="main-content">
+
+
 
                 <!-- CUSTOMER TAB: OVERVIEW -->
                 <div id="cust-overview" class="admin-tab active" style="padding: 24px;">
@@ -518,14 +562,9 @@
 
                                 <!-- Chart Card -->
                                 <div class="monitor-chart-card">
-                                    <div class="monitor-chart-header">
                                     <div class="monitor-chart-header" style="flex-wrap: wrap; gap: 10px;">
                                         <h4 class="monitor-chart-title">Real-time Performance</h4>
                                         <div class="chart-legend-row" id="chart-selectors" style="display: flex; gap: 8px;">
-                                            <style>
-                                                .chart-btn { padding: 4px 12px; font-size: 12px; border-radius: 100px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; cursor: pointer; font-weight: 600; transition: 0.2s; }
-                                                .chart-btn.active { background: #0F172A; color: #FFF; border-color: #0F172A; }
-                                            </style>
                                             <button onclick="changeChartSensor('ch4', this)" class="chart-btn">CH4</button>
                                             <button onclick="changeChartSensor('co2', this)" class="chart-btn">CO2</button>
                                             <button onclick="changeChartSensor('temp', this)" class="chart-btn">Temp</button>
@@ -1052,5 +1091,6 @@
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="script.js"></script>
+    <script src="ui.js" defer></script>
 </body>
 </html>
