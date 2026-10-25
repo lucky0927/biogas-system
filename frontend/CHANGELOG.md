@@ -1,3 +1,45 @@
+# BioMonitor SCADA Frontend — CHANGELOG v5.2
+
+## Release Date: October 2026 (v5.2 — Complete Restoration of 8 SCADA Telemetry Tiles)
+
+### Parameter Restoration & Responsive Grid Balance
+- **Restoration of Relative Humidity (`val-hum`)**: Unhidden from `style="display:none;"` and restored as a primary instrument tile with live percentage, safe operating envelope (40–80%), and sensor status badge.
+- **Restoration of Headspace Distance (`val-distance`)**: Unhidden from `style="display:none;"` and integrated directly into the Gas Volume tile (`Headspace: <span id="val-distance">0.0</span> cm`), giving operators instant visibility into both metric volume and physical acoustic sensor readings.
+- **Balanced 4x2 SCADA Matrix**: Upgraded `.monitor-top-instruments` from a cramped 6-column row (which caused horizontal edge clipping on 1366x768 laptop displays) to a balanced 4-column x 2-row SCADA grid:
+  - Row 1: Methane (CH4), Carbon Dioxide (CO2), Temperature, Relative Humidity
+  - Row 2: Digester pH, System Pressure, Storage Level (%), Gas Volume (L) + Headspace (cm)
+- **Fluid Responsive Breakpoints**:
+  - `> 1100px`: 4 columns x 2 rows
+  - `580px - 1100px`: 2 columns x 4 rows
+  - `< 580px`: 1 column fluid stack
+- **Box-Sizing & Overflow Safety**: Added `min-width: 0; box-sizing: border-box;` on all tiles to completely prevent element blowout.
+
+### 3D Digester Twin: Vibrant Electric Neon Green Gas
+- **Preserved 3D Architecture**: Retained the exact 3D cylindrical vessel, upper dome, structural neon rib rings, slurry substrate, and interactive orbit animation requested by user.
+- **Electric Neon Green Biogas Core (`#39FF14`)**: Upgraded `this.gasMat` emissive and base color to pure electric neon green (`0x39FF14`) with elevated emissive intensity (`0.95`) and richer volumetric density (`opacity: 0.62`), replacing the previously dark forest green tone.
+- **Volumetric Additive Plasma Core (`#00FF66`)**: Added an inner gas sphere with `THREE.AdditiveBlending` that concentrates an incandescent neon glow at the center of the dome.
+- **Crystal-Clear Outer Glass Shell**: Replaced the previous dark green glass tint (`0x143826`) with an ultra-transparent crystal borosilicate finish (`opacity: 0.12 - 0.14`, `FrontSide`), ensuring 100% of the internal neon luminescence shines through with crisp specular highlights.
+- **High-Intensity Core Point Light**: Elevated the internal gas point light to 4.5 intensity, casting an authentic inner-out neon radiance.
+
+---
+
+# BioMonitor SCADA Frontend — CHANGELOG v5.1
+
+## Release Date: October 2026 (v5.1 — 3D Digester Twin Gas Clarity & Color Balancing)
+
+### Gas Visualization & Color Balance Elevation
+- **Crystal-Clear Borosilicate Glass Vessel**: Transformed the outer cylinder and dome from a dark opaque green glass (`opacity: 0.85/0.75`) to ultra-clear industrial borosilicate glass (`opacity: 0.22/0.24`, `roughness: 0.08`, `clearcoat: 1.0`), eliminating visual obstruction of the tank interior.
+- **Dedicated Luminous Biogas Headspace & Dome Cloud**: Added an internal glowing gas chamber mesh (`this.gasCylinderMesh` and `this.gasDomeMesh`) in the upper headspace above the liquid, emitting vibrant bioluminescent biogas radiance (`#39FF14` / `#10B981`) with living breathing volumetric pulses.
+- **Glowing Liquid Meniscus Divider Ring**: Added an illuminated meniscus surface disk and boundary ring at the liquid surface, creating a sharp, crisp line of demarcation between the dark slurry liquid below and the luminous gas above.
+- **Deep Organic Substrate Contrast**: Styled the lower liquid slurry into a deep, rich dark biomass digestate (`#062817`, `opacity: 0.90`), providing grounded physical weight that beautifully contrasts against the bright gas.
+- **Core Internal Volumetric Gas Lighting**: Positioned an internal point light (`0x39FF14`, intensity: 3.2, distance: 7.0) inside the gas chamber, casting authentic inner-out radiance through the glass shell.
+- **Two-Phase Gas Particle Dynamics**:
+  1. Micro-fermentation bubbles rising up through the liquid slurry.
+  2. 45 swirling, floating Methane (CH4 neon green) and CO2 (cyan/amber sparkles) gas molecules drifting up into the dome and funneling into the top gas collection manifold.
+- **Script Availability**: Added Three.js CDN script tag into `index.html` to guarantee immediate WebGL execution across all tabs without delay.
+
+---
+
 # BioMonitor SCADA Frontend — CHANGELOG v5.0
 
 ## Release Date: October 2026 (Round 2 — Industrial Control-Room Elevation)

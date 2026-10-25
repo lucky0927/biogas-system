@@ -1,15 +1,18 @@
 /**
- * BioMonitor Industrial 3D Digester Twin — twin3d.js v5.0
+ * BioMonitor Industrial 3D Digester Twin — twin3d.js v5.1
  * Procedural Three.js Digital Twin for SCADA Live Monitor & Overview cards.
  * Features:
- * - Cylindrical digester vessel with dome gas holder & structural ribs
- * - Process piping: feedstock inlet, gas collection line, safety relief valve
- * - Dynamic liquid slurry level driven by volume percentage
- * - Microscopic gas bubble swarm rising at rate driven by CH4 %
- * - Status-reactive neon halo: optimal (green), warning (amber), critical (red)
- * - Mouse drag rotation & silky idle orbit
- * - Page Visibility & tab teardown lifecycle (Strictly max 1 active WebGL context)
- * - Accessible static/animated isometric SVG fallback for reduced-motion/no-WebGL
+ * - Ultra-clear borosilicate glass vessel & dome with specular rim highlights & structural ribs
+ * - Deep organic biomass digestate slurry column dynamically scaled by volume %
+ * - Luminous glowing liquid meniscus ring & surface separating liquid from gas
+ * - Dedicated luminous Biogas Headspace & Dome cloud with living volumetric breathing glow
+ * - Two-phase bubble & gas particle dynamics:
+ *     1. Micro-fermentation bubbles rising through liquid substrate
+ *     2. Floating, swirling Methane (CH4) & CO2 gas molecules drifting up into collection pipe
+ * - Gas luminescence & core volumetric lighting scaled dynamically by CH4 % and System Status
+ * - Interactive mouse/touch drag rotation & silky idle orbit
+ * - Max 1 active WebGL context lifecycle management
+ * - Accessible SVG fallback for reduced-motion/no-WebGL
  */
 
 (function () {
@@ -17,11 +20,32 @@
 
   let activeInstance = null;
 
-  // Colors
+  // Status Palette
   const STATUS_COLORS = {
-    normal: { hex: 0x39FF14, css: '#39FF14' },
-    warning: { hex: 0xF59E0B, css: '#F59E0B' },
-    critical: { hex: 0xEF4444, css: '#EF4444' }
+    normal: {
+      gasHex: 0x39FF14,       // Electric Neon Green
+      gasEmissive: 0x39FF14,  // Pure Neon Green Glow
+      gasInner: 0x00FF66,     // Inner core neon emerald
+      slurryHex: 0x04180D,    // Deep Organic Biomass (high contrast against neon gas)
+      lightHex: 0x39FF14,     // Pure Neon Point Light
+      css: '#39FF14'
+    },
+    warning: {
+      gasHex: 0xF59E0B,       // Amber Gas
+      gasEmissive: 0xF59E0B,
+      gasInner: 0xFBBF24,
+      slurryHex: 0x2A1D0B,
+      lightHex: 0xF59E0B,
+      css: '#F59E0B'
+    },
+    critical: {
+      gasHex: 0xEF4444,       // Warning Red Gas
+      gasEmissive: 0xEF4444,
+      gasInner: 0xF87171,
+      slurryHex: 0x2D0D0D,
+      lightHex: 0xEF4444,
+      css: '#EF4444'
+    }
   };
 
   /**
@@ -29,23 +53,31 @@
    */
   function renderSvgFallback(container, data) {
     if (!container) return;
-    const vol = Math.max(5, Math.min(95, data.volumePct || 50));
-    const ch4 = data.ch4Pct || 55;
+    const vol = Math.max(8, Math.min(92, data.volumePct || 50));
+    const ch4 = data.ch4Pct || 60;
     const status = data.status || 'normal';
-    const accent = STATUS_COLORS[status]?.css || '#39FF14';
+    const cfg = STATUS_COLORS[status] || STATUS_COLORS.normal;
+    const accent = cfg.css;
+    const liquidTopY = 220 - (vol * 1.3);
 
     container.innerHTML = `
       <div class="twin-svg-fallback" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
-        <svg viewBox="0 0 240 280" width="100%" height="100%" style="max-height:240px;filter:drop-shadow(0 8px 24px rgba(0,0,0,0.35));" aria-label="Digester Module Diagram">
+        <svg viewBox="0 0 240 280" width="100%" height="100%" style="max-height:240px;filter:drop-shadow(0 8px 24px rgba(0,0,0,0.45));" aria-label="Digester Module Diagram">
           <defs>
             <linearGradient id="slurryGrad" x1="0" y1="1" x2="0" y2="0">
-              <stop offset="0%" stop-color="${accent}" stop-opacity="0.85"/>
-              <stop offset="100%" stop-color="#00A84F" stop-opacity="0.45"/>
+              <stop offset="0%" stop-color="#04180D" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#0A2C17" stop-opacity="0.90"/>
             </linearGradient>
-            <linearGradient id="vesselGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="rgba(255,255,255,0.08)"/>
-              <stop offset="50%" stop-color="rgba(255,255,255,0.02)"/>
-              <stop offset="100%" stop-color="rgba(0,0,0,0.4)"/>
+            <linearGradient id="biogasGrad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0%" stop-color="#39FF14" stop-opacity="0.55"/>
+              <stop offset="40%" stop-color="#00FF66" stop-opacity="0.80"/>
+              <stop offset="100%" stop-color="#39FF14" stop-opacity="0.95"/>
+            </linearGradient>
+            <linearGradient id="glassSheen" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+              <stop offset="30%" stop-color="rgba(255,255,255,0.02)"/>
+              <stop offset="85%" stop-color="rgba(255,255,255,0.08)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0.5)"/>
             </linearGradient>
             <filter id="neonGlow">
               <feGaussianBlur stdDeviation="3" result="blur"/>
@@ -53,23 +85,32 @@
             </filter>
           </defs>
           
-          <!-- Digester Dome -->
-          <path d="M40,90 C40,40 200,40 200,90 Z" fill="url(#vesselGrad)" stroke="${accent}" stroke-width="1.5" filter="url(#neonGlow)"/>
+          <!-- Outer Glass Vessel Outline -->
+          <rect x="40" y="90" width="160" height="130" rx="8" fill="#05100A" stroke="rgba(57,255,20,0.25)" stroke-width="1.5"/>
+          <path d="M40,90 C40,35 200,35 200,90 Z" fill="rgba(6,25,15,0.6)" stroke="${accent}" stroke-width="1.5" filter="url(#neonGlow)"/>
+
+          <!-- Biogas Headspace & Dome Fill -->
+          <path d="M40,90 C40,35 200,35 200,90 L200,${liquidTopY} L40,${liquidTopY} Z" fill="url(#biogasGrad)"/>
           
-          <!-- Cylindrical Vessel Body -->
-          <rect x="40" y="90" width="160" height="130" rx="8" fill="#0A1610" stroke="rgba(57,255,20,0.2)" stroke-width="1.5"/>
-          <rect x="40" y="90" width="160" height="130" rx="8" fill="url(#vesselGrad)"/>
-          
-          <!-- Liquid Level Fill -->
-          <clipPath id="vesselClip"><rect x="42" y="92" width="156" height="126" rx="6"/></clipPath>
-          <g clip-path="url(#vesselClip)">
-            <rect x="40" y="${220 - (vol * 1.25)}" width="160" height="${vol * 1.3}" fill="url(#slurryGrad)"/>
-            <path d="M40,${220 - (vol * 1.25)} Q80,${216 - (vol * 1.25)} 120,${220 - (vol * 1.25)} T200,${220 - (vol * 1.25)}" fill="none" stroke="${accent}" stroke-width="2"/>
-          </g>
+          <!-- Liquid Slurry Fill (Bottom) -->
+          <rect x="42" y="${liquidTopY}" width="156" height="${220 - liquidTopY}" fill="url(#slurryGrad)"/>
+
+          <!-- Glowing Meniscus Level Divider -->
+          <line x1="40" y1="${liquidTopY}" x2="200" y2="${liquidTopY}" stroke="${accent}" stroke-width="2.5" filter="url(#neonGlow)"/>
+
+          <!-- Rising Gas Bubbles in Headspace -->
+          <circle cx="80" cy="${liquidTopY - 20}" r="3" fill="${accent}" opacity="0.8"/>
+          <circle cx="120" cy="${liquidTopY - 35}" r="4" fill="${accent}" opacity="0.9" filter="url(#neonGlow)"/>
+          <circle cx="150" cy="${liquidTopY - 18}" r="2.5" fill="#38BDF8" opacity="0.8"/>
+          <circle cx="100" cy="65" r="3.5" fill="${accent}" opacity="0.85"/>
+          <circle cx="130" cy="50" r="3" fill="#FDE047" opacity="0.75"/>
 
           <!-- Structural Ribs -->
-          <line x1="40" y1="130" x2="200" y2="130" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
-          <line x1="40" y1="170" x2="200" y2="170" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
+          <line x1="40" y1="130" x2="200" y2="130" stroke="rgba(57,255,20,0.3)" stroke-dasharray="4 4"/>
+          <line x1="40" y1="170" x2="200" y2="170" stroke="rgba(57,255,20,0.3)" stroke-dasharray="4 4"/>
+
+          <!-- Glass Highlights -->
+          <rect x="40" y="90" width="160" height="130" rx="8" fill="url(#glassSheen)" pointer-events="none"/>
 
           <!-- Piping & Relief Valve -->
           <path d="M120,40 L120,15 L160,15 L160,28" fill="none" stroke="${accent}" stroke-width="3" stroke-linecap="round"/>
@@ -77,8 +118,8 @@
           <path d="M25,180 L40,180" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="4" stroke-linecap="round"/>
           
           <!-- Monospace Level Badge -->
-          <rect x="80" y="235" width="80" height="24" rx="12" fill="rgba(0,0,0,0.75)" stroke="${accent}" stroke-width="1"/>
-          <text x="120" y="251" text-anchor="middle" fill="${accent}" font-family="monospace" font-size="11" font-weight="bold">${vol}% VOL</text>
+          <rect x="75" y="235" width="90" height="24" rx="12" fill="rgba(0,0,0,0.85)" stroke="${accent}" stroke-width="1"/>
+          <text x="120" y="251" text-anchor="middle" fill="${accent}" font-family="monospace" font-size="11" font-weight="bold">${vol}% VOL | ${ch4}% CH4</text>
         </svg>
       </div>
     `;
@@ -104,13 +145,13 @@
 
       this.animId = null;
       this.isDestroyed = false;
+      this.time = 0;
       this.init();
     }
 
     init() {
       if (!this.container) return;
 
-      // Reduced motion or no Three.js -> SVG Fallback
       if (this.options.reducedMotion || typeof THREE === 'undefined') {
         renderSvgFallback(this.container, this.data);
         return;
@@ -141,133 +182,245 @@
 
       this.scene = new THREE.Scene();
       this.camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-      this.camera.position.set(0, 1.8, 6.2);
-      this.camera.lookAt(0, 0, 0);
+      this.camera.position.set(0, 1.2, 5.8);
+      this.camera.lookAt(0, 0.35, 0);
 
       this.rootGroup = new THREE.Group();
       this.scene.add(this.rootGroup);
 
       // --- Lighting ---
-      const ambient = new THREE.AmbientLight(0x0e2417, 1.2);
+      const ambient = new THREE.AmbientLight(0x133825, 2.2);
       this.scene.add(ambient);
 
-      this.pointLight = new THREE.PointLight(0x39FF14, 2.5, 12);
-      this.pointLight.position.set(2, 3, 3);
-      this.scene.add(this.pointLight);
+      // Core internal neon gas light (radiates outward from INSIDE the gas dome!)
+      this.coreGasLight = new THREE.PointLight(0x39FF14, 4.5, 8.0);
+      this.coreGasLight.position.set(0, 1.3, 0);
+      this.rootGroup.add(this.coreGasLight);
 
-      this.underLight = new THREE.PointLight(0x00FF88, 1.2, 8);
-      this.underLight.position.set(-2, -2, 2);
+      // Key specular directional light for glass rim highlights
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      dirLight.position.set(2.5, 4.0, 3.5);
+      this.scene.add(dirLight);
+
+      // Under-glow light
+      this.underLight = new THREE.PointLight(0x00FF88, 1.5, 6.0);
+      this.underLight.position.set(-2, -1.8, 1.5);
       this.scene.add(this.underLight);
 
-      // --- Digester Base & Hull ---
-      const tankGeo = new THREE.CylinderGeometry(1.4, 1.45, 2.2, 32, 1, true);
-      const tankMat = new THREE.MeshPhysicalMaterial({
-        color: 0x07150E,
-        metalness: 0.35,
-        roughness: 0.25,
+      // ==========================================
+      // 1. SLURRY LIQUID COLUMN (Bottom Substrate)
+      // ==========================================
+      // Base cylinder has radius 1.36, unit height 1.0 (scaled via scale.y)
+      const liquidGeo = new THREE.CylinderGeometry(1.36, 1.38, 1.0, 32);
+      this.liquidMat = new THREE.MeshStandardMaterial({
+        color: 0x04180D,      // Deep rich organic biomass substrate
+        roughness: 0.50,
+        metalness: 0.15,
         transparent: true,
-        opacity: 0.85,
-        reflectivity: 0.8,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.15
+        opacity: 0.88,
+        emissive: 0x011008
+      });
+      this.liquidMesh = new THREE.Mesh(liquidGeo, this.liquidMat);
+      this.rootGroup.add(this.liquidMesh);
+
+      // Glowing liquid meniscus surface disk
+      const meniscusGeo = new THREE.CircleGeometry(1.36, 32);
+      this.meniscusMat = new THREE.MeshBasicMaterial({
+        color: 0x39FF14,
+        transparent: true,
+        opacity: 0.90,
+        side: THREE.DoubleSide
+      });
+      this.meniscusMesh = new THREE.Mesh(meniscusGeo, this.meniscusMat);
+      this.meniscusMesh.rotation.x = -Math.PI / 2;
+      this.rootGroup.add(this.meniscusMesh);
+
+      // Glowing meniscus boundary ring
+      const ringGeoMeniscus = new THREE.RingGeometry(1.33, 1.38, 32);
+      const ringMatMeniscus = new THREE.MeshBasicMaterial({
+        color: 0x39FF14,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.95
+      });
+      this.meniscusRingMesh = new THREE.Mesh(ringGeoMeniscus, ringMatMeniscus);
+      this.meniscusRingMesh.rotation.x = -Math.PI / 2;
+      this.rootGroup.add(this.meniscusRingMesh);
+
+      // ==========================================
+      // 2. BIOGAS CHAMBER (Headspace & Dome Cloud)
+      // ==========================================
+      // Luminous neon green gas cloud in cylinder headspace above slurry
+      const gasCylGeo = new THREE.CylinderGeometry(1.35, 1.36, 1.0, 32);
+      this.gasMat = new THREE.MeshPhongMaterial({
+        color: 0x39FF14,          // Pure Electric Neon Green
+        emissive: 0x39FF14,       // Pure Neon Green Radiance
+        emissiveIntensity: 0.95,
+        transparent: true,
+        opacity: 0.62,            // Rich, clearly visible, vibrant neon green gas
+        shininess: 90,
+        depthWrite: false,
+        side: THREE.FrontSide
+      });
+      this.gasCylinderMesh = new THREE.Mesh(gasCylGeo, this.gasMat);
+      this.rootGroup.add(this.gasCylinderMesh);
+
+      // Luminous neon green gas cloud filling the top dome
+      const gasDomeGeo = new THREE.SphereGeometry(1.34, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      this.gasDomeMesh = new THREE.Mesh(gasDomeGeo, this.gasMat);
+      this.gasDomeMesh.position.y = 1.1;
+      this.rootGroup.add(this.gasDomeMesh);
+
+      // Volumetric Core: Concentrated neon green center inside the gas dome
+      const innerCoreGeo = new THREE.SphereGeometry(1.18, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      this.innerCoreMat = new THREE.MeshBasicMaterial({
+        color: 0x00FF66,
+        transparent: true,
+        opacity: 0.40,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.FrontSide
+      });
+      this.gasCoreMesh = new THREE.Mesh(innerCoreGeo, this.innerCoreMat);
+      this.gasCoreMesh.position.y = 1.1;
+      this.rootGroup.add(this.gasCoreMesh);
+
+      // ==========================================
+      // 3. CRYSTAL-CLEAR OUTER GLASS VESSEL & DOME
+      // ==========================================
+      const tankGeo = new THREE.CylinderGeometry(1.4, 1.44, 2.2, 36, 1, true);
+      const tankMat = new THREE.MeshPhysicalMaterial({
+        color: 0x99FFAA,         // Crystal clear with faint neon mint edge sheen
+        metalness: 0.05,
+        roughness: 0.04,
+        transparent: true,
+        opacity: 0.12,           // Crystal clear glass so the inner neon green glows brilliantly
+        reflectivity: 0.95,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        depthWrite: false,
+        side: THREE.FrontSide
       });
       this.tankMesh = new THREE.Mesh(tankGeo, tankMat);
       this.rootGroup.add(this.tankMesh);
 
-      // --- Dome Gas Holder ---
-      const domeGeo = new THREE.SphereGeometry(1.4, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+      const domeGeo = new THREE.SphereGeometry(1.4, 36, 18, 0, Math.PI * 2, 0, Math.PI / 2);
       const domeMat = new THREE.MeshPhysicalMaterial({
-        color: 0x0E2E1B,
-        metalness: 0.4,
-        roughness: 0.2,
+        color: 0x99FFAA,
+        metalness: 0.05,
+        roughness: 0.04,
         transparent: true,
-        opacity: 0.75,
-        wireframe: false
+        opacity: 0.14,           // Crystal clear dome glass
+        reflectivity: 0.95,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.04,
+        depthWrite: false,
+        side: THREE.FrontSide
       });
       this.domeMesh = new THREE.Mesh(domeGeo, domeMat);
       this.domeMesh.position.y = 1.1;
       this.rootGroup.add(this.domeMesh);
 
-      // Wireframe Accent Rings
-      const ringGeo1 = new THREE.TorusGeometry(1.42, 0.02, 8, 32);
-      const ringMat = new THREE.MeshBasicMaterial({ color: 0x39FF14, transparent: true, opacity: 0.45 });
-      const ring1 = new THREE.Mesh(ringGeo1, ringMat);
-      ring1.rotation.x = Math.PI / 2;
-      ring1.position.y = 1.1;
-      this.rootGroup.add(ring1);
-
-      const ring2 = new THREE.Mesh(ringGeo1, ringMat);
-      ring2.rotation.x = Math.PI / 2;
-      ring2.position.y = 0.0;
-      this.rootGroup.add(ring2);
-
-      const ring3 = new THREE.Mesh(ringGeo1, ringMat);
-      ring3.rotation.x = Math.PI / 2;
-      ring3.position.y = -1.1;
-      this.rootGroup.add(ring3);
-
-      // --- Slurry Liquid Column (Adjusts with Volume) ---
-      const liquidGeo = new THREE.CylinderGeometry(1.36, 1.38, 2.1, 32);
-      this.liquidMat = new THREE.MeshPhongMaterial({
-        color: 0x0D4424,
-        emissive: 0x08331A,
-        transparent: true,
-        opacity: 0.70,
-        shininess: 90
-      });
-      this.liquidMesh = new THREE.Mesh(liquidGeo, this.liquidMat);
-      this.liquidMesh.position.y = 0;
-      this.rootGroup.add(this.liquidMesh);
-
-      // --- Piping ---
-      const pipeMat = new THREE.MeshStandardMaterial({ color: 0x244E34, metalness: 0.8, roughness: 0.3 });
+      // Structural Neon Accent Rings around vessel
+      const ringGeo = new THREE.TorusGeometry(1.42, 0.018, 8, 36);
+      this.ringMat = new THREE.MeshBasicMaterial({ color: 0x39FF14, transparent: true, opacity: 0.60 });
       
-      // Top Gas Extraction Pipe
+      const rTop = new THREE.Mesh(ringGeo, this.ringMat);
+      rTop.rotation.x = Math.PI / 2;
+      rTop.position.y = 1.1;
+      this.rootGroup.add(rTop);
+
+      const rMid = new THREE.Mesh(ringGeo, this.ringMat);
+      rMid.rotation.x = Math.PI / 2;
+      rMid.position.y = 0.0;
+      this.rootGroup.add(rMid);
+
+      const rBottom = new THREE.Mesh(ringGeo, this.ringMat);
+      rBottom.rotation.x = Math.PI / 2;
+      rBottom.position.y = -1.1;
+      this.rootGroup.add(rBottom);
+
+      // ==========================================
+      // 4. PROCESS PIPING & VALVES
+      // ==========================================
+      const pipeMat = new THREE.MeshStandardMaterial({ color: 0x335C43, metalness: 0.85, roughness: 0.25 });
+      
+      // Top Gas Extraction Pipe (exiting the dome apex)
       const topPipeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.9, 16);
       const topPipe = new THREE.Mesh(topPipeGeo, pipeMat);
       topPipe.position.set(0, 2.7, 0);
       this.rootGroup.add(topPipe);
 
-      // Horizontal Manifold
-      const maniGeo = new THREE.CylinderGeometry(0.07, 0.07, 1.2, 16);
+      // Horizontal Gas Header Manifold
+      const maniGeo = new THREE.CylinderGeometry(0.07, 0.07, 1.3, 16);
       const manifold = new THREE.Mesh(maniGeo, pipeMat);
       manifold.rotation.z = Math.PI / 2;
-      manifold.position.set(0.5, 3.1, 0);
+      manifold.position.set(0.55, 3.1, 0);
       this.rootGroup.add(manifold);
 
-      // Relief Valve Knob
+      // Pressure Relief Valve
       const valveGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.08, 16);
-      const valveMat = new THREE.MeshBasicMaterial({ color: 0x39FF14 });
-      const valve = new THREE.Mesh(valveGeo, valveMat);
-      valve.position.set(1.0, 3.2, 0);
+      this.valveMat = new THREE.MeshBasicMaterial({ color: 0x39FF14 });
+      const valve = new THREE.Mesh(valveGeo, this.valveMat);
+      valve.position.set(1.15, 3.2, 0);
       this.rootGroup.add(valve);
 
-      // --- Rising Gas Bubbles ---
-      this.bubbleCount = 35;
-      const bubbleGeo = new THREE.SphereGeometry(0.045, 8, 8);
-      this.bubbleGroup = new THREE.Group();
-      this.bubbles = [];
+      // Side Feedstock Inlet Pipe (into slurry)
+      const inletGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.6, 16);
+      const inlet = new THREE.Mesh(inletGeo, pipeMat);
+      inlet.rotation.z = Math.PI / 3;
+      inlet.position.set(-1.45, -0.6, 0);
+      this.rootGroup.add(inlet);
 
-      for (let i = 0; i < this.bubbleCount; i++) {
-        const bMat = new THREE.MeshBasicMaterial({
-          color: 0x39FF14,
-          transparent: true,
-          opacity: 0.3 + Math.random() * 0.5
-        });
-        const b = new THREE.Mesh(bubbleGeo, bMat);
+      // ==========================================
+      // 5. TWO-PHASE PARTICLES: SLURRY & BIOGAS
+      // ==========================================
+      // (A) Slurry micro-fermentation bubbles
+      this.slurryBubbles = [];
+      const sBubbleGeo = new THREE.SphereGeometry(0.035, 8, 8);
+      const sBubbleMat = new THREE.MeshBasicMaterial({ color: 0x86EFAC, transparent: true, opacity: 0.75 });
+      for (let i = 0; i < 20; i++) {
+        const b = new THREE.Mesh(sBubbleGeo, sBubbleMat);
+        const r = Math.random() * 1.05;
+        const theta = Math.random() * Math.PI * 2;
+        b.position.set(Math.cos(theta) * r, -1.0 + Math.random() * 1.0, Math.sin(theta) * r);
+        b.userData = {
+          speed: 0.006 + Math.random() * 0.012,
+          radius: r,
+          angle: theta,
+          wobbleSpeed: 0.02 + Math.random() * 0.03
+        };
+        this.slurryBubbles.push(b);
+        this.rootGroup.add(b);
+      }
+
+      // (B) Floating, swirling Biogas Molecules in the Headspace & Dome
+      this.gasMolecules = [];
+      const gMolGeo = new THREE.SphereGeometry(0.05, 8, 8);
+      const ch4Mat = new THREE.MeshBasicMaterial({ color: 0x39FF14, transparent: true, opacity: 0.90 }); // Methane
+      const co2Mat = new THREE.MeshBasicMaterial({ color: 0x38BDF8, transparent: true, opacity: 0.80 }); // CO2 sparkle
+      const steamMat = new THREE.MeshBasicMaterial({ color: 0xFDE047, transparent: true, opacity: 0.75 }); // Vapor trace
+
+      for (let i = 0; i < 45; i++) {
+        let mat = ch4Mat;
+        if (i % 3 === 0) mat = co2Mat;
+        else if (i % 7 === 0) mat = steamMat;
+
+        const m = new THREE.Mesh(gMolGeo, mat);
         const r = Math.random() * 1.1;
         const theta = Math.random() * Math.PI * 2;
-        b.position.set(Math.cos(theta) * r, -1.0 + Math.random() * 2.0, Math.sin(theta) * r);
-        b.userData = {
-          baseSpeed: 0.008 + Math.random() * 0.015,
-          resetY: -1.0,
-          maxY: 1.0,
-          driftAngle: Math.random() * Math.PI * 2
+        const y = 0.0 + Math.random() * 2.2;
+        m.position.set(Math.cos(theta) * r, y, Math.sin(theta) * r);
+        m.userData = {
+          speedY: 0.007 + Math.random() * 0.015,
+          vortexRate: (Math.random() - 0.5) * 0.04,
+          radialDist: r,
+          angle: theta,
+          scaleBase: 0.7 + Math.random() * 0.6
         };
-        this.bubbles.push(b);
-        this.bubbleGroup.add(b);
+        this.gasMolecules.push(m);
+        this.rootGroup.add(m);
       }
-      this.rootGroup.add(this.bubbleGroup);
 
       // Interaction
       this.setupInteraction();
@@ -334,28 +487,60 @@
     }
 
     updateMeshMetrics() {
-      if (!this.liquidMesh || !this.pointLight) return;
+      if (!this.liquidMesh || !this.meniscusMesh || !this.gasCylinderMesh) return;
 
-      const vol = Math.max(0.05, Math.min(0.98, (this.data.volumePct || 50) / 100));
-      this.liquidMesh.scale.y = vol;
-      this.liquidMesh.position.y = -1.05 + (vol * 2.1) / 2;
+      const vol = Math.max(0.08, Math.min(0.92, (this.data.volumePct || 50) / 100));
+      const totalH = 2.2;
+      const liquidHeight = totalH * vol;
+      const bottomY = -1.1;
+      const meniscusY = bottomY + liquidHeight;
 
-      // Status glow
+      // 1. Position Liquid Mesh
+      this.liquidMesh.scale.set(1, liquidHeight, 1);
+      this.liquidMesh.position.set(0, bottomY + liquidHeight / 2, 0);
+
+      // 2. Position Meniscus Disk & Ring
+      this.meniscusMesh.position.y = meniscusY;
+      this.meniscusRingMesh.position.y = meniscusY + 0.005;
+
+      // 3. Position Gas Headspace Cylinder
+      const gasCylHeight = Math.max(0.01, 1.1 - meniscusY);
+      this.gasCylinderMesh.scale.set(1, gasCylHeight, 1);
+      this.gasCylinderMesh.position.set(0, meniscusY + gasCylHeight / 2, 0);
+
+      // 4. Update Colors based on Status & CH4 %
       const status = this.data.status || 'normal';
-      const col = STATUS_COLORS[status]?.hex || 0x39FF14;
-      this.pointLight.color.setHex(col);
+      const cfg = STATUS_COLORS[status] || STATUS_COLORS.normal;
 
       if (this.liquidMat) {
-        if (status === 'critical') {
-          this.liquidMat.color.setHex(0x5A1515);
-          this.liquidMat.emissive.setHex(0x3A0808);
-        } else if (status === 'warning') {
-          this.liquidMat.color.setHex(0x543B10);
-          this.liquidMat.emissive.setHex(0x3A2807);
-        } else {
-          this.liquidMat.color.setHex(0x0D4424);
-          this.liquidMat.emissive.setHex(0x08331A);
-        }
+        this.liquidMat.color.setHex(cfg.slurryHex);
+      }
+
+      if (this.gasMat) {
+        this.gasMat.color.setHex(cfg.gasHex);
+        this.gasMat.emissive.setHex(cfg.gasEmissive);
+        // Rich vibrant emissive glow
+        const ch4Ratio = Math.max(0.7, (this.data.ch4Pct || 60) / 70);
+        this.gasMat.emissiveIntensity = 0.95 * ch4Ratio;
+      }
+
+      if (this.innerCoreMat) {
+        this.innerCoreMat.color.setHex(cfg.gasInner || cfg.gasHex);
+      }
+
+      if (this.coreGasLight) {
+        this.coreGasLight.color.setHex(cfg.lightHex);
+        this.coreGasLight.position.y = Math.min(2.0, Math.max(1.1, meniscusY + 0.5));
+      }
+
+      if (this.meniscusMat) {
+        this.meniscusMat.color.setHex(cfg.gasHex);
+      }
+      if (this.ringMat) {
+        this.ringMat.color.setHex(cfg.gasHex);
+      }
+      if (this.valveMat) {
+        this.valveMat.color.setHex(cfg.gasHex);
       }
     }
 
@@ -363,20 +548,62 @@
       if (this.isDestroyed) return;
       this.animId = requestAnimationFrame(() => this.animate());
 
-      // Slow orbit
+      this.time += 0.02;
+
+      // Slow silky orbit
       if (this.rootGroup) {
         this.rootGroup.rotation.y += 0.0035;
       }
 
-      // Animate gas bubbles with rate driven by CH4
-      const ch4Mult = Math.max(0.4, (this.data.ch4Pct || 55) / 50);
-      if (this.bubbles && this.liquidMesh) {
-        const topY = this.liquidMesh.position.y + (this.liquidMesh.scale.y * 2.1) / 2;
-        this.bubbles.forEach(b => {
-          b.position.y += b.userData.baseSpeed * ch4Mult;
-          b.position.x += Math.sin(b.userData.driftAngle += 0.02) * 0.002;
-          if (b.position.y > topY) {
-            b.position.y = b.userData.resetY;
+      // Living Biogas volumetric breathing pulse
+      if (this.gasMat) {
+        const pulse = Math.sin(this.time * 2.2) * 0.04;
+        this.gasMat.opacity = 0.62 + pulse;
+      }
+      if (this.innerCoreMat) {
+        const corePulse = Math.sin(this.time * 2.8) * 0.05;
+        this.innerCoreMat.opacity = 0.40 + corePulse;
+      }
+
+      // Meniscus calculation for particles
+      const vol = Math.max(0.08, Math.min(0.92, (this.data.volumePct || 50) / 100));
+      const bottomY = -1.1;
+      const meniscusY = bottomY + (2.2 * vol);
+      const ch4Mult = Math.max(0.5, (this.data.ch4Pct || 55) / 50);
+
+      // Animate Slurry Bubbles (inside liquid substrate)
+      if (this.slurryBubbles) {
+        this.slurryBubbles.forEach(b => {
+          b.position.y += b.userData.speed * ch4Mult;
+          b.userData.angle += b.userData.wobbleSpeed;
+          b.position.x = Math.cos(b.userData.angle) * b.userData.radius;
+          b.position.z = Math.sin(b.userData.angle) * b.userData.radius;
+          if (b.position.y >= meniscusY) {
+            b.position.y = bottomY + Math.random() * 0.15;
+          }
+        });
+      }
+
+      // Animate Gas Molecules (swirling upwards into collection pipe)
+      if (this.gasMolecules) {
+        this.gasMolecules.forEach(m => {
+          m.position.y += m.userData.speedY * ch4Mult;
+          m.userData.angle += m.userData.vortexRate;
+          
+          // Funnel inward as particles approach the top apex
+          const heightRatio = Math.max(0, (m.position.y - 1.1) / 1.4);
+          const currentRadius = m.userData.radialDist * (1.0 - heightRatio * 0.85);
+
+          m.position.x = Math.cos(m.userData.angle) * currentRadius;
+          m.position.z = Math.sin(m.userData.angle) * currentRadius;
+
+          // Pulse scale
+          const s = m.userData.scaleBase * (1.0 + Math.sin(this.time * 3 + m.position.y) * 0.2);
+          m.scale.set(s, s, s);
+
+          // Reset when reaching top manifold
+          if (m.position.y > 2.45) {
+            m.position.y = meniscusY + 0.05 + Math.random() * 0.1;
           }
         });
       }
