@@ -19,7 +19,7 @@ function loadCustomerDashboard(userData) {
     document.getElementById('login-screen').classList.remove('active');
     document.getElementById('customer-screen').classList.add('active');
     
-    // 🔴 අලුත්: දකුණු පැත්තේ උඩින් Customer ගේ නම සහ Email එක පෙන්වීම
+    // Note: අලුත්: දකුණු පැත්තේ උඩින් Customer ගේ නම සහ Email එක පෙන්වීම
     const topNameEl = document.getElementById('top-user-name');
     const topEmailEl = document.getElementById('top-user-email');
     if (topNameEl) topNameEl.innerText = userData.name || "Customer";
@@ -166,7 +166,7 @@ socket.on('liveData', (data) => {
     
     // 2. Admin overview alerts section is hidden — no live alert check needed for admin
 
-    // 🔴 3. අලුත්: History ටැබ් එකේ ඉන්නකොට සජීවීව අලුත් දත්ත වගුවට එකතු කිරීම 🔴
+    // Note: 3. අලුත්: History ටැබ් එකේ ඉන්නකොට සජීවීව අලුත් දත්ත වගුවට එකතු කිරීම 
     const historyTab = document.getElementById('cust-history');
     if (historyTab && historyTab.classList.contains('active')) {
         if (globalSelectedUnitId === data.unitId) {
@@ -361,7 +361,7 @@ function checkSystemAlerts() {
         if (!snapshot.exists()) {
             grid.innerHTML = `
                 <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">✅</span>
+                    <span style="font-size:24px;"></span>
                     <div>
                         <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
                         <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No active alerts across all biogas units.</p>
@@ -397,7 +397,7 @@ function checkSystemAlerts() {
             const borderColor = hasCritical ? '#FCA5A5' : '#FDE68A';
             const leftBorder  = hasCritical ? '#EF4444' : '#F59E0B';
             const titleColor  = hasCritical ? '#991B1B' : '#D97706';
-            const icon = hasCritical ? '🚨' : '⚠️';
+            const icon = hasCritical ? '' : '';
             const displayTitle = unit.unitName ? `${locName} — ${unitName}` : locName;
 
             const issueChips = activeAlerts.map(a => {
@@ -405,7 +405,7 @@ function checkSystemAlerts() {
                 const chipText = a.severity === 'critical' ? '#991B1B' : '#D97706';
                 const chipBdr  = a.severity === 'critical' ? '#FCA5A5' : '#FDE68A';
                 const ackBadge = a.status === 'acknowledged' ? ' <span style="font-size:10px;opacity:0.7;">(Acknowledged)</span>' : '';
-                return `<div style="background:${chipBg};color:${chipText};padding:7px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid ${chipBdr};display:inline-block;width:fit-content;">${a.severity === 'critical' ? '🚨' : '⚠️'} ${a.label}: ${a.value} ${a.sensorUnit || ''}${ackBadge}</div>`;
+                return `<div style="background:${chipBg};color:${chipText};padding:7px 12px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid ${chipBdr};display:inline-block;width:fit-content;">${a.severity === 'critical' ? '' : ''} ${a.label}: ${a.value} ${a.sensorUnit || ''}${ackBadge}</div>`;
             }).join('');
 
             alertsHtml += `
@@ -413,7 +413,7 @@ function checkSystemAlerts() {
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
                         <div>
                             <div style="font-weight:700;color:${titleColor};font-size:16px;margin-bottom:4px;">${icon} ${displayTitle}</div>
-                            <div style="font-size:13px;color:#475569;font-weight:500;">👤 ${custName}${custPhone ? ' | 📞 ' + custPhone : ''}</div>
+                            <div style="font-size:13px;color:#475569;font-weight:500;">${typeof icon === "function" ? icon("user", 12) : ""} ${custName}${custPhone ? ' |  ' + custPhone : ''}</div>
                         </div>
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <button onclick="switchAdminTab('admin-deployments'); document.getElementById('admin-search-input').value='${unitId}'; document.getElementById('admin-search-input').dispatchEvent(new Event('input'));" style="padding:7px 14px;font-size:12px;background:#FFF;color:#0F172A;border:1px solid #CBD5E1;border-radius:6px;font-weight:600;cursor:pointer;">View Unit</button>
@@ -428,7 +428,7 @@ function checkSystemAlerts() {
         if (totalActive === 0) {
             grid.innerHTML = `
                 <div style="grid-column:1/-1; background:#DCFCE7; padding:20px; border-radius:12px; border:1px solid #86EFAC; display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">✅</span>
+                    <span style="font-size:24px;"></span>
                     <div>
                         <h4 style="color:#166534; margin:0; font-size:16px;">All Systems Operational</h4>
                         <p style="color:#15803D; margin:4px 0 0 0; font-size:14px;">No critical alerts detected across all biogas units.</p>
@@ -486,7 +486,7 @@ function updateDeploymentsUI(searchQuery = '') {
         const unreadChat = cust.unreadMessages || 0; 
         const activeAlerts = unit.activeAlerts || 0; 
 
-        // 🔴 අලුත්: දත්ත නැතිනම් 'undefined' වෙනුවට 'N/A' ලබා දීම
+        // Note: අලුත්: දත්ත නැතිනම් 'undefined' වෙනුවට 'N/A' ලබා දීම
         const safeEmail = cust.email || 'N/A';
         const safePass = cust.rawPass || 'N/A';
         const safeLoginLink = cust.loginLink || 'N/A';
@@ -503,9 +503,9 @@ function updateDeploymentsUI(searchQuery = '') {
                          <span class="badge ${unit.status || 'active'}">${unit.status || 'ACTIVE'}</span>
                          
                          ${activeAlerts > 0 ? 
-                            `<span style="background: #FEF2F2; color: #DC2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #FCA5A5; display: flex; align-items: center; gap: 6px;" onclick="switchScreen('complaints-screen')">⚠️ ${activeAlerts} Critical Alerts</span>` 
+                            `<span style="background: #FEF2F2; color: #DC2626; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #FCA5A5; display: flex; align-items: center; gap: 6px;" onclick="switchScreen('complaints-screen')"> ${activeAlerts} Critical Alerts</span>` 
                             : 
-                            `<span style="background: #F0FDF4; color: #16A34A; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #BBF7D0;">✅ System Stable</span>`
+                            `<span style="background: #F0FDF4; color: #16A34A; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #BBF7D0;"> System Stable</span>`
                          }
                      </div>
                      
@@ -528,7 +528,7 @@ function updateDeploymentsUI(searchQuery = '') {
                      </div>
                      
                      <div style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: ${cust.accessGranted !== false ? '#ECFDF5' : '#FEF2F2'}; padding: 6px 12px; border-radius: 8px; border: 1px solid ${cust.accessGranted !== false ? '#A7F3D0' : '#FECACA'};" onclick="toggleCustomerAccess('${loc.customerId}', ${cust.accessGranted !== false})">
-                         <span style="font-size: 12px; font-weight: 700; color: ${cust.accessGranted !== false ? '#059669' : '#DC2626'};">${cust.accessGranted !== false ? '✅ CLIENT ACTIVE' : '❌ CLIENT SUSPENDED'}</span>
+                         <span style="font-size: 12px; font-weight: 700; color: ${cust.accessGranted !== false ? '#059669' : '#DC2626'};">${cust.accessGranted !== false ? ' CLIENT ACTIVE' : ' CLIENT SUSPENDED'}</span>
                      </div>
                  </div>
                  
@@ -667,17 +667,25 @@ document.addEventListener('click', (e) => {
 });
 
 function switchAdminTab(tabId) {
-    document.querySelectorAll('.admin-tab').forEach(tab => {
+    document.querySelectorAll('#admin-screen .admin-tab').forEach(tab => {
         tab.classList.remove('active');
+        tab.style.display = 'none';
     });
-    document.querySelectorAll('.nav-links li').forEach(li => {
+    document.querySelectorAll('#admin-screen .nav-links li').forEach(li => {
         li.classList.remove('active');
     });
 
-    document.getElementById(tabId).classList.add('active');
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+        selectedTab.style.display = 'block';
+    }
     
     const navId = tabId.replace('admin-', 'tab-admin-');
-    document.getElementById(navId).classList.add('active');
+    const selectedNav = document.getElementById(navId);
+    if (selectedNav) {
+        selectedNav.classList.add('active');
+    }
 }
 
 function openAddClientModal() {
@@ -728,7 +736,7 @@ function handleClientModeChange(selectedValue) {
         const cust = globalCustomers[selectedValue];
         if (cust) {
             document.getElementById('existing-client-summary').innerText =
-                `👤 ${cust.name} | 📞 ${cust.phone || 'N/A'} | 📧 ${cust.email || 'N/A'}`;
+                `${typeof icon === "function" ? icon("user", 12) : ""} ${cust.name} |  ${cust.phone || 'N/A'} |  ${cust.email || 'N/A'}`;
         }
         // Populate locations for this customer
         const locationSelect = document.getElementById('location-mode-select');
@@ -737,7 +745,7 @@ function handleClientModeChange(selectedValue) {
             if (loc.customerId === selectedValue) {
                 const opt = document.createElement('option');
                 opt.value = locId;
-                opt.textContent = `📍 ${loc.locationName || 'Unnamed Location'}`;
+                opt.textContent = loc.locationName || 'Unnamed Location';
                 locationSelect.appendChild(opt);
             }
         }
@@ -768,7 +776,7 @@ function handleLocationModeChange(selectedValue) {
         container.innerHTML = `
             <div style="border: 1px solid #CBD5E1; padding: 15px; border-radius: 8px; background: #F8FAFC;">
                 <p style="margin: 0 0 10px 0; font-size: 13px; font-weight: 600; color: #475569;">
-                    📦 Add New Unit to: <strong>${document.getElementById('location-mode-select').options[document.getElementById('location-mode-select').selectedIndex].text}</strong>
+                    Add New Unit to: <strong>${document.getElementById('location-mode-select').options[document.getElementById('location-mode-select').selectedIndex].text}</strong>
                 </p>
                 <div class="units-container" style="display: flex; flex-direction: column; gap: 8px;">
                     <input type="text" class="input-field unit-name-input" placeholder="Unit Name (e.g. Unit 2)">
@@ -921,7 +929,7 @@ async function saveNewClientFlow() {
                     createdAt: new Date().toISOString()
                 });
 
-                deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName}</h5><ul style="margin: 0; padding-left: 20px;">`;
+                deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">${typeof icon === 'function' ? icon('pin', 14) : ''} ${locName}</h5><ul style="margin: 0; padding-left: 20px;">`;
 
                 const unitInputs = block.querySelectorAll('.unit-name-input');
                 let unitCount = 1;
@@ -949,9 +957,9 @@ async function saveNewClientFlow() {
         } else {
             // ── Existing location — add unit(s) only ────────────────────
             const locationId = selectedLocationMode;
-            const locName = locationModeSelect.options[locationModeSelect.selectedIndex].text.replace('📍 ', '');
+            const locName = locationModeSelect.options[locationModeSelect.selectedIndex].text.replace('📍 ', '').replace('Location: ', '');
 
-            deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">📍 ${locName} (Existing)</h5><ul style="margin: 0; padding-left: 20px;">`;
+            deviceLinksHTML += `<h5 style="margin: 10px 0 5px 0; color: #1E293B;">${typeof icon === 'function' ? icon('pin', 14) : ''} ${locName} (Existing)</h5><ul style="margin: 0; padding-left: 20px;">`;
 
             const unitInputs = document.querySelectorAll('.unit-name-input');
             if (unitInputs.length === 0) {
@@ -1053,7 +1061,7 @@ function fetchHistoryData() {
         let rowsHtml = '';
         let hasData = false;
         
-        // 🔴 අලුත්: අලුත්ම දත්ත මුලින් පෙන්වීමට Array එක Reverse කිරීම
+        // Note: අලුත්: අලුත්ම දත්ත මුලින් පෙන්වීමට Array එක Reverse කිරීම
         const logEntries = Object.entries(logs).reverse();
         
         for (const [logId, data] of logEntries) {
@@ -1092,7 +1100,7 @@ window.clearUnitHistory = async function() {
         return alert("Please select a valid unit first!");
     }
 
-    if(confirm("⚠️ WARNING: Are you sure you want to clear ALL history for this unit?\n\nThis will permanently delete all logged sensor data. This cannot be undone.")) {
+    if(confirm("WARNING: Are you sure you want to clear ALL history for this unit?\n\nThis will permanently delete all logged sensor data. This cannot be undone.")) {
         try {
             await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
             
@@ -1224,7 +1232,7 @@ function loadCustomerChatForUnit() {
         customerChatUnsub();
     }
 
-    // 🔴 Customer ID එක වෙනුවට කෙළින්ම Unit ID එකෙන් Chat එක සෑදීම
+    // Note: Customer ID එක වෙනුවට කෙළින්ම Unit ID එකෙන් Chat එක සෑදීම
     const chatRef = window.dbRef(window.firebaseDB, `chats/${globalSelectedUnitId}`);
     
     customerChatUnsub = window.dbOnValue(chatRef, (snapshot) => {
@@ -1335,7 +1343,7 @@ function initAdminChat() {
             const msgs = allChats[unitId].messages || {};
             const msgKeys = Object.keys(msgs);
             
-            // 🔴 අලුත්: Unread Messages ගණනය කිරීම (WhatsApp Style)
+            // Note: අලුත්: Unread Messages ගණනය කිරීම (WhatsApp Style)
             let unreadCount = 0;
             msgKeys.forEach(key => {
                 if(msgs[key].sender === 'customer' && !msgs[key].read) {
@@ -1346,20 +1354,20 @@ function initAdminChat() {
             let lastMsg = 'No messages';
             if (msgKeys.length > 0) {
                 const lastM = msgs[msgKeys[msgKeys.length-1]];
-                lastMsg = lastM.imageUrl ? '📷 Image' : (lastM.audioUrl ? '🎤 Voice message' : lastM.text);
+                lastMsg = lastM.imageUrl ? (typeof icon === 'function' ? icon('image', 14) + ' Image' : 'Image') : (lastM.audioUrl ? (typeof icon === 'function' ? icon('mic', 14) + ' Voice message' : 'Voice message') : lastM.text);
             }
             
             const div = document.createElement('div');
             div.className = `chat-list-item ${unitId === activeChatUnitId ? 'active' : ''}`;
             div.onclick = () => openAdminChat(unitId, cust, displayTitle);
             
-            // 🔴 අලුත් UI: කොළ පාට Notification Badge එක සහ Bold Text
+            // Note: අලුත් UI: කොළ පාට Notification Badge එක සහ Bold Text
             div.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h4 style="margin: 0; font-size: 14px; color: #111827;">${displayTitle}</h4>
                     ${unreadCount > 0 ? `<span style="background: #10B981; color: white; border-radius: 50px; min-width: 20px; height: 20px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.15);">${unreadCount}</span>` : ''}
                 </div>
-                <p style="margin: 2px 0 4px 0; font-size: 11px; color: #4B5563; font-weight: 600;">👤 ${cust.name}</p>
+                <p style="margin: 2px 0 4px 0; font-size: 11px; color: #4B5563; font-weight: 600;">${typeof icon === "function" ? icon("user", 12) : ""} ${cust.name}</p>
                 <p style="margin: 0; font-size: 12px; color: ${unreadCount > 0 ? '#0F172A' : '#6B7280'}; font-weight: ${unreadCount > 0 ? '700' : 'normal'}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${lastMsg}</p>
             `;
             chatList.appendChild(div);
@@ -1377,7 +1385,7 @@ function openAdminChat(unitId, cust, displayTitle) {
     document.getElementById('admin-chat-window').style.display = 'flex';
     
     document.getElementById('active-chat-name').innerHTML = `${displayTitle} <span id="admin-chat-status" class="badge" style="font-size: 10px; padding: 4px 8px;"></span>`;
-    document.getElementById('active-chat-phone').innerText = `Customer: ${cust.name} | 📞 ${cust.phone}`;
+    document.getElementById('active-chat-phone').innerText = `Customer: ${cust.name} | ${typeof icon === "function" ? icon("phone", 12) : ""} ${cust.phone}`;
     
     document.querySelectorAll('.chat-list-item').forEach(el => el.classList.remove('active'));
     if(event && event.currentTarget) event.currentTarget.classList.add('active');
@@ -1407,7 +1415,7 @@ function openAdminChat(unitId, cust, displayTitle) {
         const messages = chatData.messages || {};
         renderAdminMessages(messages);
 
-        // 🔴 අලුත්: Admin චැට් එක ඕපන් කළාම, ඒකේ තියෙන Customer ගේ අලුත් පණිවිඩ ඔක්කොම "read" කරනවා
+        // Note: අලුත්: Admin චැට් එක ඕපන් කළාම, ඒකේ තියෙන Customer ගේ අලුත් පණිවිඩ ඔක්කොම "read" කරනවා
         const updates = {};
         let hasUnread = false;
         for(const [msgId, msg] of Object.entries(messages)) {
@@ -1432,7 +1440,7 @@ function markAsResolved() {
         const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${activeChatUnitId}/messages`));
         window.dbSet(msgRef, {
             sender: 'admin',
-            text: "✅ This complaint has been marked as RESOLVED by the Admin. If you need further assistance regarding this unit, simply send a new message.",
+            text: " This complaint has been marked as RESOLVED by the Admin. If you need further assistance regarding this unit, simply send a new message.",
             timestamp: new Date().toISOString()
         });
         
@@ -1500,7 +1508,7 @@ function triggerIssueReport() {
     if (typeof loadCustomerChatForUnit === 'function') loadCustomerChatForUnit();
     
     const chatInput = document.getElementById('cust-chat-input');
-    const mentionTag = `[🚨 Issue Report - ${unitName}] `;
+    const mentionTag = `[Issue Report - ${unitName}] `;
     
     chatInput.value = mentionTag;
     chatInput.focus(); 
@@ -1545,7 +1553,7 @@ async function handleImageUpload(event, senderRole) {
             const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${uid}/messages`));
             await window.dbSet(msgRef, {
                 sender: senderRole,
-                text: "📷 Image Attachment",
+                text: "Image Attachment",
                 imageUrl: data.data.url, 
                 timestamp: new Date().toISOString()
             });
@@ -1594,7 +1602,7 @@ async function toggleVoiceRecord(senderRole) {
                         const msgRef = window.dbPush(window.dbRef(window.firebaseDB, `chats/${uid}/messages`));
                         await window.dbSet(msgRef, {
                             sender: senderRole,
-                            text: "🎤 Voice Message",
+                            text: "Voice Message",
                             audioUrl: base64Audio,
                             timestamp: new Date().toISOString()
                         });
@@ -1648,7 +1656,7 @@ function resetReportFilters() {
     const loading = document.getElementById('report-loading');
     loading.style.display = 'block';
     loading.innerHTML = `
-        <span style="font-size: 40px; display: block; margin-bottom: 10px;">📊</span>
+        <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("gauge", 40) : ""}</div>
         <p style="font-size: 16px; margin: 0;">Select your filters above and click <strong>"Generate Report"</strong> to analyze historical data.</p>
     `;
 }
@@ -1686,7 +1694,7 @@ async function generateReport() {
         now.setTime(new Date(toDate).getTime() + 86399000); 
     }
 
-    let targetUnitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
+    let targetUnitId = globalSelectedUnitId; // Note: වෙනස් කළ ස්ථානය
 
     if (currentUser && currentUser.role === 'customer' && targetUnitId && !isUnitAccessibleToCurrentUser(targetUnitId)) {
         loading.innerHTML = "<p style='color:#991B1B'>Access to this unit has been disabled by the admin.</p>";
@@ -1714,7 +1722,7 @@ async function generateReport() {
 
         if (currentReportData.length === 0) {
             loading.innerHTML = `
-                <span style="font-size: 40px; display: block; margin-bottom: 10px;">📭</span>
+                <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("file-text", 40) : ""}</div>
                 <p style="font-size: 16px; margin: 0; color: #991B1B;">No data available for the selected date range.</p>
             `;
             return;
@@ -1756,7 +1764,7 @@ async function generateReport() {
             default:
                 reportHTML = `
                     <div style="padding: 40px; text-align: center;">
-                        <span style="font-size: 40px;">🚧</span>
+                        <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("wrench", 40) : ""}</div>
                         <h3>Coming Soon</h3>
                         <p class="text-muted">This report type is currently under development.</p>
                     </div>
@@ -2018,7 +2026,7 @@ function buildSafetyReport(data) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${alertRows || '<tr><td colspan="3" style="padding: 20px; text-align: center; color: #166534;">✅ No alerts recorded in this period.</td></tr>'}
+                    ${alertRows || '<tr><td colspan="3" style="padding: 20px; text-align: center; color: #166534;">No alerts recorded in this period.</td></tr>'}
                 </tbody>
             </table>
         </div>
@@ -2035,14 +2043,14 @@ function buildInsightsReport(data) {
     
     const getAvg = (arr, key) => arr.reduce((sum, val) => sum + (Number(val[key])||0), 0) / arr.length;
     
-    const h2sTrend = getAvg(secondHalf, 'h2s') > getAvg(firstHalf, 'h2s') ? 'Increasing 📈' : 'Decreasing 📉';
-    const prodTrend = getAvg(secondHalf, 'gasVolume') > getAvg(firstHalf, 'gasVolume') ? 'Increasing 📈' : 'Decreasing 📉';
+    const h2sTrend = getAvg(secondHalf, 'h2s') > getAvg(firstHalf, 'h2s') ? 'Increasing' : 'Decreasing';
+    const prodTrend = getAvg(secondHalf, 'gasVolume') > getAvg(firstHalf, 'gasVolume') ? 'Increasing' : 'Decreasing';
     
     const latest = data[data.length - 1];
     let warnings = "";
     
-    if (latest.h2s > 1.5 && latest.h2s <= 1.8) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;">⚠️ <strong>H2S Approaching Limit:</strong> Concentration is currently at ${latest.h2s} ppm.</p>`;
-    if (latest.pressure > 1.1 && latest.pressure <= 1.3) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;">⚠️ <strong>Pressure Approaching Limit:</strong> System pressure is rising (${latest.pressure} bar).</p>`;
+    if (latest.h2s > 1.5 && latest.h2s <= 1.8) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;"> <strong>H2S Approaching Limit:</strong> Concentration is currently at ${latest.h2s} ppm.</p>`;
+    if (latest.pressure > 1.1 && latest.pressure <= 1.3) warnings += `<p style="color: #D97706; background: #FEF3C7; padding: 10px; border-radius: 6px; border: 1px solid #FDE68A;"> <strong>Pressure Approaching Limit:</strong> System pressure is rising (${latest.pressure} bar).</p>`;
     
     return `
         <div style="border-bottom: 2px solid #E5E7EB; padding-bottom: 16px; margin-bottom: 24px;">
@@ -2051,7 +2059,7 @@ function buildInsightsReport(data) {
         
         <div style="margin-bottom: 24px;">
             <h4 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-muted);">EARLY WARNINGS</h4>
-            ${warnings || '<p style="color: #166534; background: #DCFCE7; padding: 10px; border-radius: 6px;">✅ All parameters are well within safe limits. No early warnings.</p>'}
+            ${warnings || '<p style="color: #166534; background: #DCFCE7; padding: 10px; border-radius: 6px;">All parameters are well within safe limits. No early warnings.</p>'}
         </div>
 
         <div>
@@ -2170,10 +2178,10 @@ function buildTrendReport(data) {
         const shAvg = secondHalf.length ? (shSum / secondHalf.length) : 0;
 
         // Trend එක තීරණය කිරීම (5% ක වෙනසක් සලකා)
-        let trend = "Stable ➖";
+        let trend = "Stable";
         let trendColor = "#4B5563";
-        if (shAvg > fhAvg * 1.05) { trend = "Increasing 📈"; trendColor = "#0284C7"; }
-        else if (shAvg < fhAvg * 0.95) { trend = "Decreasing 📉"; trendColor = "#D97706"; }
+        if (shAvg > fhAvg * 1.05) { trend = "Increasing"; trendColor = "#0284C7"; }
+        else if (shAvg < fhAvg * 0.95) { trend = "Decreasing"; trendColor = "#D97706"; }
 
         return {
             avg: avg.toFixed(2),
@@ -2323,7 +2331,7 @@ async function loadSensorStatus() {
     const container = document.getElementById('sensor-status-container');
     if (!container) return;
 
-    let targetUnitId = globalSelectedUnitId; // 🔴 වෙනස් කළ ස්ථානය
+    let targetUnitId = globalSelectedUnitId; // Note: වෙනස් කළ ස්ථානය
 
     if (currentUser && currentUser.role === 'customer' && targetUnitId && !isUnitAccessibleToCurrentUser(targetUnitId)) {
         container.innerHTML = "<p style='color:red;'>Access to this unit has been disabled by the admin.</p>";
@@ -2359,8 +2367,8 @@ async function loadSensorStatus() {
         const isOnline = (now - lastTime) < (10 * 60 * 1000); 
         
         const connectionBadge = isOnline ?
-            `<span style="background: #DCFCE7; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">🟢 ONLINE</span>` :
-            `<span style="background: #FEE2E2; color: #991B1B; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;">🔴 OFFLINE</span>`;
+            `<span class="led-pill pill-online"><span class="led-indicator led-online"></span> ONLINE</span>` :
+            `<span class="led-pill pill-critical"><span class="led-indicator led-critical"></span> OFFLINE</span>`;
 
         // සෙන්සර් පරාමිතීන් සහ Safe Ranges නිර්වචනය කිරීම
         const sensors = [
@@ -2383,7 +2391,7 @@ async function loadSensorStatus() {
                 status = "OFFLINE"; statusColor = "#4B5563"; statusBg = "#F3F4F6";
             } else if (s.isCritical) {
                 status = "CRITICAL"; statusColor = "#991B1B"; statusBg = "#FEE2E2";
-                alertMsg = "⚠️ Out of safe bounds!";
+                alertMsg = "Out of safe bounds";
             }
 
             html += `
@@ -2412,7 +2420,7 @@ async function loadSensorStatus() {
                             <span style="background: ${statusBg}; color: ${statusColor}; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">${status}</span>
                             <span style="font-size: 11px; color: #991B1B; margin-left: 8px; font-weight: 600;">${alertMsg}</span>
                         </div>
-                        <button class="btn-secondary-small" onclick="reportSpecificSensor('${s.name}', '${s.value} ${s.unit}', '${status}')" style="font-size: 12px; padding: 6px 12px; border: 1px solid #FCA5A5; color: #991B1B; background: #FFFFFF; cursor: pointer; transition: 0.2s;">⚠️ Report Issue</button>
+                        <button class="btn-secondary-small" onclick="reportSpecificSensor('${s.name}', '${s.value} ${s.unit}', '${status}')" style="font-size: 12px; padding: 6px 12px; border: 1px solid #FCA5A5; color: #991B1B; background: #FFFFFF; cursor: pointer; transition: 0.2s;">${typeof icon === "function" ? icon("alert-triangle", 13) : ""} Report Issue</button>
                     </div>
                 </div>
             `;
@@ -2431,7 +2439,7 @@ function reportSpecificSensor(sensorName, currentValue, status) {
     
     const chatInput = document.getElementById('cust-chat-input');
     if(chatInput) {
-        const mentionTag = `[⚠️ Issue: ${sensorName}] Status: ${status} | Current Value: ${currentValue}. Please assist! `;
+        const mentionTag = `[Issue: ${sensorName}] Status: ${status} | Current Value: ${currentValue}. Please assist! `;
         chatInput.value = mentionTag;
         chatInput.focus();
     }
@@ -2444,31 +2452,31 @@ function reportSpecificSensor(sensorName, currentValue, status) {
 // Threshold definitions
 const ALERT_THRESHOLDS = [
     {
-        id: 'ch4', label: 'Methane (CH4)', unit: '%', icon: '🔥',
+        id: 'ch4', label: 'Methane (CH4)', unit: '%', icon: 'flame',
         safeMin: 50, safeMax: 70,
         warning:  { check: v => v < 45 && v >= 40, msg: 'CH4 dropping — digester performance degrading' },
         critical: { check: v => v < 40,             msg: 'CH4 critically low — poor gas quality' }
     },
     {
-        id: 'co2', label: 'Carbon Dioxide (CO2)', unit: '%', icon: '💨',
+        id: 'co2', label: 'Carbon Dioxide (CO2)', unit: '%', icon: 'cloud',
         safeMin: 25, safeMax: 45,
         warning:  { check: v => v > 45 && v <= 50, msg: 'CO2 elevated — check gas composition balance' },
         critical: { check: v => v > 50,             msg: 'CO2 critically high — excessive CO2 concentration' }
     },
     {
-        id: 'pressure', label: 'System Pressure', unit: 'bar', icon: '⚙️',
+        id: 'pressure', label: 'System Pressure', unit: 'bar', icon: 'gauge',
         safeMin: 1.0, safeMax: 1.2,
         warning:  { check: v => v > 1.1 && v <= 1.3, msg: 'Pressure rising — monitor closely' },
         critical: { check: v => v > 1.3,              msg: 'Overpressure detected — check relief valve immediately' }
     },
     {
-        id: 'temperature', label: 'Digester Temperature', unit: '°C', icon: '🌡️',
+        id: 'temperature', label: 'Digester Temperature', unit: '°C', icon: 'thermometer',
         safeMin: 30, safeMax: 40,
         warning:  { check: v => v > 40 && v <= 45, msg: 'Temperature above optimal range' },
         critical: { check: v => v > 45,             msg: 'Critical overheating — risk of process failure' }
     },
     {
-        id: 'ph', label: 'pH Level', unit: '', icon: '🧪',
+        id: 'ph', label: 'pH Level', unit: '', icon: 'flask',
         safeMin: 6.5, safeMax: 7.5,
         warning:  { check: v => (v < 6.5 && v >= 6.0) || (v > 7.5 && v <= 8.0), msg: 'pH drifting outside optimal range — consider buffering' },
         critical: { check: v => v < 6.0 || v > 8.0,                              msg: 'pH critical — microbial activity at risk' }
@@ -2486,7 +2494,7 @@ function loadCustomerAlerts() {
     if (!unitId) {
         container.innerHTML = `
             <div style="text-align:center; padding:60px 20px; color:var(--text-muted);">
-                <div style="font-size:52px; margin-bottom:14px;">🛡️</div>
+                <div style="display:flex;justify-content:center;margin-bottom:14px;">${typeof icon === "function" ? icon("shield", 48) : ""}</div>
                 <h3 style="margin:0 0 8px 0; color:var(--text-dark); font-weight:700;">No Unit Selected</h3>
                 <p style="margin:0; font-size:14px;">Use the unit switcher above to select a biogas unit.</p>
             </div>`;
@@ -2496,7 +2504,7 @@ function loadCustomerAlerts() {
     // Show loading
     container.innerHTML = `
         <div style="text-align:center; padding:50px 20px; color:var(--text-muted);">
-            <div style="font-size:36px; margin-bottom:12px; animation: spin 1s linear infinite;">⚙️</div>
+            <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("refresh", 36) : ""}</div>
             <p style="font-size:14px; font-weight:600;">Analyzing sensor readings...</p>
         </div>`;
 
@@ -2511,7 +2519,7 @@ function loadCustomerAlerts() {
         if (!snapshot.exists()) {
             container.innerHTML = `
                 <div style="text-align:center; padding:60px 20px;">
-                    <div style="font-size:48px; margin-bottom:12px;">📭</div>
+                    <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("file-text", 40) : ""}</div>
                     <h3 style="margin:0 0 8px 0; color:var(--text-dark);">No Data Available</h3>
                     <p style="margin:0; font-size:14px; color:var(--text-muted);">No sensor readings found for this unit yet.</p>
                 </div>`;
@@ -2558,15 +2566,15 @@ function loadCustomerAlerts() {
             // Compute a mini trend from last 10 readings
             const recentVals = logs.slice(0, 10).map(l => Number(l[sensor.id] || 0)).filter(v => v > 0);
             const trend = recentVals.length >= 2
-                ? (recentVals[0] > recentVals[recentVals.length - 1] ? '📈 Rising' : '📉 Falling')
-                : '➡️ Stable';
+                ? (recentVals[0] > recentVals[recentVals.length - 1] ? (typeof icon === 'function' ? icon('trending-up', 14) + ' Rising' : 'Rising') : (typeof icon === 'function' ? icon('trending-down', 14) + ' Falling' : 'Falling'))
+                : (typeof icon === 'function' ? icon('minus', 14) + ' Stable' : 'Stable');
 
             // Style config per severity
             const cfg = {
-                critical: { bg: '#FEF2F2', border: '#EF4444', leftBar: '#DC2626', badge: '#DC2626', badgeBg: '#FEE2E2', icon: '🚨', label: 'CRITICAL' },
-                warning:  { bg: '#FFFBEB', border: '#F59E0B', leftBar: '#D97706', badge: '#D97706', badgeBg: '#FEF3C7', icon: '⚠️',  label: 'WARNING'  },
-                normal:   { bg: 'var(--bg-primary)', border: '#E2E8F0', leftBar: '#10B981', badge: '#16A34A', badgeBg: '#DCFCE7', icon: '✅', label: 'NORMAL' },
-                offline:  { bg: '#F8FAFC', border: '#CBD5E1', leftBar: '#94A3B8', badge: '#6B7280', badgeBg: '#F3F4F6', icon: '📡', label: 'OFFLINE' }
+                critical: { bg: '#FEF2F2', border: '#EF4444', leftBar: '#DC2626', badge: '#DC2626', badgeBg: '#FEE2E2', iconKey: 'siren', label: 'CRITICAL' },
+                warning:  { bg: '#FFFBEB', border: '#F59E0B', leftBar: '#D97706', badge: '#D97706', badgeBg: '#FEF3C7', iconKey: 'alert-triangle',  label: 'WARNING'  },
+                normal:   { bg: 'var(--bg-primary)', border: '#E2E8F0', leftBar: '#10B981', badge: '#16A34A', badgeBg: '#DCFCE7', iconKey: 'check-circle', label: 'NORMAL' },
+                offline:  { bg: '#F8FAFC', border: '#CBD5E1', leftBar: '#94A3B8', badge: '#6B7280', badgeBg: '#F3F4F6', iconKey: 'wifi-off', label: 'OFFLINE' }
             }[severity];
 
             const displayVal = Number.isInteger(val) ? val : val.toFixed(2);
@@ -2577,11 +2585,11 @@ function loadCustomerAlerts() {
                      style="background:${cfg.bg}; border:1px solid ${cfg.border}; border-left:5px solid ${cfg.leftBar}; border-radius:12px; padding:20px 24px; transition:0.2s;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                         <div style="display:flex; align-items:center; gap:14px;">
-                            <span style="font-size:28px; line-height:1;">${sensor.icon}</span>
+                            <span style="display:inline-flex;align-items:center;color:var(--text-accent);">${typeof icon === "function" ? icon(sensor.icon || "gauge", 26) : ""}</span>
                             <div>
                                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
                                     <h4 style="margin:0; font-size:16px; color:var(--text-dark); font-weight:700;">${sensor.label}</h4>
-                                    <span style="background:${cfg.badgeBg}; color:${cfg.badge}; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:800; letter-spacing:0.8px;">${cfg.icon} ${cfg.label}</span>
+                                    <span style="background:${cfg.badgeBg}; color:${cfg.badge}; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:800; letter-spacing:0.8px;"><span class="led-indicator ${severity === "critical" ? "led-critical" : severity === "warning" ? "led-warning" : "led-online"}"></span> ${cfg.label}</span>
                                 </div>
                                 <p style="margin:0; font-size:13px; color:#64748B;">${message}</p>
                             </div>
@@ -2611,12 +2619,12 @@ function loadCustomerAlerts() {
                     <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
                         <button onclick="reportSpecificSensor('${sensor.label}', '${displayVal} ${sensor.unit}', '${cfg.label}')"
                                 style="padding:8px 16px; font-size:12px; font-weight:700; background:#FFF; color:#1D4ED8; border:1.5px solid #BFDBFE; border-radius:8px; cursor:pointer;">
-                            💬 Report to Support
+                            ${typeof icon === "function" ? icon("chat", 14) : ""} Report to Support
                         </button>
                         ${severity === 'critical' ? `
                         <button onclick="openGuideModal('${sensor.label}', '${displayVal} ${sensor.unit}')"
                                 style="padding:8px 16px; font-size:12px; font-weight:700; background:#DC2626; color:#FFF; border:none; border-radius:8px; cursor:pointer;">
-                            🚨 View Emergency Guide
+                            ${typeof icon === "function" ? icon("siren", 14) : ""} Emergency Guide
                         </button>` : ''}
                     </div>` : ''}
                 </div>`;
@@ -2654,7 +2662,7 @@ function loadCustomerAlerts() {
         if (_allAlertCards.length === 0) {
             container.innerHTML = `
                 <div style="text-align:center; padding:60px 20px;">
-                    <div style="font-size:52px; margin-bottom:12px;">✅</div>
+                    <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("shield", 48) : ""}</div>
                     <h3 style="margin:0 0 8px 0; color:#166534; font-weight:700;">All Systems Nominal</h3>
                     <p style="margin:0; font-size:14px; color:#15803D;">All sensors are operating within safe thresholds.</p>
                 </div>`;
@@ -2664,7 +2672,7 @@ function loadCustomerAlerts() {
         console.error('loadCustomerAlerts error:', err);
         container.innerHTML = `
             <div style="text-align:center; padding:50px 20px; color:#DC2626;">
-                <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
+                <div style="display:flex;justify-content:center;margin-bottom:12px;">${typeof icon === "function" ? icon("alert-triangle", 44) : ""}</div>
                 <h3 style="margin:0 0 8px 0;">Failed to load alert data</h3>
                 <p style="margin:0; font-size:13px;">Check your connection and try refreshing.</p>
             </div>`;
@@ -2682,7 +2690,7 @@ function renderAlertCards(filter) {
     if (filtered.length === 0) {
         container.innerHTML = `
             <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
-                <div style="font-size:36px; margin-bottom:10px;">🔍</div>
+                <div style="display:flex;justify-content:center;margin-bottom:10px;">${typeof icon === "function" ? icon("search", 36) : ""}</div>
                 <p style="font-size:14px; font-weight:600; margin:0;">No ${filter} alerts found.</p>
             </div>`;
         return;
@@ -2769,7 +2777,7 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
     let bgColor = type === 'critical' ? '#FEE2E2' : (type === 'chat' ? '#E0F2FE' : '#F3F4F6');
     let borderColor = type === 'critical' ? '#FCA5A5' : (type === 'chat' ? '#BAE6FD' : '#E5E7EB');
     let textColor = type === 'critical' ? '#991B1B' : (type === 'chat' ? '#0369A1' : '#374151');
-    let icon = type === 'critical' ? '🚨' : (type === 'chat' ? '💬' : 'ℹ️');
+    let icon = type === 'critical' ? '' : (type === 'chat' ? '' : 'ℹ️');
 
     toast.style.cssText = `
         background: ${bgColor}; color: ${textColor}; border: 1px solid ${borderColor}; 
@@ -2786,7 +2794,7 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
             <span style="font-size: 12px; line-height: 1.4; display: block;">${body}</span>
             ${type === 'critical' ? '<span style="font-size: 10px; font-weight: 700; margin-top: 8px; display: block; color: #7F1D1D;">Click to view Emergency Guide →</span>' : ''}
         </div>
-        ${type === 'critical' ? `<button onclick="this.parentElement.style.transform='translateX(120%)'; setTimeout(() => this.parentElement.remove(), 400); event.stopPropagation();" style="background:none;border:none;font-size:16px;cursor:pointer;color:#991B1B;">✖</button>` : ''}
+        ${type === 'critical' ? `<button onclick="this.parentElement.style.transform='translateX(120%)'; setTimeout(() => this.parentElement.remove(), 400); event.stopPropagation();" style="background:none;border:none;font-size:16px;cursor:pointer;color:#991B1B;">&times;</button>` : ''}
     `;
     
     toast.onclick = (e) => {
@@ -2800,7 +2808,7 @@ function triggerNotification(title, body, type = 'info', actionCallback = null) 
     // Slide in
     setTimeout(() => toast.style.transform = 'translateX(0)', 50);
     
-    // 🔴 FIX: Critical ඒවට විනාඩියක් (60000ms) තියෙනවා ඔයා එනකන්! සාමාන්‍ය ඒවට තත්පර 6යි.
+    // Note: FIX: Critical ඒවට විනාඩියක් (60000ms) තියෙනවා ඔයා එනකන්! සාමාන්‍ය ඒවට තත්පර 6යි.
     const displayTime = type === 'critical' ? 60000 : 6000;
     
     setTimeout(() => {
@@ -2868,7 +2876,7 @@ function initRealtimeListeners() {
             if (msgTime > lastChatMsgTime && msg.sender !== currentUser.role) {
                 if (lastChatMsgTime !== 0 && (new Date().getTime() - msgTime) < 60000) {
                     const senderName = msg.sender === 'admin' ? 'System Admin' : 'Customer';
-                    const previewText = msg.imageUrl ? '📷 Image attached' : (msg.audioUrl ? '🎤 Voice message' : msg.text);
+                    const previewText = msg.imageUrl ? (typeof icon === 'function' ? icon('image', 14) + ' Image attached' : 'Image attached') : (msg.audioUrl ? (typeof icon === 'function' ? icon('mic', 14) + ' Voice message' : 'Voice message') : msg.text);
                     
                     triggerNotification(`New Message from ${senderName}`, previewText, 'chat', () => {
                         if(currentUser.role === 'customer') switchCustomerTab('cust-support');
@@ -2900,7 +2908,7 @@ function initRealtimeListeners() {
 
                 if (!window.lastAlertedTimes[unitId]) window.lastAlertedTimes[unitId] = 0;
 
-                // 🔴 FIX: පරණ දත්ත නෙවෙයි, අලුතින්ම එන එක විතරක් ගන්න
+                // Note: FIX: පරණ දත්ත නෙවෙයි, අලුතින්ම එන එක විතරක් ගන්න
                 const liveSensorQuery = window.query(
                     window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`),
                     window.orderByKey(),
@@ -2917,7 +2925,7 @@ function initRealtimeListeners() {
                     const logTime = new Date(log.timestamp).getTime();
                     const now = new Date().getTime();
                     
-                    // 🔴 FIX: Timestamp එක අලුත් එකක් නම් විතරක් Check කරනවා
+                    // Note: FIX: Timestamp එක අලුත් එකක් නම් විතරක් Check කරනවා
                     if (logTime > window.lastAlertedTimes[unitId]) {
                         
                         // තත්පර 10කට වඩා අලුත් නම් (පරණ ඒවා පෙන්නන්නේ නැහැ)
@@ -2929,7 +2937,7 @@ function initRealtimeListeners() {
                             if (Number(log.co2) > 50) {
                                 isCritical = true;
                                 triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
+                                    `Critical Alert: ${unitName}`, 
                                     `Location: ${locName}<br><strong>CO2 Level: ${log.co2} %</strong>`, 
                                     'critical', 
                                     () => {
@@ -2941,7 +2949,7 @@ function initRealtimeListeners() {
                             if (Number(log.pressure) > 1.3) {
                                 isCritical = true;
                                 triggerNotification(
-                                    `🚨 Critical Alert: ${unitName}`, 
+                                    `Critical Alert: ${unitName}`, 
                                     `Location: ${locName}<br><strong>Pressure: ${log.pressure} bar</strong>`, 
                                     'critical', 
                                     () => {
@@ -2954,8 +2962,8 @@ function initRealtimeListeners() {
                             // Menu අයිකනය රතු කිරීම
                             if (isCritical) {
                                 const alertTab = document.getElementById('tab-cust-alerts');
-                                if (alertTab && !alertTab.innerHTML.includes('🔴')) {
-                                    alertTab.innerHTML += ' <span style="font-size: 10px; animation: floatIcon 1s infinite;">🔴</span>';
+                                if (alertTab && !alertTab.querySelector('.led-indicator')) {
+                                    alertTab.innerHTML += ' <span class="led-indicator led-critical" style="margin-left:6px;"></span>';
                                 }
                             }
                         }
@@ -3108,10 +3116,10 @@ function paintCustomerOverview() {
     let switcherHtml = '<option value="" disabled>-- Switch Unit --</option>';
 
     for (const [locName, locUnits] of Object.entries(locationGroups)) {
-        switcherHtml += `<optgroup label="📍 ${locName}">`;
+        switcherHtml += `<optgroup label="${locName}">`;
         html += `
             <div class="location-group">
-                <h4 class="location-group-title">📍 Location: ${locName}</h4>
+                <h4 class="location-group-title">${typeof icon === "function" ? icon("pin", 16) : ""} Location: ${locName}</h4>
                 <div class="overview-grid">
         `;
 
@@ -3134,7 +3142,7 @@ function paintCustomerOverview() {
                         <h3 style="margin: 0; font-size: 16px; color: var(--text-dark);">${u.safeUnitName}</h3>
                         ${statusBadge}
                     </div>
-                    <!-- 🔴 MAC වෙනුවට Device ID එක (Firebase u.id) පෙන්වීම -->
+                    <!--  MAC වෙනුවට Device ID එක (Firebase u.id) පෙන්වීම -->
                     <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">Device ID: <strong style="color: var(--text-dark); font-family: monospace;">${u.id}</strong></p>
                     <p style="margin: 0; font-size: 13px; color: ${isUnitAccessOn ? 'var(--accent-coral)' : '#9CA3AF'}; font-weight: 600;">${isUnitAccessOn ? 'Click to monitor live data &rarr;' : 'Access disabled by admin'}</p>
                 </div>
@@ -3321,14 +3329,14 @@ function copyText(text) {
 }
 
 function shareCustomerDetails(name, user, pass, loginLink, deviceLink) {
-    const shareText = `🌱 *BioGas System Setup*\n\n👤 *Customer:* ${name}\n\n🔗 *Your Secure Login Link:*\n${loginLink}\n\n👤 *Username:* ${user}\n🔑 *Password:* ${pass}\n\n📡 *Device Setup Token:*\n${deviceLink}\n\n_Please do not share these details with anyone._`;
+    const shareText = `*BioGas System Setup*\n\n*Customer:* ${name}\n\n*Your Secure Login Link:*\n${loginLink}\n\n*Username:* ${user}\n*Password:* ${pass}\n\n *Device Setup Token:*\n${deviceLink}\n\n_Please do not share these details with anyone._`;
     navigator.clipboard.writeText(shareText);
     alert('All details formatted and copied! Ready to paste in WhatsApp.');
 }
 
 function copySuccessDetails() {
     const modal = document.getElementById('success-deployment-modal');
-    const custName = modal.getAttribute('data-custname') || 'Customer'; // 🔴 නියම නම ගන්නවා
+    const custName = modal.getAttribute('data-custname') || 'Customer'; // Note: නියම නම ගන්නවා
     const user = document.getElementById('succ-user').innerText;
     const pass = document.getElementById('succ-pass').innerText;
     const login = document.getElementById('succ-login').innerText;
@@ -3360,7 +3368,7 @@ async function deleteUnit(unitId, unitName) {
             await window.dbSet(window.dbRef(window.firebaseDB, `units/${unitId}`), null);
             await window.dbSet(window.dbRef(window.firebaseDB, `sensor_logs/${unitId}`), null);
             
-            // 🔴 අලුත්: Refresh නොකර ඒ වෙලාවෙම UI එකෙන් කාඩ් එක මකා දැමීම 🔴
+            // Note: අලුත්: Refresh නොකර ඒ වෙලාවෙම UI එකෙන් කාඩ් එක මකා දැමීම 
             if (globalUnits[unitId]) {
                 delete globalUnits[unitId];
             }
@@ -3474,7 +3482,7 @@ async function clearAllAlerts() {
 // --- ADMIN: CUSTOMER MANAGEMENT LOGIC ---
 // ==========================================
 
-// 🔴 අලුත්: HTML Modals ඉබේම පිටුවට එකතු කරන කේතය (100% වැඩ කරන ක්‍රමය)
+// Note: අලුත්: HTML Modals ඉබේම පිටුවට එකතු කරන කේතය (100% වැඩ කරන ක්‍රමය)
 function ensureEditModalsExist() {
     if (!document.getElementById('edit-customer-modal')) {
         const modalDiv = document.createElement('div');
@@ -3529,7 +3537,7 @@ function renderCustomersList() {
     const customerKeys = Object.keys(globalCustomers);
     if (customerKeys.length === 0) {
         // If globalCustomers is empty, data might still be loading — re-fetch directly
-        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Loading customers...</div>';
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">${typeof icon === "function" ? icon("clock", 16) : ""} Loading customers...</div>';
         window.dbGet(window.dbRef(window.firebaseDB, 'users')).then(snapshot => {
             if (snapshot.exists()) {
                 const users = snapshot.val();
@@ -3558,9 +3566,9 @@ function renderCustomersList() {
             if (loc.customerId === custId) {
                 locHTML += `
                     <div style="margin-top: 12px; padding: 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; position: relative;">
-                        <button class="btn-secondary-small" onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; padding: 4px 10px; font-size: 11px;">✏️ Edit</button>
+                        <button class="btn-secondary-small" onclick="openEditLocationModal('${locId}')" style="position: absolute; right: 16px; top: 16px; padding: 4px 10px; font-size: 11px;"> Edit</button>
                         
-                        <strong style="color: var(--text-dark); font-size: 14px;">📍 ${loc.locationName || 'Location'}</strong><br>
+                        <strong style="color: var(--text-dark); font-size: 14px;">${typeof icon === "function" ? icon("pin", 14) : ""} ${loc.locationName || "Location"}</strong><br>
                         <span style="font-size: 12px; color: var(--text-muted);">${loc.address || 'No address provided'}</span>
                         <ul style="margin-top: 12px; padding-left: 20px; font-size: 13px; color: var(--text-secondary); list-style-type: square;">`;
                 
@@ -3584,22 +3592,22 @@ function renderCustomersList() {
         const safePhone = cust.phone || 'N/A';
 
         const card = document.createElement('div');
-        // 🔴 param-card class එක පාවිච්චි කිරීමෙන් Dark Mode එක ඉබේම වැඩ කරයි!
+        // Note: param-card class එක පාවිච්චි කිරීමෙන් Dark Mode එක ඉබේම වැඩ කරයි!
         card.className = 'param-card'; 
         card.style.cssText = "padding: 24px; margin-bottom: 20px;";
         
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; gap: 16px; align-items: center;">
-                    <div style="width: 48px; height: 48px; background: rgba(59,130,246,0.1); color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                    <div style="width: 48px; height: 48px; background: rgba(59,130,246,0.1); color: #3B82F6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;"></div>
                     <div>
                         <h3 style="margin: 0 0 4px 0; font-size: 18px; color: var(--text-dark); font-weight: 700;">${safeName}</h3>
-                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">📧 ${safeEmail} <span style="color: var(--border-strong); margin: 0 8px;">|</span> 📞 ${safePhone}</p>
+                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">${typeof icon === "function" ? icon("mail", 13) : ""} ${safeEmail} <span style="color: var(--border-strong); margin: 0 8px;">|</span> ${typeof icon === "function" ? icon("phone", 13) : ""} ${safePhone}</p>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <button class="btn-secondary-small" onclick="openEditCustomerModal('${custId}')">✏️ Edit Profile</button>
-                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: rgba(239,68,68,0.1); color: #DC2626; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">🗑️ Delete</button>
+                    <button class="btn-secondary-small" onclick="openEditCustomerModal('${custId}')">${typeof icon === "function" ? icon("edit", 13) : ""} Edit Profile</button>
+                    <button onclick="deleteCustomerRecord('${custId}', '${safeName}')" style="padding: 8px 16px; font-size: 13px; background: rgba(239,68,68,0.1); color: #DC2626; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;">${typeof icon === "function" ? icon("trash", 13) : ""} Delete</button>
                 </div>
             </div>
             
@@ -3690,7 +3698,7 @@ async function saveLocationEdit() {
 
 // --- DELETE CUSTOMER ---
 async function deleteCustomerRecord(custId, custName) {
-    if(confirm(`⚠️ CRITICAL WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will permanently delete their account AND all their assigned locations, biogas units, sensor logs, and chat histories. This action CANNOT be undone.`)) {
+    if(confirm(`CRITICAL WARNING: Are you sure you want to completely DELETE the customer "${custName}"?\n\nThis will permanently delete their account AND all their assigned locations, biogas units, sensor logs, and chat histories. This action CANNOT be undone.`)) {
         try {
             const db = window.firebaseDB;
             const updates = {}; 

@@ -39,7 +39,7 @@
     // Update toggle button icon
     const toggleBtns = document.querySelectorAll('#theme-toggle-btn');
     toggleBtns.forEach(btn => {
-      btn.textContent = isDark ? '☀️' : '🌙';
+      btn.innerHTML = typeof icon === 'function' ? (isDark ? icon('sun', 18) : icon('moon', 18)) : '';
       btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     });
 
@@ -478,9 +478,27 @@
   window.switchCustomerTab = function (tabId) {
     if (typeof _origSwitchCustomer === 'function') _origSwitchCustomer(tabId);
     animateTabCards(tabId);
-    // Destroy Three.js if leaving login (not applicable here but guard)
     if (tabId !== 'login') {
       isLoginVisible = false;
+    }
+
+    // Digester Twin lifecycle management (Strictly max 1 active WebGL context)
+    if (tabId === 'cust-monitor') {
+      setTimeout(() => {
+        const mount = document.getElementById('digester-twin-mount');
+        if (mount && typeof window.initDigesterTwin === 'function') {
+          const volEl = document.getElementById('val-vol-pct');
+          const ch4El = document.getElementById('val-ch4');
+          const vol = volEl ? parseFloat(volEl.textContent) || 50 : 50;
+          const ch4 = ch4El ? parseFloat(ch4El.textContent) || 55 : 55;
+          window.initDigesterTwin('digester-twin-mount', { width: mount.clientWidth, height: 280 });
+          window.updateDigesterTwinData({ volumePct: vol, ch4Pct: ch4, status: 'normal' });
+        }
+      }, 100);
+    } else {
+      if (typeof window.destroyDigesterTwin === 'function') {
+        window.destroyDigesterTwin();
+      }
     }
   };
 
@@ -497,6 +515,15 @@
         el.classList.remove('value-flash');
         void el.offsetWidth;
         el.classList.add('value-flash');
+        if (id === 'val-vol-pct' || id === 'val-ch4') {
+          const v = parseFloat(el.textContent) || 0;
+          if (typeof window.updateDigesterTwinData === 'function') {
+            const dataObj = {};
+            if (id === 'val-vol-pct') dataObj.volumePct = v;
+            if (id === 'val-ch4') dataObj.ch4Pct = v;
+            window.updateDigesterTwinData(dataObj);
+          }
+        }
         // Also flash parent card
         const card = el.closest('.sensor-mini-card, .param-card');
         if (card) {
@@ -668,9 +695,14 @@
     const types = { critical: 'toast-critical', warning: 'toast-warning', success: 'toast-success', info: '' };
     toast.className = `toast-notification ${types[type] || ''}`;
 
-    const icons = { critical: '🚨', warning: '⚠️', success: '✅', info: 'ℹ️' };
+    const iconMap = {
+      critical: typeof icon === 'function' ? icon('siren', 18) : '',
+      warning: typeof icon === 'function' ? icon('alert-triangle', 18) : '',
+      success: typeof icon === 'function' ? icon('check-circle', 18) : '',
+      info: typeof icon === 'function' ? icon('alert-circle', 18) : ''
+    };
     toast.innerHTML = `
-      <span style="font-size:18px;flex-shrink:0">${icons[type] || icons.info}</span>
+      <span style="flex-shrink:0">${iconMap[type] || iconMap.info}</span>
       <div>
         <div style="font-weight:700;font-size:13px;color:var(--text-primary)">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${message}</div>
@@ -740,7 +772,7 @@
       updateChartDefaults(document.body.classList.contains('dark-theme'));
     }, 800);
 
-    console.log('[BioMonitor UI] v4.0 loaded ✓');
+    console.log('[BioMonitor SCADA UI] v5.0 initialized');
   }
 
   if (document.readyState === 'loading') {

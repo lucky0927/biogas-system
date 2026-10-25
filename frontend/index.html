@@ -48,7 +48,7 @@
                 <div id="login-error"></div>
 
                 <button type="submit" id="login-btn" class="btn-primary-small login-button">
-                    Sign In <span style="font-size:18px;margin-left:8px;">➔</span>
+                    Sign In <span style="font-size:16px;margin-left:8px;">&rarr;</span>
                 </button>
             </form>
         </div>
@@ -109,12 +109,13 @@
                             <input type="text" id="admin-search-input" placeholder="Search customer, location or unit ID...">
                             <div id="search-suggestions" class="suggestions-dropdown"></div>
                         </div>
-                        <button id="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">🌙</button>
+                        <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
                     </div>
                 </div>
 
                <!-- PRO OVERVIEW DASHBOARD -->
-                <div id="admin-overview" class="admin-tab active" style="margin-top: 24px;">       
+                <div id="admin-overview" class="admin-tab active">
+                <div class="page">       
 
             <!-- ROW 1: 5-Column Stats -->
             <div class="dash-grid-5">
@@ -146,11 +147,12 @@
                 </div>
             </div>
 
-
-        </div>
+        </div> <!-- /.page -->
+    </div> <!-- /#admin-overview -->
 
                 <!-- ADMIN TAB: DEPLOYMENTS (Add New) -->
                 <div id="admin-deployments" class="admin-tab">
+                <div class="page">
                     <div class="flex-header">
                         <h3 class="section-title">Manage Locations & Units</h3>
                         <button class="btn-add-unit btn-floating-add" onclick="openAddClientModal()">+ Add New Client</button>                    </div>
@@ -158,10 +160,12 @@
                     <div class="units-list" id="all-units-list">
                         <!-- All locations and units will load here -->
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#admin-deployments -->
 
                 <!-- ADMIN TAB: CUSTOMERS -->
-                <div id="admin-customers" class="admin-tab" style="padding: 24px;">
+                <div id="admin-customers" class="admin-tab">
+                <div class="page">
                     <div class="flex-header" style="margin-bottom: 24px;">
                         <div>
                             <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Customer Management</h2>
@@ -171,11 +175,13 @@
                     <div id="customers-list-container" style="display: grid; gap: 20px;">
                         <!-- Customers list will be loaded here by JS -->
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#admin-customers -->
 
                 <!-- ADMIN TAB: COMPLAINTS (Will build in step 6) -->
                 <!-- ADMIN TAB: COMPLAINTS (CHAT) -->
-                <div id="admin-complaints" class="admin-tab" style="padding: 0; height: calc(100vh - 120px);">
+                <div id="admin-complaints" class="admin-tab">
+                <div class="page" style="padding-top:16px;padding-bottom:16px;">
                     <div class="chat-layout">
                         <!-- LEFT: Chat List -->
                         <div class="chat-sidebar">
@@ -195,15 +201,15 @@
                                     </h3>
                                     <p id="active-chat-phone" style="margin: 0; font-size: 12px; color: var(--text-muted);">Phone</p>
                                 </div>
-                                <button id="btn-resolve" class="btn-secondary-small" onclick="markAsResolved()" style="background: #F3F4F6; color: #374151; border: 1px solid #D1D5DB;">✔️ Mark as Resolved</button>
+                                <button id="btn-resolve" class="btn-secondary-small" onclick="markAsResolved()"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Mark as Resolved</button>
                             </div>
                             <div class="chat-messages" id="admin-chat-messages">
                                 <!-- Messages -->
                             </div>
                             <div class="chat-input-area" style="align-items: center;">
                                 <input type="file" id="admin-chat-image" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'admin')">
-                                <button class="btn-chat-icon" title="Upload Image" onclick="document.getElementById('admin-chat-image').click()">📎</button>
-                                <button class="btn-chat-icon" id="admin-mic-btn" title="Hold or Click to Record" onclick="toggleVoiceRecord('admin')">🎤</button>
+                                <button class="btn-chat-icon" title="Upload Image" onclick="document.getElementById('admin-chat-image').click()"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l7.9-7.9"/></svg></button>
+                                <button class="btn-chat-icon" id="admin-mic-btn" title="Hold or Click to Record" onclick="toggleVoiceRecord('admin')"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
                                 <input type="text" id="admin-chat-input" placeholder="Type a reply..." onkeypress="handleAdminChatEnter(event)">
                                 <button class="btn-primary-small" onclick="sendAdminMessage()">Reply</button>
                             </div>
@@ -212,16 +218,18 @@
                         <!-- RIGHT: Placeholder (When no chat is selected) -->
                         <div class="chat-main" id="admin-chat-placeholder" style="align-items: center; justify-content: center;">
                             <div style="text-align: center; color: #9CA3AF;">
-                                <span style="font-size: 40px;">💬</span>
+                                <svg class="bm-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                 <h3>Select a conversation</h3>
                                 <p>Choose a customer from the left to start chatting</p>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#admin-complaints -->
 
-                <!-- ADMIN TAB: SETTINGS -->
-                <div id="admin-settings" class="admin-tab" style="padding: 24px;">
+            <!-- ADMIN TAB: SETTINGS -->
+                <div id="admin-settings" class="admin-tab">
+                <div class="page">
                     <div class="flex-header" style="margin-bottom: 24px;">
                         <div>
                             <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Settings</h2>
@@ -232,7 +240,7 @@
                     <div style="display: grid; gap: 20px; max-width: 600px;">
                         <!-- Theme Settings -->
                         <div class="param-card" style="border: 1px solid var(--border-color); padding: 24px; border-radius: 12px;">
-                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🎨 Theme Preferences</h3>
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Theme Preferences</h3>
                             <div style="display: flex; flex-direction: column; gap: 12px;">
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                     <input type="radio" name="theme-select" value="light" onchange="changeTheme(this.value)" checked> Light Mode
@@ -248,7 +256,7 @@
 
                         <!-- Language Settings -->
                         <div class="param-card" style="border: 1px solid var(--border-color); padding: 24px; border-radius: 12px;">
-                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🌐 Language / භාෂාව / மொழி</h3>
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Language / භාෂාව / மொழி</h3>
                             <select id="language-select-admin" onchange="changeLanguage(this.value)" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; font-size: 14px; background: var(--surface-2); color: var(--text-dark);">
                                 <option value="en" selected>English</option>
                                 <option value="si">සිංහල (Sinhala)</option>
@@ -257,11 +265,13 @@
                             <p style="margin: 10px 0 0 0; font-size: 12px; color: var(--text-muted);">Note: Language changes will be applied to the main UI components.</p>
                         </div>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#admin-settings -->
 
-            </div>
-        </div>
-    </div>
+        </div> <!-- /.main-content -->
+    </div> <!-- /.dashboard-layout -->
+</div> <!-- /#admin-screen -->
+
     <div id="add-client-modal" class="modal">
         <div class="modal-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
@@ -292,7 +302,7 @@
                     <!-- Existing Customer Info (shown when existing customer selected) -->
                     <div id="existing-client-info" style="display: none; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 12px; margin-top: 4px;">
                         <p style="margin: 0; font-size: 13px; color: #166534;">
-                            <strong>📋 Adding to existing client.</strong> New location/unit will be linked to the selected customer.
+                            <span style="display:inline-flex;align-items:center;gap:6px;"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg> <strong>Adding to existing client.</strong></span> New location/unit will be linked to the selected customer.
                         </p>
                         <p id="existing-client-summary" style="margin: 8px 0 0 0; font-size: 13px; color: #15803D; font-weight: 600;"></p>
                     </div>
@@ -326,7 +336,7 @@
 
             <div id="wizard-step-2" style="display: none;">
                 <div style="background: #ECFDF5; padding: 20px; border-radius: 12px; border: 1px dashed #10B981; text-align: center; margin-bottom: 20px;">
-                    <span style="font-size: 40px; display: block; margin-bottom: 10px;">✅</span>
+                    <div style="display:flex;justify-content:center;margin-bottom:12px;"><svg class="bm-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
                     <h3 style="color: #059669; margin: 0;">Deployment Successful!</h3>
                 </div>
                 
@@ -350,20 +360,20 @@
     <!-- MODAL: SUCCESS DEPLOYMENT & CREDENTIALS -->
     <div id="success-deployment-modal" class="modal">
         <div class="modal-content" style="text-align: center;">
-            <div style="font-size: 48px; color: #10B981; margin-bottom: 16px;">✅</div>
+            <div style="display:flex;justify-content:center;margin-bottom:16px;"><svg class="bm-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
             <h3 style="margin-bottom: 8px;">Deployment Successful!</h3>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Customer account and links auto-generated.</p>
             
             <div style="background: #F8FAFC; padding: 20px; border-radius: 12px; text-align: left; border: 1px solid #E2E8F0; margin-bottom: 24px;">
-                <p style="margin-bottom: 8px; font-size: 13px;"><strong>👤 Username:</strong> <span id="succ-user" style="color: #0284C7; font-weight: 600;"></span></p>
-                <p style="margin-bottom: 8px; font-size: 13px;"><strong>🔑 Password:</strong> <span id="succ-pass" style="color: #0284C7; font-weight: 600;"></span></p>
-                <p style="margin-bottom: 8px; font-size: 13px;"><strong>🔗 Login Link:</strong> <span id="succ-login" style="color: #059669; font-size: 11px; word-break: break-all;"></span></p>
-                <p style="margin-bottom: 0; font-size: 13px;"><strong>📡 Device Link:</strong> <span id="succ-device" style="color: #D97706; font-size: 11px; word-break: break-all;"></span></p>
+                <p style="margin-bottom: 8px; font-size: 13px;"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> <strong>Username:</strong> <span id="succ-user" style="color: #0284C7; font-weight: 600;"></span></p>
+                <p style="margin-bottom: 8px; font-size: 13px;"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> <strong>Password:</strong> <span id="succ-pass" style="color: #0284C7; font-weight: 600;"></span></p>
+                <p style="margin-bottom: 8px; font-size: 13px;"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> <strong>Login Link:</strong> <span id="succ-login" style="color: #059669; font-size: 11px; word-break: break-all;"></span></p>
+                <p style="margin-bottom: 0; font-size: 13px;"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg> <strong>Device Link:</strong> <span id="succ-device" style="color: #D97706; font-size: 11px; word-break: break-all;"></span></p>
             </div>
             
             <div style="display: flex; gap: 12px;">
                 <button class="btn-secondary-small" onclick="document.getElementById('success-deployment-modal').classList.remove('active')" style="flex: 1;">Close</button>
-                <button class="btn-primary-small" onclick="copySuccessDetails()" style="flex: 1; background: #0F172A; color: white;">📋 Copy & Share</button>
+                <button class="btn-primary-small" onclick="copySuccessDetails()" style="flex: 1; background: #0F172A; color: white;"><svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy & Share</button>
             </div>
         </div>
     </div>
@@ -428,7 +438,7 @@
                     </ul>
 
                     <div class="sidebar-profile-card">
-                        <div class="profile-avatar">👤</div>
+                        <div class="profile-avatar"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                         <div class="profile-info">
                             <h4 id="top-user-name">Loading...</h4>
                             <p id="top-user-email">Please wait</p>
@@ -448,182 +458,220 @@
 
 
                 <!-- CUSTOMER TAB: OVERVIEW -->
-                <div id="cust-overview" class="admin-tab active" style="padding: 24px;">
-                    <div class="flex-header" style="margin-bottom: 24px;">
-                        <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Overview</h2>
-                            <p class="text-muted" style="font-size: 14px;">Select a biogas unit to monitor and manage its data across the system.</p>
-                        </div>
-                    </div>
-                    <div id="customer-overview-container"></div>
-                </div>
-
-                <!-- CUSTOMER TAB: MONITOR -->
-                <div id="cust-monitor" class="admin-tab" style="padding: 24px;">
-                    <div id="live-monitor-container">
-                        <div class="flex-header" style="align-items: flex-start; margin-bottom: 24px;">
-                            <div>
-                                <h2 id="live-unit-name" style="font-size: 28px; color: var(--text-dark);">Unit Name</h2>
-                                <p class="text-muted" id="live-unit-location">Location details</p>
+                <div id="cust-overview" class="admin-tab active">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>System Overview</h2>
+                                <p>Select a biogas digester unit to monitor and manage telemetry across the plant.</p>
                             </div>
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <select id="monitor-unit-switcher" class="unit-switcher" onchange="handleUnitSwitch(this.value)">
-                                        <option value="" disabled>-- Switch Unit --</option>
-                                    </select>
-                                    <button class="btn-report-issue" onclick="triggerIssueReport()">⚠️ Report Issue</button>
-                                    <div class="badge active" style="padding: 0 16px; font-size: 13px; height: 38px; border-radius: 8px; display: inline-flex; align-items: center; box-sizing: border-box; margin: 0;">ONLINE</div>
-                                </div>  
-                        </div>
-
-                        <!-- ═══ PREMIUM MONITOR LAYOUT ═══ -->
-                        <div class="monitor-main-layout">
-
-                            <!-- TOP: Left Sensors | Tank Center | Right Sensors -->
-                            <div class="monitor-top-row">
-
-                                <!-- LEFT SENSORS 2×2 -->
-                                <div class="monitor-sensor-col">
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">CH4 Concentration</p>
-                                        <div class="sensor-mini-val"><span id="val-ch4">0.00</span><small>ppm</small></div>
-                                        <span class="sensor-mini-tag good">Optimal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-ch4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 28 C15 22 25 25 35 18 S55 12 70 15 S90 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 28 C15 22 25 25 35 18 S55 12 70 15 S90 10 120 8 L120 36 L0 36Z" fill="url(#spk-ch4)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">CO2 Level</p>
-                                        <div class="sensor-mini-val"><span id="val-co2">0.00</span><small>ppm</small></div>
-                                        <span class="sensor-mini-tag warn">Monitor</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-co2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F59E0B" stop-opacity="0.25"/><stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/></linearGradient></defs><path d="M0 18 C10 15 20 22 35 20 S55 25 70 18 S90 22 120 26" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/><path d="M0 18 C10 15 20 22 35 20 S55 25 70 18 S90 22 120 26 L120 36 L0 36Z" fill="url(#spk-co2)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Temperature</p>
-                                        <div class="sensor-mini-val"><span id="val-temp">0.0</span><small>°C</small></div>
-                                        <span class="sensor-mini-tag good">Active</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-temp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 26 C15 24 25 22 40 20 S60 18 75 16 S95 14 120 12 L120 36 L0 36Z" fill="url(#spk-temp)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Gas Volume (%)</p>
-                                        <div class="sensor-mini-val"><span id="val-vol-pct">0.0</span><small>%</small></div>
-                                        <span class="sensor-mini-tag good">Normal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-volpct" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8 L120 36 L0 36Z" fill="url(#spk-volpct)"/></svg></div>
-                                    </div>
-                                </div>
-
-                                <!-- CENTER: Biogas Reactor Tank -->
-                                <div class="monitor-tank-center">
-                                    <h4 class="tank-center-title">Biogas Reactor Tank</h4>
-                                    <div class="tank-flow-row">
-                                        <span class="tank-flow-label">Inlet</span>
-                                        <span class="tank-flow-arrow">→</span>
-                                    </div>
-                                    <div class="tank-wrapper" style="height: 220px; justify-content: center;">
-                                        <div class="tank-container" style="width: 110px; height: 185px;">
-                                            <div class="tank-level" id="tank-level-fill" style="height: 0%;"></div>
-                                        </div>
-                                        <div class="tank-text">Distance: <span id="val-distance">0</span> cm</div>
-                                    </div>
-                                    <div class="tank-flow-row" style="justify-content: flex-end;">
-                                        <span class="tank-flow-arrow">→</span>
-                                        <span class="tank-flow-label">Outlet</span>
-                                    </div>
-                                </div>
-
-                                <!-- RIGHT SENSORS 2×2 -->
-                                <div class="monitor-sensor-col">
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">pH Level</p>
-                                        <div class="sensor-mini-val"><span id="val-ph">0.0</span></div>
-                                        <span class="sensor-mini-tag good">Optimal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 20 C20 18 35 22 50 19 S70 21 85 18 S100 20 120 19 L120 36 L0 36Z" fill="url(#spk-ph)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Pressure</p>
-                                        <div class="sensor-mini-val"><span id="val-pressure">0.0</span><small>mbar</small></div>
-                                        <span class="sensor-mini-tag good">Normal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-pres" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 20 C15 20 25 18 40 21 S60 16 70 10 S90 18 110 20 S118 21 120 20" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 20 C15 20 25 18 40 21 S60 16 70 10 S90 18 110 20 S118 21 120 20 L120 36 L0 36Z" fill="url(#spk-pres)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Humidity</p>
-                                        <div class="sensor-mini-val"><span id="val-hum">0.0</span><small>%</small></div>
-                                        <span class="sensor-mini-tag good">Normal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-hum" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B82F6" stop-opacity="0.25"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0"/></linearGradient></defs><path d="M0 14 C15 16 25 18 40 20 S60 22 75 24 S95 26 120 28" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/><path d="M0 14 C15 16 25 18 40 20 S60 22 75 24 S95 26 120 28 L120 36 L0 36Z" fill="url(#spk-hum)"/></svg></div>
-                                    </div>
-                                    <div class="sensor-mini-card">
-                                        <p class="sensor-mini-label">Gas Volume (L)</p>
-                                        <div class="sensor-mini-val"><span id="val-vol">0.0</span><small>L</small></div>
-                                        <span class="sensor-mini-tag good">Normal</span>
-                                        <div class="mini-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" fill="none"><defs><linearGradient id="spk-vol" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/><stop offset="100%" stop-color="#10B981" stop-opacity="0"/></linearGradient></defs><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><path d="M0 30 C20 26 35 24 50 20 S70 16 85 12 S105 10 120 8 L120 36 L0 36Z" fill="url(#spk-vol)"/></svg></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- BOTTOM: Real-time Chart | Status & Actuators -->
-                            <div class="monitor-bottom-row">
-
-                                <!-- Chart Card -->
-                                <div class="monitor-chart-card">
-                                    <div class="monitor-chart-header" style="flex-wrap: wrap; gap: 10px;">
-                                        <h4 class="monitor-chart-title">Real-time Performance</h4>
-                                        <div class="chart-legend-row" id="chart-selectors" style="display: flex; gap: 8px;">
-                                            <button onclick="changeChartSensor('ch4', this)" class="chart-btn">CH4</button>
-                                            <button onclick="changeChartSensor('co2', this)" class="chart-btn">CO2</button>
-                                            <button onclick="changeChartSensor('temp', this)" class="chart-btn">Temp</button>
-                                            <button onclick="changeChartSensor('hum', this)" class="chart-btn">Humidity</button>
-                                            <button onclick="changeChartSensor('ph', this)" class="chart-btn">pH</button>
-                                            <button onclick="changeChartSensor('vol', this)" class="chart-btn active">Volume</button>
-                                        </div>
-                                    </div>
-                                    <div id="chart-container" style="width: 100%; height: 190px; position: relative;">
-                                        <span class="text-muted" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;">Waiting for live data…</span>
-                                    </div>
-                                </div>
-
-                                <!-- Status & Actuators Column -->
-                                <div class="monitor-status-col">
-                                    <div class="status-info-card">
-                                        <p class="status-info-label">System Status</p>
-                                        <div class="badge active" style="padding: 9px 22px; font-size: 13px; letter-spacing: 0.08em; margin-top: 10px;">● ACTIVE</div>
-                                    </div>
-                                    <div class="status-info-card" style="flex: 1;">
-                                        <p class="status-info-label" style="margin-bottom: 14px;">Actuator Status</p>
-                                        <div class="actuator-row-mini">
-                                            <div class="actuator-mini-item">
-                                                <span class="actuator-mini-label">Valve 1</span>
-                                                <div class="status-indicator" id="status-valve1">OFF</div>
-                                            </div>
-                                            <div class="actuator-mini-item">
-                                                <span class="actuator-mini-label">Valve 2</span>
-                                                <div class="status-indicator" id="status-valve2">OFF</div>
-                                            </div>
-                                            <div class="actuator-mini-item">
-                                                <span class="actuator-mini-label">Valve 3</span>
-                                                <div class="status-indicator" id="status-valve">OFF</div>
-                                            </div>
-                                            <div class="actuator-mini-item">
-                                                <span class="actuator-mini-label">Pump</span>
-                                                <div class="status-indicator" id="status-pump">OFF</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="page-header-actions">
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
                             </div>
                         </div>
+                        <div id="customer-overview-container"></div>
                     </div>
                 </div>
+
+                                <!-- CUSTOMER TAB: MONITOR -->
+                <div id="cust-monitor" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2 id="live-unit-name">Unit Name</h2>
+                                <p id="live-unit-location">Location details</p>
+                            </div>
+                            <div class="page-header-actions">
+                                <select id="monitor-unit-switcher" class="unit-switcher" onchange="handleUnitSwitch(this.value)">
+                                    <option value="" disabled>-- Switch Unit --</option>
+                                </select>
+                                <button class="btn-report-issue" onclick="triggerIssueReport()">
+                                    <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    Report Issue
+                                </button>
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="live-monitor-container" class="monitor-scada-grid">
+                            <!-- TOP ROW: 6 HIGH-DENSITY SCADA INSTRUMENT TILES -->
+                            <div class="monitor-top-instruments">
+                                <!-- CH4 -->
+                                <div class="metric-tile panel-bracket">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span class="metric-tile-label">Methane (CH4)</span>
+                                        <span class="led-pill pill-online"><span class="led-indicator led-online"></span> Optimal</span>
+                                    </div>
+                                    <div class="metric-tile-value"><span id="val-ch4">0.00</span> <small style="font-size:12px;color:var(--text-muted);">%</small></div>
+                                    <div class="range-bar" style="height:5px;"><div class="range-zone-safe" style="left:50%;width:25%;"></div></div>
+                                    <div class="range-labels"><span>Safe: 50–75%</span><span>CH4 Sensor</span></div>
+                                </div>
+
+                                <!-- CO2 -->
+                                <div class="metric-tile panel-bracket">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span class="metric-tile-label">Carbon Dioxide</span>
+                                        <span class="led-pill pill-online"><span class="led-indicator led-online"></span> Nominal</span>
+                                    </div>
+                                    <div class="metric-tile-value"><span id="val-co2">0.00</span> <small style="font-size:12px;color:var(--text-muted);">%</small></div>
+                                    <div class="range-bar" style="height:5px;"><div class="range-zone-safe" style="left:25%;width:20%;"></div></div>
+                                    <div class="range-labels"><span>Safe: 25–45%</span><span>CO2 Sensor</span></div>
+                                </div>
+
+                                <!-- Temperature -->
+                                <div class="metric-tile panel-bracket">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span class="metric-tile-label">Temperature</span>
+                                        <span class="led-pill pill-online"><span class="led-indicator led-online"></span> Active</span>
+                                    </div>
+                                    <div class="metric-tile-value"><span id="val-temp">0.0</span> <small style="font-size:12px;color:var(--text-muted);">°C</small></div>
+                                    <div class="range-bar" style="height:5px;"><div class="range-zone-safe" style="left:30%;width:25%;"></div></div>
+                                    <div class="range-labels"><span>Safe: 30–40°C</span><span>Thermal RTD</span></div>
+                                </div>
+
+                                <!-- Slurry pH -->
+                                <div class="metric-tile panel-bracket">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span class="metric-tile-label">Digester pH</span>
+                                        <span class="led-pill pill-online"><span class="led-indicator led-online"></span> Balanced</span>
+                                    </div>
+                                    <div class="metric-tile-value"><span id="val-ph">0.00</span></div>
+                                    <div class="range-bar" style="height:5px;"><div class="range-zone-safe" style="left:60%;width:20%;"></div></div>
+                                    <div class="range-labels"><span>Safe: 6.5–7.5</span><span>pH Probe</span></div>
+                                </div>
+
+                                <!-- Pressure -->
+                                <div class="metric-tile panel-bracket">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span class="metric-tile-label">System Pressure</span>
+                                        <span class="led-pill pill-online"><span class="led-indicator led-online"></span> Normal</span>
+                                    </div>
+                                    <div class="metric-tile-value"><span id="val-pressure">0.00</span> <small style="font-size:12px;color:var(--text-muted);">bar</small></div>
+                                    <div class="range-bar" style="height:5px;"><div class="range-zone-safe" style="left:40%;width:20%;"></div></div>
+                                    <div class="range-labels"><span>Safe: 1.0–1.2 bar</span><span>Pressure Transducer</span></div>
+                                </div>
+
+                                <!-- Gas Volume -->
+                                <div class="metric-tile panel-bracket">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                                        <span class="metric-tile-label">Storage Volume</span>
+                                        <span class="led-pill pill-online"><span class="led-indicator led-online"></span> Normal</span>
+                                    </div>
+                                    <div class="metric-tile-value"><span id="val-vol-pct">0.0</span> <small style="font-size:12px;color:var(--text-muted);">%</small> <span style="font-size:13px;font-weight:600;color:var(--text-muted);">(<span id="val-vol">0.0</span> L)</span></div>
+                                    <div class="range-bar" style="height:5px;"><div class="range-zone-safe" style="left:10%;width:80%;"></div></div>
+                                    <div class="range-labels"><span>Max: 2000 L</span><span>Ultrasonic Sensor</span></div>
+                                    <!-- Hidden humidity for data binding -->
+                                    <span id="val-hum" style="display:none;">0.0</span>
+                                </div>
+                            </div>
+
+                            <!-- CENTER ROW: 3D DIGESTER TWIN + REALTIME CHART + SCADA ACTUATORS -->
+                            <div class="monitor-center-row">
+                                <!-- LEFT: 3D Procedural Digester Twin -->
+                                <div class="panel panel-bracket" style="display:flex;flex-direction:column;">
+                                    <div class="panel-header">
+                                        <h4 class="panel-title">
+                                            <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8Z"/><path d="M12 6v6l4 2"/></svg>
+                                            Digester Twin
+                                        </h4>
+                                        <span class="badge active" style="font-size:10px;">WebGL Active</span>
+                                    </div>
+                                    <div class="panel-body" style="padding:10px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                                        <div id="digester-twin-mount"></div>
+                                        <!-- Hidden elements for backward compatibility with script.js lines -->
+                                        <div id="tank-level-fill" style="display:none;height:0%;"></div>
+                                        <span id="val-distance" style="display:none;">0</span>
+                                        <div style="display:flex;justify-content:space-between;width:100%;font-size:11px;color:var(--text-muted);margin-top:8px;padding:0 8px;">
+                                            <span>Slurry Height: Live</span>
+                                            <span style="font-family:var(--font-mono);color:var(--text-accent);">Orbit: Drag mouse</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CENTER: Real-Time Performance Area Chart -->
+                                <div class="monitor-chart-card panel-bracket">
+                                    <div class="monitor-chart-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);">
+                                        <h4 class="panel-title">
+                                            <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                            Real-Time Telemetry Stream
+                                        </h4>
+                                        <div class="segmented-control" id="chart-selectors">
+                                            <button onclick="changeChartSensor('ch4', this)" class="chart-btn seg-btn">CH4</button>
+                                            <button onclick="changeChartSensor('co2', this)" class="chart-btn seg-btn">CO2</button>
+                                            <button onclick="changeChartSensor('temp', this)" class="chart-btn seg-btn">Temp</button>
+                                            <button onclick="changeChartSensor('hum', this)" class="chart-btn seg-btn">Hum</button>
+                                            <button onclick="changeChartSensor('ph', this)" class="chart-btn seg-btn">pH</button>
+                                            <button onclick="changeChartSensor('vol', this)" class="chart-btn seg-btn active">Volume</button>
+                                        </div>
+                                    </div>
+                                    <div id="chart-container" style="width:100%;height:220px;position:relative;padding:10px 16px;">
+                                        <span class="text-muted" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;">Connecting to telemetry stream…</span>
+                                    </div>
+                                </div>
+
+                                <!-- RIGHT: System Status & Actuator Controls -->
+                                <div class="panel panel-bracket" style="display:flex;flex-direction:column;">
+                                    <div class="panel-header">
+                                        <h4 class="panel-title">
+                                            <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 12h10"/></svg>
+                                            Actuators
+                                        </h4>
+                                        <span class="badge active" style="font-size:10px;">SCADA ONLINE</span>
+                                    </div>
+                                    <div class="panel-body actuator-scada-row">
+                                        <div class="actuator-item">
+                                            <div class="actuator-info">
+                                                <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3"/></svg>
+                                                <span>Inlet Valve 1</span>
+                                            </div>
+                                            <div class="status-indicator" id="status-valve1">OFF</div>
+                                        </div>
+                                        <div class="actuator-item">
+                                            <div class="actuator-info">
+                                                <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3"/></svg>
+                                                <span>Outlet Valve 2</span>
+                                            </div>
+                                            <div class="status-indicator" id="status-valve2">OFF</div>
+                                        </div>
+                                        <div class="actuator-item">
+                                            <div class="actuator-info">
+                                                <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3"/></svg>
+                                                <span>Gas Relief V3</span>
+                                            </div>
+                                            <div class="status-indicator" id="status-valve">OFF</div>
+                                        </div>
+                                        <div class="actuator-item">
+                                            <div class="actuator-info">
+                                                <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
+                                                <span>Feed Slurry Pump</span>
+                                            </div>
+                                            <div class="status-indicator" id="status-pump">OFF</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- CUSTOMER TAB: HISTORY -->
-                <div id="cust-history" class="admin-tab" style="padding: 24px;">
-                    <div class="flex-header">
-                        <div>
-                            <h2 class="section-title">Historical Data Logs</h2>
-                            <p class="text-muted">View, filter, and export past sensor readings</p>
+                                <div id="cust-history" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>Historical Telemetry Logs</h2>
+                                <p>Archived sensor logs and export utilities.</p>
+                            </div>
+                            <div class="page-header-actions">
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
+                            </div>
                         </div>
-                        <div class="history-actions">
-                            <button class="btn-secondary-small" onclick="exportToCSV()">Export CSV</button>
-                            <button class="btn-primary-small" onclick="exportToPDF()" style="background-color: var(--text-dark); color: white;">Export PDF</button>
-                        </div>
-                    </div>
 
                     <div class="history-controls" style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
                         <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
@@ -636,9 +684,9 @@
                             <input type="date" id="history-date-select" class="input-field" onchange="fetchHistoryData()">
                         </div>
                         
-                        <!-- 🔴 Clear History Button -->
+                        <!-- Clear History Button -->
                         <button onclick="clearUnitHistory()" style="padding: 14px 20px; margin-bottom: 12px; font-size: 14px; background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s;">
-                            🗑️ Clear History
+                            <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg> Clear History
                         </button>
                     </div>
 
@@ -652,16 +700,23 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-history -->
 
                 <!-- CUSTOMER TAB: REPORTS & ANALYTICS -->
-                <div id="cust-reports" class="admin-tab" style="padding: 24px;">
-                    <div class="flex-header" style="margin-bottom: 24px;">
-                        <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Reports & Analytics</h2>
-                            <p class="text-muted" style="font-size: 14px;">Generate professional performance, safety, and trend reports using real-time sensor logs.</p>
+                <div id="cust-reports" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>Reports & Analytics</h2>
+                                <p>Industrial process analysis, compliance verification, and performance logs.</p>
+                            </div>
+                            <div class="page-header-actions">
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
                     <div class="param-card" style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-soft);">
                         <div style="flex: 1; min-width: 180px;">
@@ -702,7 +757,7 @@
 
                     <div id="report-preview-container" class="report-preview-panel">
                         <div id="report-loading" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                            <span style="font-size: 40px; display: block; margin-bottom: 10px;">📊</span>
+                            <div style="display:flex;justify-content:center;margin-bottom:12px;"><svg class="bm-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="1.75"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg></div>
                             <p style="font-size: 16px; margin: 0;">Select your filters above and click <strong>"Generate Report"</strong> to analyze historical data.</p>
                         </div>
                         <div id="report-content" style="display: none;"></div>
@@ -712,43 +767,54 @@
                         <button class="btn-secondary-small" onclick="exportReportToCSV()">Export Data (CSV)</button>
                         <button class="btn-primary-small" style="background: #991B1B;" onclick="exportReportToPDF()">Download PDF Report</button>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-reports -->
 
                 <!-- CUSTOMER TAB: SENSOR STATUS -->
-                <div id="cust-sensors" class="admin-tab" style="padding: 24px;">
-                    <div class="flex-header" style="margin-bottom: 24px;">
-                        <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Real-time Sensor Status</h2>
-                            <p class="text-muted" style="font-size: 14px;">Monitor individual hardware sensors, their connection states, and safe operating ranges.</p>
+                <div id="cust-sensors" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>Instrument Sensor Status</h2>
+                                <p>Hardware diagnostics, signal calibration, and safe operational bounds.</p>
+                            </div>
+                            <div class="page-header-actions">
+                                <button class="btn-secondary-small" onclick="loadSensorStatus()">
+                                    <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                                    Refresh Status
+                                </button>
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <select id="sensor-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)">
-                                <option value="" disabled>-- Switch Unit --</option>
-                            </select>
-                            <button class="btn-secondary-small" onclick="loadSensorStatus()">🔄 Refresh Status</button>
-                        </div>
-                    </div>
                     <div id="sensor-status-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
                         <p style="color: var(--text-muted);">Loading sensor diagnostics...</p>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-sensors -->
 
                 <!-- CUSTOMER TAB: ALERTS -->
-                <div id="cust-alerts" class="admin-tab" style="padding: 24px;">
-
-                    <!-- HEADER -->
-                    <div class="flex-header" style="margin-bottom: 20px;">
-                        <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0 0 4px 0;">System Alert Center</h2>
-                            <p class="text-muted" style="font-size: 14px; margin: 0;">Real-time monitoring of all sensor thresholds and safety boundaries.</p>
+                <div id="cust-alerts" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>System Alert Center</h2>
+                                <p>Real-time anomaly detection, threshold breaches, and emergency safety boundaries.</p>
+                            </div>
+                            <div class="page-header-actions">
+                                <select id="alerts-unit-switcher" class="unit-switcher" onchange="handleUnitSwitch(this.value)">
+                                    <option value="" disabled>-- Switch Unit --</option>
+                                </select>
+                                <button class="btn-secondary-small" onclick="loadCustomerAlerts()">
+                                    <svg class="bm-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                                    Refresh Alerts
+                                </button>
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                            <select id="alerts-unit-switcher" class="input-field unit-switcher" onchange="handleUnitSwitch(this.value)" style="min-width: 180px;">
-                                <option value="" disabled>-- Switch Unit --</option>
-                            </select>
-                            <button onclick="loadCustomerAlerts()" style="padding: 10px 18px; font-size: 13px; font-weight: 600; background: #0F172A; color: #fff; border: none; border-radius: 10px; cursor: pointer;">🔄 Refresh</button>
-                        </div>
-                    </div>
 
                     <!-- SUMMARY BAR -->
                     <div id="alert-summary-bar" style="display:none; background: #0F172A; border-radius: 14px; padding: 18px 24px; margin-bottom: 20px; gap: 32px; align-items: center; flex-wrap: wrap;">
@@ -781,23 +847,24 @@
                     <!-- FILTER BAR -->
                     <div id="alert-filter-bar" style="display:none; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
                         <button onclick="filterAlerts('all')"      id="af-all"      style="padding: 8px 20px; border-radius: 20px; border: 2px solid #0F172A; background: #0F172A; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">All</button>
-                        <button onclick="filterAlerts('critical')" id="af-critical" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #FCA5A5; background: #FFF; color: #DC2626; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">🔴 Critical</button>
-                        <button onclick="filterAlerts('warning')"  id="af-warning"  style="padding: 8px 20px; border-radius: 20px; border: 2px solid #FDE68A; background: #FFF; color: #D97706; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">🟡 Warning</button>
-                        <button onclick="filterAlerts('normal')"   id="af-normal"   style="padding: 8px 20px; border-radius: 20px; border: 2px solid #BBF7D0; background: #FFF; color: #16A34A; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;">🟢 Normal</button>
+                        <button onclick="filterAlerts('critical')" id="af-critical" class="chart-btn"><span class="led-indicator led-critical"></span> Critical (<span id="btn-count-critical">0</span>)</button>
+                        <button onclick="filterAlerts('warning')" id="af-warning" class="chart-btn"><span class="led-indicator led-warning"></span> Warning (<span id="btn-count-warning">0</span>)</button>
+                        <button onclick="filterAlerts('normal')" id="af-normal" class="chart-btn"><span class="led-indicator led-online"></span> Normal (<span id="btn-count-normal">0</span>)</button>
                     </div>
 
                     <!-- ALERT CARDS -->
                     <div id="customer-alerts-container" style="display: flex; flex-direction: column; gap: 12px;">
                         <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
-                            <div style="font-size: 52px; margin-bottom: 14px;">🛡️</div>
+                            <div style="display:flex;justify-content:center;margin-bottom:14px;"><svg class="bm-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="1.75"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                             <h3 style="margin: 0 0 8px 0; color: var(--text-dark); font-weight: 700;">Alert Center Ready</h3>
-                            <p style="margin: 0; font-size: 14px;">Select a unit above to begin real-time threshold monitoring.</p>
                         </div>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-alerts -->
 
                 <!-- CUSTOMER TAB: SUPPORT (CHAT) -->
-                <div id="cust-support" class="admin-tab" style="padding: 0; height: calc(100vh - 40px);">
+                <div id="cust-support" class="admin-tab">
+                    <div class="page" style="padding-top:16px;padding-bottom:16px;">
                     <div class="chat-layout">
                         <div class="chat-main">
                             <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -817,28 +884,35 @@
                             <div class="chat-messages" id="cust-chat-messages"></div>
                             <div class="chat-input-area" style="align-items: center;">
                                 <input type="file" id="cust-chat-image" accept="image/*" style="display: none;" onchange="handleImageUpload(event, 'customer')">
-                                <button class="btn-chat-icon" title="Upload Image" onclick="document.getElementById('cust-chat-image').click()">📎</button>
-                                <button class="btn-chat-icon" id="cust-mic-btn" title="Hold or Click to Record" onclick="toggleVoiceRecord('customer')">🎤</button>
+                                <button class="btn-chat-icon" title="Upload Image" onclick="document.getElementById('cust-chat-image').click()"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l7.9-7.9"/></svg></button>
+                                <button class="btn-chat-icon" id="cust-mic-btn" title="Hold or Click to Record" onclick="toggleVoiceRecord('customer')"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
                                 <input type="text" id="cust-chat-input" placeholder="Type your message here..." onkeypress="handleCustChatEnter(event)">
                                 <button class="btn-primary-small" onclick="sendCustMessage()">Send</button>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-support -->
 
                 <!-- CUSTOMER TAB: SETTINGS -->
-                <div id="cust-settings" class="admin-tab" style="padding: 24px;">
-                    <div class="flex-header" style="margin-bottom: 24px;">
-                        <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">System Settings</h2>
-                            <p class="text-muted" style="font-size: 14px;">Customize your application interface and preferences.</p>
+                <div id="cust-settings" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>System Settings</h2>
+                                <p>Control-room display theme, localized language, and telemetry options.</p>
+                            </div>
+                            <div class="page-header-actions">
+                                <button class="theme-toggle-btn" title="Toggle theme" onclick="window.uiToggleTheme && window.uiToggleTheme()">
+                                    <svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
                     <div style="display: grid; gap: 20px; max-width: 600px;">
                         <!-- Theme Settings -->
                         <div class="param-card" style="border: 1px solid #E5E7EB; padding: 24px; border-radius: 12px;">
-                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🎨 Theme Preferences</h3>
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> Theme Preferences</h3>
                             <div style="display: flex; flex-direction: column; gap: 12px;">
                                 <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                     <input type="radio" name="theme-select" value="light" onchange="changeTheme(this.value)" checked> Light Mode
@@ -854,7 +928,7 @@
 
                         <!-- Language Settings -->
                         <div class="param-card" style="border: 1px solid #E5E7EB; padding: 24px; border-radius: 12px;">
-                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">🌐 Language / භාෂාව / மொழி</h3>
+                            <h3 style="margin: 0 0 16px 0; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;"><svg class="bm-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Language / භාෂාව / மொழி</h3>
                             <select id="language-select" onchange="changeLanguage(this.value)" style="width: 100%; padding: 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-family: inherit; font-size: 14px;">
                                 <option value="en" selected>English</option>
                                 <option value="si">සිංහල (Sinhala)</option>
@@ -863,16 +937,18 @@
                             <p style="margin: 10px 0 0 0; font-size: 12px; color: var(--text-muted);">Note: Language changes will be applied to the main UI components.</p>
                         </div>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-settings -->
 
                 <!-- CUSTOMER TAB: CONTACT US -->
-                <div id="cust-contact" class="admin-tab" style="padding: 24px;">
-                    <div class="flex-header" style="margin-bottom: 24px;">
-                        <div>
-                            <h2 style="font-size: 24px; font-weight: 700; color: var(--text-dark);">Contact & Support</h2>
-                            <p class="text-muted" style="font-size: 14px;">Get in touch with the BioGas Solutions team.</p>
+                <div id="cust-contact" class="admin-tab">
+                    <div class="page">
+                        <div class="page-header">
+                            <div class="page-header-title">
+                                <h2>Contact & Technical Dispatch</h2>
+                                <p>Direct communication channels to the BioMonitor engineering support center.</p>
+                            </div>
                         </div>
-                    </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
                         <!-- Contact Details Card -->
@@ -880,7 +956,7 @@
                             <h3 style="margin: 0 0 20px 0; font-size: 18px; color: var(--text-dark);">Reach Out to Us</h3>
                             
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                                <span style="font-size: 20px;">📞</span>
+                                <svg class="bm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                                 <div>
                                     <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Call Us</p>
                                     <a href="tel:+94778852808" style="color: var(--text-dark); font-weight: 600; text-decoration: none;">+94 77 885 2808</a>
@@ -888,7 +964,7 @@
                             </div>
 
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                                <span style="font-size: 20px;">💬</span>
+                                <svg class="bm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                 <div>
                                     <p style="margin: 0; font-size: 12px; color: var(--text-muted);">WhatsApp</p>
                                     <a href="https://wa.me/94778852808" target="_blank" style="color: #16A34A; font-weight: 600; text-decoration: none;">+94 77 885 2808</a>
@@ -896,7 +972,7 @@
                             </div>
 
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                                <span style="font-size: 20px;">✉️</span>
+                                <svg class="bm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                                 <div>
                                     <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Email</p>
                                     <a href="mailto:punsalavcc@gmail.com" style="color: var(--text-dark); font-weight: 600; text-decoration: none;">punsalavcc@gmail.com</a>
@@ -904,7 +980,7 @@
                             </div>
 
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <span style="font-size: 20px;">📘</span>
+                                <svg class="bm-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                                 <div>
                                     <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Facebook</p>
                                     <span style="color: #2563EB; font-weight: 600; cursor: pointer;">BioGas Solutions</span>
@@ -914,7 +990,7 @@
 
                         <!-- Technical Support Card -->
                         <div class="param-card" style="border: 1px solid #E5E7EB; padding: 30px; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                            <span style="font-size: 48px; margin-bottom: 16px;">🛠️</span>
+                            <div style="display:flex;justify-content:center;margin-bottom:16px;"><svg class="bm-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="1.75"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
                             <h3 style="margin: 0 0 10px 0; font-size: 18px; color: var(--text-dark);">Technical Issue?</h3>
                             <p style="margin: 0 0 20px 0; font-size: 14px; color: var(--text-muted); line-height: 1.5;">
                                 Having trouble with your biogas unit or sensors? Report it directly to our admin team with images and voice notes.
@@ -924,7 +1000,12 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> <!-- /.page -->
+            </div> <!-- /#cust-contact -->
+
+        </div> <!-- /.main-content -->
+    </div> <!-- /.dashboard-layout -->
+</div> <!-- /#customer-screen -->
 
     <!-- ========================================== -->
     <!-- ALERTS, TOASTS & USER GUIDE MODAL          -->
@@ -936,9 +1017,9 @@
     <!-- Emergency User Guide Modal -->
     <div id="guide-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
         <div class="param-card" style="background: var(--bg-primary, #FFFFFF); padding: 30px; border-radius: 20px; max-width: 500px; width: 90%; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-            <button onclick="closeGuideModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">✖</button>
+            <button onclick="closeGuideModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);">&times;</button>
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-                <span style="font-size: 30px;">⚠️</span>
+                <svg class="bm-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="1.75"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <h3 id="guide-title" style="margin: 0; color: #991B1B; font-size: 20px;">Emergency Guide</h3>
             </div>
             <div id="guide-content" style="font-size: 14px; color: var(--text-dark); line-height: 1.6;">
@@ -982,7 +1063,7 @@
         window.dbGet = get;
         window.dbSet = set;
         window.dbPush = push;
-        window.dbUpdate = update; // 🔴 අලුතින් එකතු කළ කොටස (Clear Alerts Error එක හදයි)
+        window.dbUpdate = update; // Fix: Clear alerts error
         window.dbOnValue = onValue;
         window.query = query;
         window.orderByKey = orderByKey;
@@ -1084,12 +1165,14 @@
             } catch (error) {
                 errorDiv.innerText = error.message;
             } finally {
-                document.getElementById('login-btn').innerText = "Sign In ➔";
+                document.getElementById('login-btn').innerText = "Sign In";
             }
         });
     </script>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="icons.js"></script>
+    <script src="twin3d.js" defer></script>
     <script src="script.js"></script>
     <script src="ui.js" defer></script>
 </body>
