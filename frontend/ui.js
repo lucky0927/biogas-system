@@ -204,31 +204,34 @@
     const wire = new THREE.Mesh(geoWire, matWire);
     scene.add(wire);
 
-    // ── Floating molecule bubbles ──
+    // ── Floating molecule bubbles in 3D ──
     const bubbles = [];
-    const bubbleGeo = new THREE.SphereGeometry(0.12, 12, 12);
-    for (let i = 0; i < 28; i++) {
-      const r = Math.random() > 0.5;
+    const bubbleGeo = new THREE.SphereGeometry(0.13, 14, 14);
+    for (let i = 0; i < 35; i++) {
+      const r = Math.random() > 0.45;
       const mat = new THREE.MeshBasicMaterial({
         color: r ? 0x39FF14 : 0x00FF88,
         transparent: true,
-        opacity: 0.55 + Math.random() * 0.35,
+        opacity: 0.50 + Math.random() * 0.40,
       });
       const b = new THREE.Mesh(bubbleGeo, mat);
       const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
-      const radius = 2.6 + Math.random() * 2.8;
+      const radius = 2.0 + Math.random() * 3.6;
+      const startY = -5.5 + Math.random() * 11.0;
       b.position.set(
-        radius * Math.sin(phi) * Math.cos(theta),
-        radius * Math.sin(phi) * Math.sin(theta),
-        radius * Math.cos(phi)
+        radius * Math.cos(theta),
+        startY,
+        (Math.random() - 0.5) * 3.5
       );
+      const sc = 0.55 + Math.random() * 1.1;
+      b.scale.set(sc, sc, sc);
       b.userData = {
-        speed: 0.004 + Math.random() * 0.008,
+        speed: 0.008 + Math.random() * 0.014,
         angle: Math.random() * Math.PI * 2,
-        riseSpeed: 0.002 + Math.random() * 0.004,
-        originY: b.position.y,
-        amp: 0.3 + Math.random() * 0.5,
+        riseSpeed: 0.006 + Math.random() * 0.010,
+        wobbleDist: 0.15 + Math.random() * 0.35,
+        baseX: b.position.x,
+        baseZ: b.position.z,
       };
       scene.add(b);
       bubbles.push(b);
@@ -282,11 +285,24 @@
       camera.position.y += (mouseY * 0.8 - camera.position.y) * 0.04;
       camera.lookAt(scene.position);
 
-      // Animate bubbles
+      // Animate bubbles floating upwards in 3D
       bubbles.forEach(b => {
         b.userData.angle += b.userData.speed;
-        b.position.y = b.userData.originY + Math.sin(b.userData.angle) * b.userData.amp;
-        b.material.opacity = 0.35 + Math.abs(Math.sin(b.userData.angle)) * 0.50;
+        b.position.y += b.userData.riseSpeed;
+        b.position.x = b.userData.baseX + Math.sin(b.userData.angle) * b.userData.wobbleDist;
+        b.position.z = b.userData.baseZ + Math.cos(b.userData.angle) * (b.userData.wobbleDist * 0.5);
+
+        // Loop smoothly when rising above view
+        if (b.position.y > 6.0) {
+          b.position.y = -6.0;
+          const theta = Math.random() * Math.PI * 2;
+          const radius = 2.0 + Math.random() * 3.6;
+          b.position.x = Math.cos(theta) * radius;
+          b.position.z = (Math.random() - 0.5) * 3.5;
+          b.userData.baseX = b.position.x;
+          b.userData.baseZ = b.position.z;
+        }
+        b.material.opacity = 0.35 + Math.abs(Math.sin(b.userData.angle)) * 0.45;
       });
 
       renderer.render(scene, camera);
@@ -306,21 +322,35 @@
     if (threeAnimFrame) cancelAnimationFrame(threeAnimFrame);
     if (threeScene && threeScene.cleanup) threeScene.cleanup();
     threeScene = null;
+    const container = document.getElementById('login-canvas-bg');
+    if (container) container.querySelectorAll('.login-particle').forEach(p => p.remove());
   }
 
-  // CSS particle fallback
+  // CSS Biogas Bubbles Animation
   function spawnCSSParticles(container) {
-    for (let i = 0; i < 20; i++) {
+    if (!container) return;
+    container.querySelectorAll('.login-particle').forEach(p => p.remove());
+
+    const bubbleCount = 42;
+    for (let i = 0; i < bubbleCount; i++) {
       const p = document.createElement('div');
-      p.className = 'login-particle';
-      const size = 3 + Math.random() * 6;
+      const isAlt = i % 2 === 0;
+      p.className = isAlt ? 'login-particle bubble-alt' : 'login-particle';
+      
+      const size = 8 + Math.floor(Math.random() * 24);
+      const left = (Math.random() * 96).toFixed(1);
+      const duration = (8 + Math.random() * 12).toFixed(1);
+      const delay = (-Math.random() * 18).toFixed(1); // Pre-fills the screen immediately!
+      const opacity = (0.4 + Math.random() * 0.5).toFixed(2);
+      
       p.style.cssText = `
-        width: ${size}px; height: ${size}px;
-        left: ${Math.random() * 100}%;
-        bottom: ${Math.random() * 30}%;
-        animation-duration: ${6 + Math.random() * 12}s;
-        animation-delay: ${Math.random() * 8}s;
-        opacity: ${0.3 + Math.random() * 0.5};
+        width: ${size}px;
+        height: ${size}px;
+        left: ${left}%;
+        bottom: -50px;
+        animation-duration: ${duration}s;
+        animation-delay: ${delay}s;
+        opacity: ${opacity};
       `;
       container.appendChild(p);
     }

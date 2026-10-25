@@ -1427,8 +1427,109 @@ body.dark-theme .modal-content {
 body:not(.dark-theme) #login-screen {
   background: linear-gradient(135deg, #0A2018 0%, #0E3020 50%, #061808 100%);
 }
-#login-canvas-bg { position:absolute; inset:0; z-index:0; pointer-events:none; }
-#login-canvas-bg canvas { width:100% !important; height:100% !important; }
+#login-screen::before {
+  content: '';
+  position: absolute;
+  top: -25%;
+  left: -15%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(57, 255, 20, 0.18) 0%, transparent 65%);
+  border-radius: 50%;
+  animation: orb-drift 10s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+}
+#login-screen::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  right: -15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.14) 0%, transparent 65%);
+  border-radius: 50%;
+  animation: orb-drift 14s ease-in-out infinite alternate-reverse;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#login-canvas-bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+#login-canvas-bg canvas { position:absolute; inset:0; width:100% !important; height:100% !important; }
+
+/* ── BIOGAS BUBBLES FLOATING UP ANIMATION ── */
+.login-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0%, rgba(57, 255, 20, 0.65) 30%, rgba(0, 255, 136, 0.35) 65%, rgba(10, 48, 24, 0.05) 100%);
+  box-shadow: 0 0 16px rgba(57, 255, 20, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(57, 255, 20, 0.45);
+  pointer-events: none;
+  z-index: 2;
+  animation: bubble-rise linear infinite;
+  will-change: transform, opacity;
+}
+
+.login-particle.bubble-alt {
+  background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.95) 0%, rgba(0, 255, 180, 0.6) 35%, rgba(57, 255, 20, 0.25) 70%, rgba(5, 30, 15, 0.05) 100%);
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.55), inset 0 0 8px rgba(255, 255, 255, 0.7);
+  animation-name: bubble-rise-alt;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.7);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  30% {
+    transform: translateY(-35vh) translateX(20px) scale(0.9);
+  }
+  60% {
+    transform: translateY(-70vh) translateX(-20px) scale(1.05);
+    opacity: 0.9;
+  }
+  85% {
+    transform: translateY(-98vh) translateX(12px) scale(0.95);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateY(-125vh) translateX(0px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes bubble-rise-alt {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.75);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  35% {
+    transform: translateY(-40vh) translateX(-24px) scale(1.0);
+  }
+  65% {
+    transform: translateY(-75vh) translateX(22px) scale(0.95);
+    opacity: 0.85;
+  }
+  85% {
+    transform: translateY(-100vh) translateX(-10px) scale(0.85);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-125vh) translateX(8px) scale(0.65);
+    opacity: 0;
+  }
+}
+
+@keyframes orb-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(50px, 35px) scale(1.12); }
+}
 
 .login-container {
   background: rgba(15, 29, 23, 0.74);
